@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Minifigure Series</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="top">
+    <a class="back" href="index.html">← All series</a>
+    <span class="brand" id="crumb"></span>
+  </header>
+
+  <section class="hero" id="hero"></section>
+  <div class="hero-title"><h1 id="title"></h1><p id="sub"></p></div>
+  <main class="figs" id="figs"></main>
+
+  <div class="nav" id="nav">
+    <button id="prev" aria-label="Previous figure">↑</button>
+    <button id="next" aria-label="Next figure">↓</button>
+  </div>
+
+  <script src="data.js"></script>
+  <script>
+    // Series page: hero group shot, then one full-screen card per minifigure.
+    const id = new URLSearchParams(location.search).get('id');
+    const s = (window.CATALOG || []).find(x => x.id === id);
+
+    if (!s) {
+      document.getElementById('title').textContent = 'Series not found';
+      document.getElementById('nav').hidden = true;
+    } else {
+      document.title = s.name;
+      document.getElementById('crumb').textContent = s.name;
+      document.getElementById('title').textContent = s.name;
+      document.getElementById('sub').textContent =
+        `${s.year} · ${s.figures.length} minifigures · set ${s.id}`;
+
+      const heroSrc = (s.group && s.group.img) || (s.bag && s.bag.img);
+      if (heroSrc) {
+        const img = new Image();
+        img.src = heroSrc;
+        img.alt = `${s.name} — all figures`;
+        document.getElementById('hero').append(img);
+      }
+
+      const figs = document.getElementById('figs');
+      s.figures.forEach((f, i) => {
+        const card = document.createElement('article');
+        card.className = 'fig';
+        card.innerHTML = `<div class="num"></div><div class="frame"></div><h2></h2><div class="id"></div>`;
+        card.querySelector('.num').textContent = `${i + 1} / ${s.figures.length}`;
+        card.querySelector('h2').textContent = f.name;
+        card.querySelector('.id').textContent = f.set_num;
+        const frame = card.querySelector('.frame');
+        if (f.img) {
+          const img = new Image();
+          img.loading = 'lazy';
+          img.src = f.img;
+          img.alt = f.name;
+          frame.append(img);
+        } else {
+          frame.innerHTML = '<span class="noimg">No image</span>';
+        }
+        figs.append(card);
+      });
+
+      // Prev/next: jump to the card above/below the current viewport position.
+      const cards = () => [...figs.children];
+      function current() {
+        const y = window.innerHeight / 3;
+        const list = cards();
+        let idx = -1;
+        list.forEach((c, i) => { if (c.getBoundingClientRect().top <= y) idx = i; });
+        return idx;
+      }
+      function go(delta) {
+        const list = cards();
+        const idx = Math.max(0, Math.min(list.length - 1, current() + delta));
+        list[idx].scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+      document.getElementById('prev').onclick = () => go(-1);
+      document.getElementById('next').onclick = () => go(1);
+      document.addEventListener('keydown', e => {
+        if (e.key === 'ArrowDown' || e.key === 'ArrowRight') { e.preventDefault(); go(1); }
+        if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') { e.preventDefault(); go(-1); }
+      });
+    }
+  </script>
+</body>
+</html>

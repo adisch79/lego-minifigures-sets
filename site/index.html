@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Minifigure Series</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="top">
+    <a class="brand" href="index.html"><span class="dot"></span>Minifigure Series</a>
+    <input id="q" type="search" placeholder="Search series or year" aria-label="Search">
+  </header>
+  <main class="wrap">
+    <p class="summary" id="summary"></p>
+    <div class="grid" id="grid"></div>
+    <p class="empty" id="empty" hidden>No series match.</p>
+  </main>
+
+  <script src="data.js"></script>
+  <script>
+    // Home page: one tile per series, filtered by the search box.
+    const catalog = window.CATALOG || [];
+    const grid = document.getElementById('grid');
+    const q = document.getElementById('q');
+    const figCount = catalog.reduce((n, s) => n + s.figures.length, 0);
+    document.getElementById('summary').textContent =
+      `${catalog.length} series · ${figCount} minifigures`;
+
+    function cover(s) {
+      return (s.bag && s.bag.img) || (s.group && s.group.img) ||
+        (s.figures.find(f => f.img) || {}).img || '';
+    }
+
+    function render(filter) {
+      const f = filter.trim().toLowerCase();
+      const list = catalog.filter(s =>
+        !f || s.name.toLowerCase().includes(f) || String(s.year).includes(f) || s.id.includes(f));
+      grid.replaceChildren(...list.map(s => {
+        const a = document.createElement('a');
+        a.className = 'tile';
+        a.href = `series.html?id=${encodeURIComponent(s.id)}`;
+        a.innerHTML = `<div class="cover"><img loading="lazy" alt=""></div>
+          <div class="meta"><h2></h2><p></p></div>`;
+        a.querySelector('img').src = cover(s);
+        a.querySelector('h2').textContent = s.name;
+        a.querySelector('p').textContent = `${s.year} · ${s.figures.length} figures · ${s.id}`;
+        return a;
+      }));
+      document.getElementById('empty').hidden = list.length > 0;
+    }
+
+    try { q.value = sessionStorage.getItem('q') || ''; } catch (e) {}
+    q.addEventListener('input', () => {
+      try { sessionStorage.setItem('q', q.value); } catch (e) {}
+      render(q.value);
+    });
+    render(q.value);
+  </script>
+</body>
+</html>
