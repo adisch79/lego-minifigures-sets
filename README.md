@@ -25,11 +25,14 @@ start site\index.html               # open the site locally (Windows)
 python -m unittest discover tests   # run tests
 ```
 
-### Publish to phone (GitHub Pages)
-1. Create an empty GitHub repo, then: `git remote add origin <url>` and `git push -u origin master`.
-2. Repo Settings → Pages → Source: GitHub Actions. The workflow in `.github/workflows/pages.yml`
-   publishes `site/` on every push to `master`.
-3. Open `https://<user>.github.io/<repo>/` on the phone.
+### Live site
+**https://adisch79.github.io/lego-minifigures-sets/**
+
+The workflow in `.github/workflows/pages.yml` publishes `site/` on every push to `master`.
+Flow: `feature/<story>` → `dev` → release merge into `master` (which deploys).
+
+Repo settings this needs (already done): Pages source = GitHub Actions; default branch = `master`;
+environment `github-pages` allows `master` to deploy.
 
 ## Data source
 Catalog and images: [Rebrickable](https://rebrickable.com) data downloads. Personal, non-commercial use.
