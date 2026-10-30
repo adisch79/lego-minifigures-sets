@@ -116,7 +116,7 @@ button { font: inherit; color: inherit; }
 }
 .slide .pic { height: min(58vh, 560px); width: 100%; display: grid; place-items: center; }
 .slide .pic img { max-width: 100%; max-height: 100%; object-fit: contain; }
-.slide .count { color: var(--muted); font-weight: 700; font-size: 14px; }
+.viewer .count { text-align: center; padding-bottom: 12px; color: var(--muted); font-weight: 700; font-size: 14px; }
 .slide h2 { margin: 0; font-size: clamp(20px, 4.5vw, 28px); text-align: center; }
 .slide .setno { font-size: clamp(20px, 5vw, 28px); }
 .noimg { color: var(--muted); }
@@ -143,3 +143,14 @@ button { font: inherit; color: inherit; }
 }
 .thumbs button img { width: 100%; height: 100%; object-fit: contain; }
 .thumbs button.on { border-color: var(--accent-2); background: rgba(255,255,255,.14); }
+
+/* Keyboard focus */
+.tile:focus-visible, .arrow:focus-visible, .thumbs button:focus-visible, .track:focus-visible {
+  outline: 3px solid var(--accent-2); outline-offset: 3px;
+}
+.thumbs button .noimg { font-size: 14px; font-weight: 700; }
+
+@media (prefers-reduced-motion: reduce) {
+  .tile { transition: none; }
+  .tile:hover { transform: none; }
+}

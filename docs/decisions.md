@@ -17,3 +17,4 @@
 - 2026-10-31 — Pages environment `github-pages` must allow `master`; the rule was pinned to `dev` when Pages was first enabled.
 - 2026-10-31 — Transitive deps constrained via `constraints.txt` (pip freeze limited to the rembg/onnxruntime/pillow/numpy/scipy dependency tree); no hashes (accepted for a personal project).
 - 2026-10-31 — u2net model downloaded by rembg from github.com release assets and hash-checked (md5 via pooch) by rembg itself; no extra check in our code.
+- 2026-10-31 — E7-04: no mockups; visual change limited to focus rings, favicon (existing brand mark), muted placeholder text.
