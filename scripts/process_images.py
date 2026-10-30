@@ -7,6 +7,8 @@
     the artwork itself (no bag outline, no white corners).
 """
 
+import os
+
 import numpy as np
 from PIL import Image, ImageFilter
 from scipy import ndimage
@@ -114,4 +116,21 @@ def process_file(src, dest, kind):
     with Image.open(src) as img:
         out = flatten_bag(img, max_size) if kind == "bag" else cut_out(img, max_size, kind)
     dest.parent.mkdir(parents=True, exist_ok=True)
-    out.save(dest, "WEBP", quality=82, method=5)
+    # Save to a temp file first so a failed save never leaves a corrupt WebP behind.
+    tmp = dest.with_name(dest.stem + ".tmp.webp")
+    try:
+        out.save(tmp, "WEBP", quality=82, method=5)
+        os.replace(tmp, dest)
+    finally:
+        if tmp.exists():
+            tmp.unlink()
+
+
+def safe_process_file(src, dest, kind):
+    """process_file that logs and swallows per-file errors. Returns True on success."""
+    try:
+        process_file(src, dest, kind)
+        return True
+    except Exception as e:  # one bad file must not abort the run
+        print(f"  ERROR processing {src}: {type(e).__name__}: {e}", flush=True)
+        return False

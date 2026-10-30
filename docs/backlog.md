@@ -34,7 +34,7 @@ Legend: **UI** = starts with 3 mockups. **Install** = delivers a setup script.
 ### E4 Publish
 | ID | Title | Goal | Acceptance criteria | Size | Model | Flags | Status |
 |---|---|---|---|---|---|---|---|
-| E4-01 | GitHub Pages deploy | Site reachable from phone | Repo + Pages live; README has URL | S | sonnet | Install | In progress (workflow ready, needs owner repo) |
+| E4-01 | GitHub Pages deploy | Site reachable from phone | Repo + Pages live; README has URL | S | sonnet | Install | In progress (Pages enabled, no Actions run starts; NOT live) |
 | E4-02 | Mobile performance | Fast on phone | Lazy-load images; series page LCP < 2.5 s on 4G | S | sonnet | | Ready |
 
 ## MVP 3 — Stay current
@@ -43,3 +43,36 @@ Legend: **UI** = starts with 3 mockups. **Install** = delivers a setup script.
 | ID | Title | Goal | Acceptance criteria | Size | Model | Flags | Status |
 |---|---|---|---|---|---|---|---|
 | E5-01 | Incremental update | Add new series with one command | Re-run fetches only new series/figures; existing files untouched | S | sonnet | | Done |
+
+## Round 2 — owner feedback on MVP 1 (shipped in 3b525d1 without review; retro review in P-01)
+
+Items reconstructed from commit 3b525d1 and decisions.md (owner to confirm wording).
+
+### E6 Visual redesign
+| ID | Title | Goal | Acceptance criteria | Size | Model | Flags | Status |
+|---|---|---|---|---|---|---|---|
+| E6-01 | Figure cut-outs | Figures without photo background | Transparent WebP per figure; white plastic stays solid; no floor shadow | M | sonnet | | Done (golden set pending, P-07) |
+| E6-02 | Group-shot hero cut-out | Clean transparent hero | Group shot transparent; no white haze around figures | S | sonnet | | Done |
+| E6-03 | Flat bag artwork tiles | Tiles show bag art, not crumpled bag | Crop to flat artwork rectangle on every series | S | sonnet | UI | Done (no mockups, see P-06) |
+| E6-04 | Uniform tiles + title overlay | Same-size home tiles | All tiles 3:4; title overlaid; no layout jumps | S | sonnet | UI | Done |
+| E6-05 | Big set number | Series number readable at a glance | Large set-number badge on every tile | S | sonnet | UI | Done |
+| E6-06 | Dark stage + swipe viewer | No big gaps; one figure at a time | Dark theme; horizontal swipe viewer + thumbnail strip + ←/→ keys; works at 375 px | M | sonnet | UI | Done |
+
+### E7 Retro-review fixes (P-01 findings, 2026-10-31)
+| ID | Title | Goal | Acceptance criteria | Size | Model | Flags | Status |
+|---|---|---|---|---|---|---|---|
+| E7-01 | Robust download + processing | One bad file never breaks or poisons a run | CSV 404 raises clear error; CSV/image/WebP writes atomic (tmp + `os.replace`); downloaded image verified with PIL; per-file errors in download + process caught, logged, run continues; `import urllib.error`; 429 honours Retry-After; `suffix()` tolerates non-numeric; tests for each | M | sonnet | | Done |
+| E7-02 | Input validation (security S1/S2) | Untrusted CSV can't write outside repo or fetch other hosts | Only `https://cdn.rebrickable.com` URLs fetched; read size capped (20 MB image, 100 MB CSV); `set_num` must match `[A-Za-z0-9]+-\d+`; ext allowlist; tests | S | sonnet | | Ready |
+| E7-03 | Supply-chain pins (security S3/S4) | Reproducible, tamper-resistant builds | requirements.txt exact versions; workflow actions pinned to commit SHA | S | sonnet | | Ready |
+| E7-04 | Site robustness + a11y | Site correct on edge data, usable by keyboard | null year hidden; empty cover guarded; reduced-motion respected; ←/→ ignores modifier keys; off-screen slides `inert`; `aria-current` on thumb; `:focus-visible` styles; favicon (no console 404); resize re-aligns viewer | M | sonnet | | Ready |
+| E7-05 | Catalog logic edge cases | Correct bag/series picking | Deterministic series-id tie break; bag/group classification tests | S | sonnet | | Ready |
+| E7-06 | Repo hygiene decision | Owner decides | `originals/` kept; site public (see decisions) | S | — | | Done |
+
+E4-02 also gets: 160 px thumbnails, hero `fetchpriority=high` + width/height.
+
+## Process fixes (from HANDOFF)
+| ID | Title | Status |
+|---|---|---|
+| P-01 | security-reviewer agent; retro code/QA/security review of 0088846~1..3b525d1 | Done (QA pass; 0 blocking security; 5 blocking code → E7-01, E4-01) |
+| P-06 | 3 mockups before next UI story | Rule — applies from now |
+| P-07 | Golden set for u2net cut-outs (via E2-03 review page, ~50 labelled) | Ready |
