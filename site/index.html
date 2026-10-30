@@ -3,13 +3,14 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#12161f">
   <title>Minifigure Series</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <header class="top">
-    <a class="brand" href="index.html"><span class="dot"></span>Minifigure Series</a>
-    <input id="q" type="search" placeholder="Search series or year" aria-label="Search">
+    <a class="brand" href="index.html"><span class="dot"></span><span class="txt">Minifigure Series</span></a>
+    <input id="q" type="search" placeholder="Search series, year or number" aria-label="Search">
   </header>
   <main class="wrap">
     <p class="summary" id="summary"></p>
@@ -19,7 +20,7 @@
 
   <script src="data.js"></script>
   <script>
-    // Home page: one tile per series, filtered by the search box.
+    // Home page: one tile per series (flat bag artwork, set number, title), filtered by search.
     const catalog = window.CATALOG || [];
     const grid = document.getElementById('grid');
     const q = document.getElementById('q');
@@ -28,8 +29,7 @@
       `${catalog.length} series · ${figCount} minifigures`;
 
     function cover(s) {
-      return (s.bag && s.bag.img) || (s.group && s.group.img) ||
-        (s.figures.find(f => f.img) || {}).img || '';
+      return (s.bag && s.bag.img) || (s.group && s.group.img) || '';
     }
 
     function render(filter) {
@@ -40,11 +40,14 @@
         const a = document.createElement('a');
         a.className = 'tile';
         a.href = `series.html?id=${encodeURIComponent(s.id)}`;
-        a.innerHTML = `<div class="cover"><img loading="lazy" alt=""></div>
-          <div class="meta"><h2></h2><p></p></div>`;
+        if (s.color) a.style.setProperty('--c', s.color);
+        a.innerHTML = `<img class="art" loading="lazy" alt="">
+          <span class="setno"></span>
+          <div class="cap"><h2></h2><p></p></div>`;
         a.querySelector('img').src = cover(s);
+        a.querySelector('.setno').textContent = s.id;
         a.querySelector('h2').textContent = s.name;
-        a.querySelector('p').textContent = `${s.year} · ${s.figures.length} figures · ${s.id}`;
+        a.querySelector('p').textContent = `${s.year} · ${s.figures.length} figures`;
         return a;
       }));
       document.getElementById('empty').hidden = list.length > 0;

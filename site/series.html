@@ -3,89 +3,123 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#12161f">
   <title>Minifigure Series</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <header class="top">
     <a class="back" href="index.html">← All series</a>
-    <span class="brand" id="crumb"></span>
+    <span class="brand"><span class="txt" id="crumb"></span></span>
   </header>
 
-  <section class="hero" id="hero"></section>
-  <div class="hero-title"><h1 id="title"></h1><p id="sub"></p></div>
-  <main class="figs" id="figs"></main>
+  <div class="stage">
+    <section class="hero" id="hero"></section>
+    <div class="title">
+      <span class="setno" id="setno"></span>
+      <div><h1 id="name"></h1><p id="sub"></p></div>
+    </div>
+  </div>
 
-  <div class="nav" id="nav">
-    <button id="prev" aria-label="Previous figure">↑</button>
-    <button id="next" aria-label="Next figure">↓</button>
+  <div class="stage">
+    <section class="viewer" id="viewer">
+      <button class="arrow prev" id="prev" aria-label="Previous figure">‹</button>
+      <div class="track" id="track"></div>
+      <button class="arrow next" id="next" aria-label="Next figure">›</button>
+    </section>
+    <nav class="thumbs" id="thumbs" aria-label="All figures"></nav>
   </div>
 
   <script src="data.js"></script>
   <script>
-    // Series page: hero group shot, then one full-screen card per minifigure.
+    // Series page: hero group shot, then a swipeable viewer showing one minifigure at a time.
     const id = new URLSearchParams(location.search).get('id');
     const s = (window.CATALOG || []).find(x => x.id === id);
+    const track = document.getElementById('track');
+    const thumbs = document.getElementById('thumbs');
+
+    function img(src, alt, cls) {
+      const el = new Image();
+      el.src = src;
+      el.alt = alt;
+      if (cls) el.className = cls;
+      return el;
+    }
 
     if (!s) {
-      document.getElementById('title').textContent = 'Series not found';
-      document.getElementById('nav').hidden = true;
+      document.getElementById('name').textContent = 'Series not found';
+      document.getElementById('viewer').hidden = true;
     } else {
       document.title = s.name;
       document.getElementById('crumb').textContent = s.name;
-      document.getElementById('title').textContent = s.name;
-      document.getElementById('sub').textContent =
-        `${s.year} · ${s.figures.length} minifigures · set ${s.id}`;
+      document.getElementById('setno').textContent = s.id;
+      document.getElementById('name').textContent = s.name;
+      document.getElementById('sub').textContent = `${s.year} · ${s.figures.length} minifigures`;
 
       const heroSrc = (s.group && s.group.img) || (s.bag && s.bag.img);
-      if (heroSrc) {
-        const img = new Image();
-        img.src = heroSrc;
-        img.alt = `${s.name} — all figures`;
-        document.getElementById('hero').append(img);
-      }
+      if (heroSrc) document.getElementById('hero').append(img(heroSrc, `${s.name}: all figures`, 'shadowed'));
 
-      const figs = document.getElementById('figs');
       s.figures.forEach((f, i) => {
-        const card = document.createElement('article');
-        card.className = 'fig';
-        card.innerHTML = `<div class="num"></div><div class="frame"></div><h2></h2><div class="id"></div>`;
-        card.querySelector('.num').textContent = `${i + 1} / ${s.figures.length}`;
-        card.querySelector('h2').textContent = f.name;
-        card.querySelector('.id').textContent = f.set_num;
-        const frame = card.querySelector('.frame');
+        const slide = document.createElement('article');
+        slide.className = 'slide';
+        slide.innerHTML = `<div class="pic"></div><div class="count"></div><h2></h2><span class="setno"></span>`;
+        const pic = slide.querySelector('.pic');
         if (f.img) {
-          const img = new Image();
-          img.loading = 'lazy';
-          img.src = f.img;
-          img.alt = f.name;
-          frame.append(img);
+          const el = img(f.img, f.name, 'shadowed');
+          if (i > 1) el.loading = 'lazy';
+          pic.append(el);
         } else {
-          frame.innerHTML = '<span class="noimg">No image</span>';
+          pic.innerHTML = '<span class="noimg">No image</span>';
         }
-        figs.append(card);
+        slide.querySelector('.count').textContent = `${i + 1} / ${s.figures.length}`;
+        slide.querySelector('h2').textContent = f.name;
+        slide.querySelector('.setno').textContent = f.set_num;
+        track.append(slide);
+
+        const b = document.createElement('button');
+        b.setAttribute('aria-label', f.name);
+        if (f.img) {
+          const t = img(f.img, '');
+          t.loading = 'lazy';
+          b.append(t);
+        }
+        b.onclick = () => go(i);
+        thumbs.append(b);
       });
 
-      // Prev/next: jump to the card above/below the current viewport position.
-      const cards = () => [...figs.children];
-      function current() {
-        const y = window.innerHeight / 3;
-        const list = cards();
-        let idx = -1;
-        list.forEach((c, i) => { if (c.getBoundingClientRect().top <= y) idx = i; });
-        return idx;
+      let index = 0;
+      const prev = document.getElementById('prev');
+      const next = document.getElementById('next');
+
+      function go(i, smooth = true) {
+        i = Math.max(0, Math.min(s.figures.length - 1, i));
+        track.scrollTo({ left: i * track.clientWidth, behavior: smooth ? 'smooth' : 'auto' });
       }
-      function go(delta) {
-        const list = cards();
-        const idx = Math.max(0, Math.min(list.length - 1, current() + delta));
-        list[idx].scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+      function mark(i) {
+        index = i;
+        prev.disabled = i === 0;
+        next.disabled = i === s.figures.length - 1;
+        [...thumbs.children].forEach((b, j) => b.classList.toggle('on', j === i));
+        const on = thumbs.children[i];
+        if (on) thumbs.scrollTo({ left: on.offsetLeft - thumbs.clientWidth / 2 + on.clientWidth / 2, behavior: 'smooth' });
+        history.replaceState(null, '', `#${i + 1}`);
       }
-      document.getElementById('prev').onclick = () => go(-1);
-      document.getElementById('next').onclick = () => go(1);
+
+      track.addEventListener('scroll', () => {
+        const i = Math.round(track.scrollLeft / track.clientWidth);
+        if (i !== index) mark(i);
+      }, { passive: true });
+      prev.onclick = () => go(index - 1);
+      next.onclick = () => go(index + 1);
       document.addEventListener('keydown', e => {
-        if (e.key === 'ArrowDown' || e.key === 'ArrowRight') { e.preventDefault(); go(1); }
-        if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') { e.preventDefault(); go(-1); }
+        if (e.key === 'ArrowRight') go(index + 1);
+        if (e.key === 'ArrowLeft') go(index - 1);
       });
+
+      const start = parseInt(location.hash.slice(1), 10) - 1;
+      mark(0);
+      if (start > 0) requestAnimationFrame(() => go(start, false));
     }
   </script>
 </body>

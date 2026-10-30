@@ -7,15 +7,15 @@ Source: Rebrickable public CSV dumps (no API key). For each CMF sub-theme
   - figures: every other <base>-N set (one per minifigure)
 
 Outputs:
+  originals/<base>/<set_num>.jpg   every downloaded image, untouched
+  site/img/<base>/<set_num>.webp   web image: bag = flat artwork crop, figure/group = transparent cut-out
   site/data.json   catalog (series -> figures, local image paths)
   site/data.js     same catalog as `window.CATALOG = ...` (works from file://)
-  site/img/<base>/<set_num>.jpg   all images
 Re-running skips images that already exist (incremental update).
 """
 
 import csv
 import gzip
-import io
 import json
 import re
 import sys
@@ -28,6 +28,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 CACHE = ROOT / "cache"
 SITE = ROOT / "site"
+ORIG = ROOT / "originals"
 IMG = SITE / "img"
 
 CSV_BASE = "https://cdn.rebrickable.com/media/downloads/"
@@ -140,7 +141,7 @@ def minifig_images(inventories, inventory_minifigs, minifigs):
 
 def local_path(series_id, set_num, src):
     ext = Path(src).suffix.lower() or ".jpg"
-    return IMG / series_id / f"{set_num}{ext}"
+    return ORIG / series_id / f"{set_num}{ext}"
 
 
 def download_one(job):
@@ -159,6 +160,35 @@ def download_one(job):
     return "ok", job
 
 
+def process_all(catalog):
+    """Make the web image for every downloaded original that has none yet."""
+    from process_images import color_hex, process_file
+
+    todo = []
+    for s in catalog:
+        for kind, items in (("bag", [s["bag"]]), ("group", [s["group"]]), ("figure", s["figures"])):
+            for item in items:
+                if item and item.get("orig"):
+                    dest = IMG / s["id"] / f"{item['set_num']}.webp"
+                    item["img"] = dest.relative_to(SITE).as_posix()
+                    if not dest.exists():
+                        todo.append((item["orig"], dest, kind))
+    print(f"Processing {len(todo)} images")
+    for i, (src, dest, kind) in enumerate(todo, 1):
+        process_file(src, dest, kind)
+        if i % 25 == 0:
+            print(f"  {i}/{len(todo)}", flush=True)
+
+    # Tile color: average color of the flat bag artwork.
+    from PIL import Image
+    import numpy as np
+    for s in catalog:
+        s["color"] = None
+        if s["bag"] and s["bag"].get("img"):
+            with Image.open(SITE / s["bag"]["img"]) as im:
+                s["color"] = color_hex(np.asarray(im.convert("RGB").resize((32, 32))))
+
+
 def main():
     themes, sets, inventories, inventory_minifigs, minifigs = (load_csv(n) for n in CSV_FILES)
     catalog = build_catalog(themes, sets)
@@ -170,12 +200,10 @@ def main():
             f["alt"] = fallback.get(f["set_num"])
             f["src"] = f["src"] or f["alt"]
         for item in [s["bag"], s["group"], *s["figures"]]:
-            if item and item["src"]:
-                dest = local_path(s["id"], item["set_num"], item["src"])
-                item["img"] = dest.relative_to(SITE).as_posix()
-                jobs.append((item, dest))
-            elif item:
-                item["img"] = None
+            if item:
+                item["img"] = item["orig"] = None
+                if item["src"]:
+                    jobs.append((item, local_path(s["id"], item["set_num"], item["src"])))
 
     print(f"{len(catalog)} series, {sum(len(s['figures']) for s in catalog)} figures, "
           f"{len(jobs)} images")
@@ -185,25 +213,29 @@ def main():
         for i, (status, (item, dest)) in enumerate(pool.map(download_one, jobs), 1):
             counts[status] += 1
             if status == "missing":
-                item["img"] = None
                 missing.append(item["set_num"])
+            else:
+                item["orig"] = dest
             if i % 100 == 0:
                 print(f"  {i}/{len(jobs)} {dict(counts)}")
+    print(f"Download: {dict(counts)}")
+    if missing:
+        print("Missing images:", ", ".join(missing))
+
+    process_all(catalog)
 
     for s in catalog:
         for item in [s["bag"], s["group"], *s["figures"]]:
             if item:
-                item.pop("src", None)
-                item.pop("alt", None)
+                for k in ("src", "alt", "orig"):
+                    item.pop(k, None)
 
     payload = json.dumps(catalog, ensure_ascii=False, indent=1)
     (SITE / "data.json").write_text(payload, encoding="utf-8")
     (SITE / "data.js").write_text(f"window.CATALOG = {payload};\n", encoding="utf-8")
 
     size_mb = sum(p.stat().st_size for p in IMG.rglob("*") if p.is_file()) / 1e6
-    print(f"Done: {dict(counts)}; images on disk: {size_mb:.0f} MB")
-    if missing:
-        print("Missing images:", ", ".join(missing))
+    print(f"Done. Web images: {size_mb:.0f} MB")
     return 0
 
 
