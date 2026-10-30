@@ -225,15 +225,23 @@ def build_catalog(themes, sets):
 
 
 def minifig_images(inventories, inventory_minifigs, minifigs):
-    """set_num -> image URL of the first minifig in that set (fallback when the set photo is missing)."""
+    """set_num -> photo URL of the minifig in that set's inventory.
+
+    Deterministic: the lowest fig_num wins; a set with several distinct figs prints a warning.
+    """
     inv_set = {r["id"]: r["set_num"] for r in inventories}
     fig_img = {r["fig_num"]: r["img_url"] for r in minifigs}
-    out = {}
-    for r in inventory_minifigs:
+    out, chosen, seen = {}, {}, defaultdict(set)
+    for r in sorted(inventory_minifigs, key=lambda r: r["fig_num"]):
         set_num = inv_set.get(r["inventory_id"])
         img = fig_img.get(r["fig_num"])
-        if set_num and img and set_num not in out:
-            out[set_num] = img
+        if set_num and img:
+            seen[set_num].add(r["fig_num"])
+            if set_num not in out:
+                out[set_num], chosen[set_num] = img, r["fig_num"]
+    for set_num, figs in seen.items():
+        if len(figs) > 1:
+            print(f"  warning: {set_num} has {len(figs)} minifigs {sorted(figs)}; using {chosen[set_num]}")
     return out
 
 
@@ -307,9 +315,11 @@ def download_one(job):
             tmp.unlink()
 
 
-def process_all(catalog, rebuild=False):
+def process_all(catalog, rebuild=False, prev_src=None):
     """Make the web image for every downloaded original that has none yet, or whose original
-    is newer than it (source changed), or all of them with rebuild=True."""
+    is newer than it, or whose figure source (fig/set) differs from prev_src[set_num]
+    (from the previous data.json), or all of them with rebuild=True."""
+    prev_src = prev_src or {}
     from process_images import color_hex, safe_process_file
 
     todo = []
@@ -319,8 +329,15 @@ def process_all(catalog, rebuild=False):
                 if item and item.get("orig"):
                     dest = IMG / s["id"] / f"{item['set_num']}.webp"
                     item["img"] = dest.relative_to(SITE).as_posix()
-                    if rebuild or not dest.exists() or dest.stat().st_mtime < Path(item["orig"]).stat().st_mtime:
-                        todo.append((item["orig"], dest, kind, item))
+                    if kind == "figure" and item.get("source") == "set":
+                        kind_ = "figure_set"
+                    else:
+                        kind_ = kind
+                    changed = (kind == "figure" and item.get("source") is not None
+                               and prev_src.get(item["set_num"]) != item["source"])
+                    if (rebuild or changed or not dest.exists()
+                            or dest.stat().st_mtime < Path(item["orig"]).stat().st_mtime):
+                        todo.append((item["orig"], dest, kind_, item))
     print(f"Processing {len(todo)} images")
     errors = 0
     for i, (src, dest, kind, item) in enumerate(todo, 1):
@@ -351,6 +368,12 @@ def parse_args(argv=None):
 
 def main(argv=None):
     args = parse_args(argv)
+    prev_src = {}  # set_num -> "fig"|"set" from the previous run (absent in rembg-era output)
+    try:
+        old = json.loads((SITE / "data.json").read_text(encoding="utf-8"))
+        prev_src = {f["set_num"]: f.get("src") for s in old for f in s["figures"]}
+    except (OSError, ValueError, KeyError, TypeError):
+        pass
     themes, sets, inventories, inventory_minifigs, minifigs = (load_csv(n) for n in CSV_FILES)
     catalog = build_catalog(themes, sets)
     fig_photos = minifig_images(inventories, inventory_minifigs, minifigs)
@@ -402,18 +425,18 @@ def main(argv=None):
                     print(f"  skipping {item['set_num']!r}: {e}")
             else:
                 missing.append(item["set_num"])
-        elif status == "missing":
+        elif status not in ("ok", "skip"):
             missing.append(item["set_num"])
     if fallback:
         print(f"Falling back to set image for {len(fallback)} figures")
         for status, dest, item in run(fallback):
-            if status == "missing":
+            if status not in ("ok", "skip"):
                 missing.append(item["set_num"])
     print(f"Download: {dict(counts)}")
     if missing:
         print("Missing images:", ", ".join(missing))
 
-    process_all(catalog, rebuild=args.rebuild)
+    process_all(catalog, rebuild=args.rebuild, prev_src=prev_src)
 
     for s in catalog:
         for item in [s["bag"], s["group"], *s["figures"]]:

@@ -72,23 +72,21 @@ class LocalPathTest(unittest.TestCase):
             fetch_data.local_path("71002", "../x-1", FIG, fig=True)
 
 
-class TrimPadTest(unittest.TestCase):
-    def test_trim_and_pad(self):
-        out = process_images.trim_and_pad(grey_with_block())
-        w, h = out.size
-        self.assertAlmostEqual(w / h, 0.75, delta=0.01)
-        self.assertEqual(out.getpixel((0, 0)), GREY)  # padding uses the photo background
-        self.assertEqual(out.getpixel((w - 1, h - 1)), GREY)
-        self.assertEqual(out.getpixel((w // 2, h // 2)), RED)  # figure kept, not cut out
-        self.assertLess(h, 300)  # uniform border trimmed
+class ResizeOnlyTest(unittest.TestCase):
+    def test_figure_unchanged_except_size(self):
+        im = grey_with_block((1600, 1600), (400, 300, 1200, 1500))
+        out = process_images.prepare_figure(im, 800)
+        self.assertEqual(out.size, (800, 800))  # no trim, no pad
+        self.assertEqual(out.getpixel((0, 0)), GREY)
+        self.assertEqual(out.getpixel((400, 400)), RED)
 
-    def test_uniform_image(self):
-        out = process_images.trim_and_pad(Image.new("RGB", (100, 100), GREY))
-        self.assertAlmostEqual(out.size[0] / out.size[1], 0.75, delta=0.02)
+    def test_figure_small_not_upscaled_nor_padded(self):
+        out = process_images.prepare_figure(grey_with_block((400, 300)), 800)
+        self.assertEqual(out.size, (400, 300))
 
-    def test_figure_max_height(self):
-        out = process_images.prepare_figure(grey_with_block((2000, 3000), (500, 500, 1500, 2800)), 900)
-        self.assertLessEqual(out.size[1], 900)
+    def test_set_fallback_max_900(self):
+        out = process_images.prepare_figure(Image.new("RGB", (1800, 1200), "white"), 900)
+        self.assertEqual(out.size, (900, 600))
 
     def test_group_only_resized(self):
         im = grey_with_block((3600, 1200), (100, 100, 3000, 900), bg=(255, 255, 255))
@@ -162,6 +160,33 @@ def _rows(with_second=False):
     }
 
 
+class MinifigImagesTest(unittest.TestCase):
+    def test_deterministic_and_warns(self):
+        invs = [{"id": "1", "set_num": "71053-6"}]
+        mf = [{"fig_num": "fig-b", "img_url": "b.jpg"}, {"fig_num": "fig-a", "img_url": "a.jpg"}]
+        rows1 = [{"inventory_id": "1", "fig_num": "fig-b"}, {"inventory_id": "1", "fig_num": "fig-a"}]
+        with mock.patch("builtins.print") as pr:
+            out1 = fetch_data.minifig_images(invs, rows1, mf)
+        out2 = fetch_data.minifig_images(invs, list(reversed(rows1)), mf)
+        self.assertEqual(out1, {"71053-6": "a.jpg"})
+        self.assertEqual(out1, out2)
+        self.assertTrue(any("71053-6" in str(c) for c in pr.call_args_list))
+
+
+class KindTest(unittest.TestCase):
+    def test_set_source_uses_set_kind(self):
+        site = Path(tempfile.mkdtemp()) / "site"
+        orig = site.parent / "o.png"
+        orig.write_bytes(b"x")
+        items = [{"set_num": "71002-1", "orig": orig, "source": "fig"},
+                 {"set_num": "71002-2", "orig": orig, "source": "set"}]
+        cat = [{"id": "71002", "bag": None, "group": None, "figures": items}]
+        with mock.patch.object(fetch_data, "SITE", site),                 mock.patch.object(fetch_data, "IMG", site / "img"),                 mock.patch.object(process_images, "safe_process_file", return_value=True) as p:
+            fetch_data.process_all(cat)
+        kinds = sorted(c.args[2] for c in p.call_args_list)
+        self.assertEqual(kinds, ["figure", "figure_set"])
+
+
 class MainTest(unittest.TestCase):
     def run_main(self, root, rows, fake_get, argv=()):
         with mock.patch.object(fetch_data, "ROOT", root), \
@@ -213,6 +238,32 @@ class MainTest(unittest.TestCase):
             self.assertEqual(f["src"], "set")
             self.assertTrue(f["img"])
             self.assertTrue((root / "originals" / "71002" / "71002-1.jpg").exists())
+
+    def test_missing_logged_when_both_sources_fail(self):
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            (root / "site").mkdir()
+            with mock.patch("builtins.print") as pr:
+                self.run_main(root, _rows(), lambda *a, **k: None)
+            out = " ".join(str(c) for c in pr.call_args_list)
+            self.assertIn("Missing images", out)
+            self.assertIn("71002-1", out)
+
+    def test_source_change_vs_old_data_json_rebuilds(self):
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            (root / "site").mkdir()
+            data = self.png(root)
+            self.run_main(root, _rows(), lambda *a, **k: data)
+            webp = root / "site" / "img" / "71002" / "71002-1.webp"
+            os.utime(webp, (2_000_000_000, 2_000_000_000))
+            dj = root / "site" / "data.json"
+            old = json.loads(dj.read_text(encoding="utf-8"))
+            del old[0]["figures"][0]["src"]  # old rembg-era output had no src
+            dj.write_text(json.dumps(old), encoding="utf-8")
+            with mock.patch.object(process_images, "safe_process_file", return_value=True) as p:
+                self.run_main(root, _rows(), lambda *a, **k: data)
+            self.assertEqual(p.call_count, 1)
 
     def test_rebuild_flag_reprocesses_all(self):
         with tempfile.TemporaryDirectory() as d:

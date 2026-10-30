@@ -115,7 +115,7 @@ button { font: inherit; color: inherit; }
   display: flex; flex-direction: column; align-items: center; gap: 10px;
   padding: 8px 16px 18px;
 }
-.slide .pic { height: min(58vh, 560px); width: 100%; display: grid; place-items: center; }
+.slide .pic { height: min(58vh, 560px); width: 100%; display: grid; place-items: center; grid-template: minmax(0, 1fr) / minmax(0, 1fr); }
 .slide .pic img { max-width: 100%; max-height: 100%; object-fit: contain; }
 .slide .count { color: var(--muted); font-weight: 700; font-size: 14px; }
 .slide h2 { margin: 0; font-size: clamp(20px, 4.5vw, 28px); text-align: center; }

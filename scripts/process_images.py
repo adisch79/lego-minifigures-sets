@@ -1,7 +1,6 @@
 """Turn downloaded product photos into web images. No background removal.
 
-  - figures: real Rebrickable minifig photo, uniform border trimmed, padded to 3:4 with the
-    photo's own background colour, max 900 px tall.
+  - figures: real Rebrickable minifig photo, only resized (max 800 px); set-image fallback max 900 px.
   - group shots: only resized (max 1800 px wide).
   - bags / boxes: cropped to the largest flat rectangle inside the packaging, so the tile shows
     the artwork itself (no bag outline, no white corners).
@@ -16,9 +15,6 @@ from scipy import ndimage
 BAG_WHITE_MIN = 245      # background pixels: all channels at least this bright ...
 WHITE_SPREAD = 22        # ... and nearly gray (max - min channel)
 BAG_EDGE_FILL = 0.985    # a crop edge must be this much artwork
-TRIM_TOL = 14            # figure photos: pixel differs from the corner colour by more than this
-TRIM_MARGIN = 0.04       # margin kept around the figure, fraction of its size
-FIG_ASPECT = 3 / 4       # figure image width / height
 
 
 def background_mask(rgb):
@@ -71,33 +67,12 @@ def flatten_bag(img, max_size):
     return img.crop(box) if box else img
 
 
-def trim_and_pad(img, aspect=FIG_ASPECT):
-    """Trim the uniform border (colour of the corners) and pad to width/height = aspect
-    with the photo's own background colour."""
+def prepare_figure(img, max_size):
+    """Figure photo: unchanged except for a downscale so neither side exceeds max_size."""
     img = img.convert("RGB")
-    a = np.asarray(img).astype(np.int16)
-    corners = np.stack([a[0, 0], a[0, -1], a[-1, 0], a[-1, -1]])
-    bg = tuple(int(v) for v in np.median(corners, axis=0))
-    diff = np.abs(a - np.array(bg, np.int16)).max(axis=2) > TRIM_TOL
-    rows, cols = np.where(diff)
-    if rows.size:
-        l, r, t, b = cols.min(), cols.max() + 1, rows.min(), rows.max() + 1
-        m = int(max(r - l, b - t) * TRIM_MARGIN)
-        w, h = img.size
-        img = img.crop((max(0, l - m), max(0, t - m), min(w, r + m), min(h, b + m)))
-    w, h = img.size
-    cw, ch = (w, round(w / aspect)) if w / h > aspect else (round(h * aspect), h)
-    canvas = Image.new("RGB", (cw, ch), bg)
-    canvas.paste(img, ((cw - w) // 2, (ch - h) // 2))
-    return canvas
-
-
-def prepare_figure(img, max_height):
-    out = trim_and_pad(img)
-    if out.size[1] > max_height:
-        w, h = out.size
-        out = out.resize((max(1, round(w * max_height / h)), max_height), Image.LANCZOS)
-    return out
+    if max(img.size) > max_size:
+        img.thumbnail((max_size, max_size), Image.LANCZOS)
+    return img
 
 
 def prepare_group(img, max_width):
@@ -110,11 +85,13 @@ def prepare_group(img, max_width):
 
 
 def process_file(src, dest, kind):
-    """Process one downloaded file to WebP. kind: 'bag' | 'figure' | 'group'."""
+    """Process one downloaded file to WebP. kind: 'bag' | 'figure' | 'figure_set' | 'group'."""
     with Image.open(src) as img:
         if kind == "bag":
             out = flatten_bag(img, 700)
-        elif kind == "figure":
+        elif kind == "figure":  # real minifig photo
+            out = prepare_figure(img, 800)
+        elif kind == "figure_set":  # set promo image used as fallback
             out = prepare_figure(img, 900)
         else:
             out = prepare_group(img, 1800)
