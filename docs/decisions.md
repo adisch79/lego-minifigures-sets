@@ -14,3 +14,4 @@
 - 2026-10-31 — Site and repo stay public, LEGO/Rebrickable images included. Owner choice (E7-06).
 - 2026-10-31 — Default branch = `master` (production). Needed because the `github-pages` environment only lets the default branch deploy. Flow: feature → `dev` → release merge into `master`.
 - 2026-10-31 — PRs merged locally with `--no-ff` (no `gh` CLI on this PC); each merge passed code-reviewer + qa first.
+- 2026-10-31 — Pages environment `github-pages` must allow `master`; the rule was pinned to `dev` when Pages was first enabled.
