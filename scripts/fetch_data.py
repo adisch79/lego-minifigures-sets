@@ -23,6 +23,8 @@ import sys
 import time
 import urllib.error
 import urllib.request
+from datetime import datetime, timezone
+from email.utils import parsedate_to_datetime
 from collections import Counter, defaultdict
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
@@ -40,11 +42,27 @@ CSV_FILES = ["themes", "sets", "inventories", "inventory_minifigs", "minifigs"]
 CMF_THEME_ID = "535"
 CSV_MAX_AGE_S = 24 * 3600
 RETRY_AFTER_MAX_S = 60
+GZIP_MAGIC = bytes([0x1F, 0x8B])
 USER_AGENT = "minifigures-extractor/1.0 (personal, non-commercial)"
 
 GROUP_RE = re.compile(r"complete|all sets", re.I)
 BAG_RE = re.compile(r"random (bag|box)", re.I)
 SKIP_RE = re.compile(r"sealed box|tower box|6[ -]pack|^\d+-\d+$", re.I)
+
+
+def _retry_after(value, attempt):
+    """Seconds to wait for a Retry-After header (delta-seconds or HTTP-date); backoff if unusable."""
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        pass
+    try:
+        when = parsedate_to_datetime(value)
+        if when.tzinfo is None:
+            when = when.replace(tzinfo=timezone.utc)
+        return int((when - datetime.now(timezone.utc)).total_seconds())
+    except (TypeError, ValueError, IndexError):
+        return 2 ** attempt
 
 
 def http_get(url, retries=3):
@@ -60,10 +78,7 @@ def http_get(url, retries=3):
             if e.code == 429:
                 if attempt == retries - 1:
                     raise
-                try:
-                    wait = int(e.headers.get("Retry-After", ""))
-                except (TypeError, ValueError, AttributeError):
-                    wait = 2 ** attempt
+                wait = _retry_after(e.headers.get("Retry-After") if e.headers else None, attempt)
                 time.sleep(min(max(wait, 0), RETRY_AFTER_MAX_S))
                 continue
             if 400 <= e.code < 500 or attempt == retries - 1:
@@ -85,8 +100,14 @@ def load_csv(name):
         if data is None:
             raise RuntimeError(f"Could not download {name}.csv.gz (404 Not Found)")
         tmp = path.with_name(path.name + ".tmp")
-        tmp.write_bytes(data)
-        os.replace(tmp, path)
+        try:
+            if data[:2] != GZIP_MAGIC:
+                raise RuntimeError(f"{name}.csv.gz is not a gzip file (got {len(data)} bytes)")
+            tmp.write_bytes(data)
+            os.replace(tmp, path)
+        finally:
+            if tmp.exists():
+                tmp.unlink()
     with gzip.open(path, "rt", encoding="utf-8") as f:
         return list(csv.DictReader(f))
 
@@ -173,18 +194,29 @@ def download_one(job):
         return "skip", job
     tmp = dest.with_name(dest.name + ".tmp")
     try:
-        data = None
+        got_data = False
+        last_err = None
         for src in (item["src"], item.get("alt")):
-            if src and not data:
-                data = http_get(src)
-        if not data:
+            if not src:
+                continue
+            data = http_get(src)
+            if not data:
+                continue
+            got_data = True
+            try:
+                dest.parent.mkdir(parents=True, exist_ok=True)
+                tmp.write_bytes(data)
+                with Image.open(tmp) as im:  # reject HTML / truncated downloads
+                    im.verify()
+            except Exception as e:  # bad bytes: try the next source
+                last_err = e
+                print(f"  invalid image from {src}: {type(e).__name__}", flush=True)
+                continue
+            os.replace(tmp, dest)
+            return "ok", job
+        if not got_data:
             return "missing", job
-        dest.parent.mkdir(parents=True, exist_ok=True)
-        tmp.write_bytes(data)
-        with Image.open(tmp) as im:  # reject HTML / truncated downloads
-            im.verify()
-        os.replace(tmp, dest)
-        return "ok", job
+        raise last_err
     except Exception as e:  # one bad image must not abort the run
         print(f"  ERROR {item.get('src')}: {type(e).__name__}: {e}", flush=True)
         return "error", job
