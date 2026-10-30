@@ -1,5 +1,5 @@
-pillow
-numpy
-scipy
-rembg
-onnxruntime
+pillow==12.3.0
+numpy==2.5.3
+scipy==1.18.1
+rembg==2.0.86
+onnxruntime==1.31.1
