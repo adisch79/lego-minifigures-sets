@@ -14,7 +14,7 @@ banner with all figures, then every minifigure one at a time.
 ## Install
 Python 3.10+, then:
 ```
-python -m pip install --user -r requirements.txt
+python -m pip install --user -r requirements.txt -c constraints.txt
 ```
 First run downloads the u2net model (~170 MB) to `~/.u2net` or `~/.rembg`.
 
