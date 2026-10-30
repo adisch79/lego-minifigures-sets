@@ -28,6 +28,7 @@ class Resp:
     def __init__(self, data, url=None):
         self.data = data
         self.url = url or OK_URL
+        self.headers = {}
 
     def read(self, n=-1):
         return self.data if n is None or n < 0 else self.data[:n]
@@ -48,12 +49,12 @@ def http_error(code, headers=None):
 
 class HttpGetTest(unittest.TestCase):
     def test_404_returns_none(self):
-        with mock.patch("urllib.request.urlopen", side_effect=http_error(404)):
+        with mock.patch.object(fetch_data.OPENER, "open", side_effect=http_error(404)):
             self.assertIsNone(fetch_data.http_get(OK_URL))
 
     def test_other_4xx_not_retried(self):
         m = mock.Mock(side_effect=http_error(403))
-        with mock.patch("urllib.request.urlopen", m), mock.patch("time.sleep"):
+        with mock.patch.object(fetch_data.OPENER, "open", m), mock.patch("time.sleep"):
             with self.assertRaises(urllib.error.HTTPError):
                 fetch_data.http_get(OK_URL)
         self.assertEqual(m.call_count, 1)
@@ -61,13 +62,13 @@ class HttpGetTest(unittest.TestCase):
     def test_429_honours_retry_after_capped(self):
         m = mock.Mock(side_effect=[http_error(429, {"Retry-After": "5"}),
                                    http_error(429, {"Retry-After": "9999"}), Resp(b"ok")])
-        with mock.patch("urllib.request.urlopen", m), mock.patch("time.sleep") as sl:
+        with mock.patch.object(fetch_data.OPENER, "open", m), mock.patch("time.sleep") as sl:
             self.assertEqual(fetch_data.http_get(OK_URL), b"ok")
         self.assertEqual([c.args[0] for c in sl.call_args_list], [5, 60])
 
     def test_5xx_retried_then_raises(self):
         m = mock.Mock(side_effect=http_error(503))
-        with mock.patch("urllib.request.urlopen", m), mock.patch("time.sleep"):
+        with mock.patch.object(fetch_data.OPENER, "open", m), mock.patch("time.sleep"):
             with self.assertRaises(urllib.error.HTTPError):
                 fetch_data.http_get(OK_URL, retries=3)
         self.assertEqual(m.call_count, 3)
@@ -76,14 +77,14 @@ class HttpGetTest(unittest.TestCase):
 class RetryAfterTest(unittest.TestCase):
     def test_429_last_attempt_reraises(self):
         m = mock.Mock(side_effect=http_error(429, {"Retry-After": "1"}))
-        with mock.patch("urllib.request.urlopen", m), mock.patch("time.sleep"):
+        with mock.patch.object(fetch_data.OPENER, "open", m), mock.patch("time.sleep"):
             with self.assertRaises(urllib.error.HTTPError):
                 fetch_data.http_get(OK_URL, retries=2)
         self.assertEqual(m.call_count, 2)
 
     def test_non_numeric_retry_after_falls_back_to_backoff(self):
         m = mock.Mock(side_effect=[http_error(429, {"Retry-After": "soon"}), Resp(b"ok")])
-        with mock.patch("urllib.request.urlopen", m), mock.patch("time.sleep") as sl:
+        with mock.patch.object(fetch_data.OPENER, "open", m), mock.patch("time.sleep") as sl:
             fetch_data.http_get(OK_URL)
         self.assertEqual([c.args[0] for c in sl.call_args_list], [1])
 
@@ -92,14 +93,14 @@ class RetryAfterTest(unittest.TestCase):
         from email.utils import format_datetime
         when = format_datetime(datetime.now(timezone.utc) + timedelta(seconds=30), usegmt=True)
         m = mock.Mock(side_effect=[http_error(429, {"Retry-After": when}), Resp(b"ok")])
-        with mock.patch("urllib.request.urlopen", m), mock.patch("time.sleep") as sl:
+        with mock.patch.object(fetch_data.OPENER, "open", m), mock.patch("time.sleep") as sl:
             fetch_data.http_get(OK_URL)
         self.assertTrue(20 <= sl.call_args_list[0].args[0] <= 30)
 
     def test_http_date_far_future_capped(self):
         m = mock.Mock(side_effect=[http_error(429, {"Retry-After": "Wed, 21 Oct 2099 07:28:00 GMT"}),
                                    Resp(b"ok")])
-        with mock.patch("urllib.request.urlopen", m), mock.patch("time.sleep") as sl:
+        with mock.patch.object(fetch_data.OPENER, "open", m), mock.patch("time.sleep") as sl:
             fetch_data.http_get(OK_URL)
         self.assertEqual(sl.call_args_list[0].args[0], 60)
 

@@ -3,6 +3,8 @@
 import json
 import sys
 import unittest
+import urllib.error
+import urllib.request
 from pathlib import Path
 from unittest import mock
 
@@ -20,29 +22,61 @@ class UrlAllowlistTest(unittest.TestCase):
                "https://cdn.rebrickable.com.evil.com/a.jpg",
                "https://cdn.rebrickable.com@evil.com/a.jpg", "", "//cdn.rebrickable.com/a"]
         for url in bad:
-            with self.subTest(url=url), mock.patch("urllib.request.urlopen") as m:
+            with self.subTest(url=url), mock.patch.object(fetch_data.OPENER, "open") as m:
                 with self.assertRaises(ValueError):
                     fetch_data.http_get(url)
                 m.assert_not_called()
 
     def test_allowed_url_fetched(self):
-        with mock.patch("urllib.request.urlopen", return_value=Resp(b"ok", GOOD)):
+        with mock.patch.object(fetch_data.OPENER, "open", return_value=Resp(b"ok", GOOD)):
             self.assertEqual(fetch_data.http_get(GOOD), b"ok")
 
     def test_redirect_to_other_host_rejected(self):
-        with mock.patch("urllib.request.urlopen", return_value=Resp(b"ok", "https://evil.com/a")):
+        with mock.patch.object(fetch_data.OPENER, "open", return_value=Resp(b"ok", "https://evil.com/a")):
             with self.assertRaises(ValueError):
                 fetch_data.http_get(GOOD)
 
 
+class RedirectTest(unittest.TestCase):
+    def _redirect(self, newurl):
+        h = fetch_data._CheckedRedirect()
+        req = urllib.request.Request(GOOD)
+        return h.redirect_request(req, None, 302, "Found", {}, newurl)
+
+    def test_off_host_and_downgrade_rejected(self):
+        for url in ("https://evil.com/a.jpg", "http://cdn.rebrickable.com/a.jpg", "file:///etc/passwd"):
+            with self.subTest(url=url), self.assertRaises(ValueError):
+                self._redirect(url)
+
+    def test_allowed_redirect_ok(self):
+        self.assertIsNotNone(self._redirect("https://cdn.rebrickable.com/b.jpg"))
+
+
+class TruncationTest(unittest.TestCase):
+    def test_truncated_is_retried(self):
+        bad = Resp(b"abc", GOOD)
+        bad.headers = {"Content-Length": "10"}
+        m = mock.Mock(side_effect=[bad, Resp(b"ok", GOOD)])
+        with mock.patch.object(fetch_data.OPENER, "open", m), mock.patch("time.sleep"):
+            self.assertEqual(fetch_data.http_get(GOOD), b"ok")
+        self.assertEqual(m.call_count, 2)
+
+    def test_truncated_final_raises(self):
+        bad = Resp(b"abc", GOOD)
+        bad.headers = {"Content-Length": "10"}
+        with mock.patch.object(fetch_data.OPENER, "open", return_value=bad), mock.patch("time.sleep"):
+            with self.assertRaises(urllib.error.URLError):
+                fetch_data.http_get(GOOD, retries=2)
+
+
 class SizeCapTest(unittest.TestCase):
     def test_over_cap_fails(self):
-        with mock.patch("urllib.request.urlopen", return_value=Resp(b"x" * 11, GOOD)):
+        with mock.patch.object(fetch_data.OPENER, "open", return_value=Resp(b"x" * 11, GOOD)):
             with self.assertRaises(ValueError):
                 fetch_data.http_get(GOOD, max_bytes=10)
 
     def test_at_cap_ok(self):
-        with mock.patch("urllib.request.urlopen", return_value=Resp(b"x" * 10, GOOD)):
+        with mock.patch.object(fetch_data.OPENER, "open", return_value=Resp(b"x" * 10, GOOD)):
             self.assertEqual(len(fetch_data.http_get(GOOD, max_bytes=10)), 10)
 
     def test_defaults(self):
@@ -58,6 +92,21 @@ class IdAndPathTest(unittest.TestCase):
     def test_invalid_ids(self):
         for v in ("../x-1", "a/b-1", "a\b-1", "71053", "71053-", "-1", "a-1/../b", "a-1\n", ""):
             self.assertFalse(fetch_data.valid_set_num(v), v)
+
+    def test_unicode_digits_rejected(self):
+        self.assertFalse(fetch_data.valid_set_num("71053-١"))
+
+    def test_windows_reserved_series_rejected(self):
+        for v in ("CON", "nul", "Com1", "LPT9", "aux", "PRN"):
+            with self.subTest(v=v), self.assertRaises(ValueError):
+                fetch_data.local_path(v, "1-1", GOOD)
+
+    def test_malformed_row_does_not_crash(self):
+        themes = [{"id": "1", "parent_id": "535", "name": "T"}]
+        sets = [{"set_num": None, "name": "A", "theme_id": "1", "year": "2020", "img_url": GOOD},
+                {"set_num": "5-1", "name": "B", "theme_id": "1", "year": "2020", "img_url": GOOD}]
+        cat = fetch_data.build_catalog(themes, sets)
+        self.assertEqual(len(cat[0]["figures"]), 1)
 
     def test_ext_allowlist(self):
         lp = fetch_data.local_path

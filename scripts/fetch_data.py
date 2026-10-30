@@ -50,8 +50,9 @@ ALLOWED_HOST = "cdn.rebrickable.com"
 MAX_IMAGE_BYTES = 20 * 1024 * 1024
 MAX_CSV_BYTES = 100 * 1024 * 1024
 ALLOWED_EXTS = {".jpg", ".jpeg", ".png", ".webp"}
-SET_NUM_RE = re.compile(r"[A-Za-z0-9]+-\d+")
-SERIES_ID_RE = re.compile(r"[A-Za-z0-9]+")
+SET_NUM_RE = re.compile(r"[A-Za-z0-9]+-[0-9]+", re.ASCII)
+SERIES_ID_RE = re.compile(r"[A-Za-z0-9]+", re.ASCII)
+WINDOWS_RESERVED_RE = re.compile(r"(CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9])", re.I)
 USER_AGENT = "minifigures-extractor/1.0 (personal, non-commercial)"
 
 GROUP_RE = re.compile(r"complete|all sets", re.I)
@@ -89,6 +90,17 @@ def check_url(url):
         raise ValueError(f"URL not allowed: {str(url)[:80]!r}")
 
 
+class _CheckedRedirect(urllib.request.HTTPRedirectHandler):
+    """Validate every redirect target before it is requested."""
+
+    def redirect_request(self, req, fp, code, msg, headers, newurl):
+        check_url(newurl)
+        return super().redirect_request(req, fp, code, msg, headers, newurl)
+
+
+OPENER = urllib.request.build_opener(_CheckedRedirect)
+
+
 def http_get(url, retries=3, max_bytes=MAX_IMAGE_BYTES):
     """GET with retries and backoff. Returns bytes or None on 404.
 
@@ -99,11 +111,15 @@ def http_get(url, retries=3, max_bytes=MAX_IMAGE_BYTES):
     for attempt in range(retries):
         try:
             req = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
-            with urllib.request.urlopen(req, timeout=60) as resp:
+            with OPENER.open(req, timeout=60) as resp:
                 check_url(resp.geturl())
                 data = resp.read(max_bytes + 1)
                 if len(data) > max_bytes:
                     raise ValueError(f"Response larger than {max_bytes} bytes")
+                expected = resp.headers.get("Content-Length") if resp.headers else None
+                if expected is not None and expected.isdigit() and len(data) != int(expected):
+                    raise urllib.error.URLError(
+                        f"truncated download ({len(data)} of {expected} bytes)")  # retried
                 return data
         except urllib.error.HTTPError as e:
             if e.code == 404:
@@ -157,7 +173,7 @@ def build_catalog(themes, sets):
     by_theme = defaultdict(list)
     for s in sets:
         if not valid_set_num(s["set_num"]):
-            print(f"  skipping set with invalid set_num {s['set_num'][:40]!r}")
+            print(f"  skipping set with invalid set_num {str(s.get('set_num'))[:40]!r}")
             continue
         by_theme[s["theme_id"]].append(s)
 
@@ -219,13 +235,14 @@ def minifig_images(inventories, inventory_minifigs, minifigs):
 
 
 def local_path(series_id, set_num, src):
-    if not SERIES_ID_RE.fullmatch(series_id or "") or not valid_set_num(set_num):
+    if (not SERIES_ID_RE.fullmatch(series_id or "") or WINDOWS_RESERVED_RE.fullmatch(series_id)
+            or not valid_set_num(set_num)):
         raise ValueError(f"invalid id: {series_id!r} / {set_num!r}")
     ext = Path(urllib.parse.urlsplit(src).path).suffix.lower()
     if ext not in ALLOWED_EXTS:
         ext = ".jpg"
     dest = ORIG / series_id / f"{set_num}{ext}"
-    if not dest.resolve().is_relative_to(ROOT):
+    if not dest.resolve().is_relative_to(ORIG.resolve()):
         raise ValueError(f"path escapes repo: {dest}")
     return dest
 
@@ -253,7 +270,7 @@ def download_one(job):
                     im.verify()
             except Exception as e:  # bad bytes: try the next source
                 last_err = e
-                print(f"  invalid image from {src}: {type(e).__name__}", flush=True)
+                print(f"  invalid image from {src!r}: {type(e).__name__}", flush=True)
                 continue
             os.replace(tmp, dest)
             return "ok", job
@@ -261,7 +278,7 @@ def download_one(job):
             return "missing", job
         raise last_err
     except Exception as e:  # one bad image must not abort the run
-        print(f"  ERROR {item.get('src')}: {type(e).__name__}: {e}", flush=True)
+        print(f"  ERROR {item.get('src')!r}: {type(e).__name__}: {e}", flush=True)
         return "error", job
     finally:
         if tmp.exists():
@@ -316,7 +333,10 @@ def main():
             if item:
                 item["img"] = item["orig"] = None
                 if item["src"]:
-                    jobs.append((item, local_path(s["id"], item["set_num"], item["src"])))
+                    try:
+                        jobs.append((item, local_path(s["id"], item["set_num"], item["src"])))
+                    except ValueError as e:
+                        print(f"  skipping {item['set_num']!r}: {e}")
 
     print(f"{len(catalog)} series, {sum(len(s['figures']) for s in catalog)} figures, "
           f"{len(jobs)} images")
