@@ -71,7 +71,7 @@ Items reconstructed from commit 3b525d1 and decisions.md (owner to confirm wordi
 ### E8 Photo quality
 | ID | Title | Goal | Acceptance criteria | Size | Model | Flags | Status |
 |---|---|---|---|---|---|---|---|
-| E8-01 | Real minifig photos, no cut-outs | Figures look like the real minifig, group shot intact | Figure image = Rebrickable minifig photo (`.fig.jpg` original), set image as fallback; `src` recorded in data.json; no background removal (trim + pad 3:4, group resize only); `--rebuild` flag; rounded photo cards on site | M | sonnet | UI (owner-requested, minimal CSS) | In progress |
+| E8-01 | Real minifig photos, no cut-outs | Figures look like the real minifig, group shot intact | Figure image = Rebrickable minifig photo (`.fig.jpg` original), set image as fallback; `src` recorded in data.json; no background removal (trim + pad 3:4, group resize only); `--rebuild` flag; rounded photo cards on site | M | sonnet | UI (owner-requested, minimal CSS) | Done |
 
 E4-02 also gets: 160 px thumbnails, hero `fetchpriority=high` + width/height.
 
