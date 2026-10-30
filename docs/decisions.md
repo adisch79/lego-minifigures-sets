@@ -15,3 +15,5 @@
 - 2026-10-31 — Default branch = `master` (production). Needed because the `github-pages` environment only lets the default branch deploy. Flow: feature → `dev` → release merge into `master`.
 - 2026-10-31 — PRs merged locally with `--no-ff` (no `gh` CLI on this PC); each merge passed code-reviewer + qa first.
 - 2026-10-31 — Pages environment `github-pages` must allow `master`; the rule was pinned to `dev` when Pages was first enabled.
+- 2026-10-31 — Transitive deps constrained via `constraints.txt` (pip freeze limited to the rembg/onnxruntime/pillow/numpy/scipy dependency tree); no hashes (accepted for a personal project).
+- 2026-10-31 — u2net model downloaded by rembg from github.com release assets and hash-checked (md5 via pooch) by rembg itself; no extra check in our code.
