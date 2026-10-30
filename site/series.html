@@ -57,7 +57,7 @@
       document.getElementById('sub').textContent = `${s.year} · ${s.figures.length} minifigures`;
 
       const heroSrc = (s.group && s.group.img) || (s.bag && s.bag.img);
-      if (heroSrc) document.getElementById('hero').append(img(heroSrc, `${s.name}: all figures`, 'shadowed'));
+      if (heroSrc) document.getElementById('hero').append(img(heroSrc, `${s.name}: all figures`, 'photo'));
 
       s.figures.forEach((f, i) => {
         const slide = document.createElement('article');
@@ -65,7 +65,7 @@
         slide.innerHTML = `<div class="pic"></div><div class="count"></div><h2></h2><span class="setno"></span>`;
         const pic = slide.querySelector('.pic');
         if (f.img) {
-          const el = img(f.img, f.name, 'shadowed');
+          const el = img(f.img, f.name, 'photo');
           if (i > 1) el.loading = 'lazy';
           pic.append(el);
         } else {
