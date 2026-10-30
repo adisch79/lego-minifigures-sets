@@ -34,7 +34,7 @@ Legend: **UI** = starts with 3 mockups. **Install** = delivers a setup script.
 ### E4 Publish
 | ID | Title | Goal | Acceptance criteria | Size | Model | Flags | Status |
 |---|---|---|---|---|---|---|---|
-| E4-01 | GitHub Pages deploy | Site reachable from phone | Repo + Pages live; README has URL | S | sonnet | Install | In progress (Pages enabled, no Actions run starts; NOT live) |
+| E4-01 | GitHub Pages deploy | Site reachable from phone | Repo + Pages live; README has URL | S | sonnet | Install | Done (live 2026-10-31) |
 | E4-02 | Mobile performance | Fast on phone | Lazy-load images; series page LCP < 2.5 s on 4G | S | sonnet | | Ready |
 
 ## MVP 3 — Stay current
