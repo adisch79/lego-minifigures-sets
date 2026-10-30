@@ -10,3 +10,7 @@
 - 2026-10-30 — Figure/group background removal: rembg u2net. Tested vs isnet-general-use (white legs turned semi-transparent) and white-threshold flood fill (ate white clothing, left floor shadow). u2net kept white plastic solid and removed shadows.
 - 2026-10-30 — Bag tiles: crop the largest flat rectangle inside the bag (artwork only), uniform 3:4 tiles, title overlaid. Owner asked for flat artwork, same size.
 - 2026-10-30 — Dark theme only, figures on a soft radial "stage"; figures shown in a horizontal swipe viewer (one at a time) + thumbnail strip, replacing the full-height vertical cards (owner: big gaps).
+- 2026-10-31 — Keep `originals/` (183 MB) committed in the repo. Owner choice (E7-06).
+- 2026-10-31 — Site and repo stay public, LEGO/Rebrickable images included. Owner choice (E7-06).
+- 2026-10-31 — Default branch = `master` (production). Needed because the `github-pages` environment only lets the default branch deploy. Flow: feature → `dev` → release merge into `master`.
+- 2026-10-31 — PRs merged locally with `--no-ff` (no `gh` CLI on this PC); each merge passed code-reviewer + qa first.

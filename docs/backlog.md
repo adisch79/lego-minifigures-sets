@@ -66,7 +66,7 @@ Items reconstructed from commit 3b525d1 and decisions.md (owner to confirm wordi
 | E7-03 | Supply-chain pins (security S3/S4) | Reproducible, tamper-resistant builds | requirements.txt exact versions; workflow actions pinned to commit SHA | S | sonnet | | Ready |
 | E7-04 | Site robustness + a11y | Site correct on edge data, usable by keyboard | null year hidden; empty cover guarded; reduced-motion respected; ←/→ ignores modifier keys; off-screen slides `inert`; `aria-current` on thumb; `:focus-visible` styles; favicon (no console 404); resize re-aligns viewer | M | sonnet | | Ready |
 | E7-05 | Catalog logic edge cases | Correct bag/series picking | Deterministic series-id tie break; bag/group classification tests | S | sonnet | | Ready |
-| E7-06 | Repo hygiene decision | Owner decides | `originals/` (183 MB) committed? data.json duplicate of data.js? public vs private site (LEGO images) | S | — | | Needs owner |
+| E7-06 | Repo hygiene decision | Owner decides | `originals/` kept; site public (see decisions) | S | — | | Done |
 
 E4-02 also gets: 160 px thumbnails, hero `fetchpriority=high` + width/height.
 
