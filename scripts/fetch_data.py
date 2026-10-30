@@ -22,6 +22,7 @@ import re
 import sys
 import time
 import urllib.error
+import urllib.parse
 import urllib.request
 from datetime import datetime, timezone
 from email.utils import parsedate_to_datetime
@@ -30,6 +31,8 @@ from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 from PIL import Image
+
+Image.MAX_IMAGE_PIXELS = 50_000_000  # decompression-bomb guard for downloaded images
 
 ROOT = Path(__file__).resolve().parent.parent
 CACHE = ROOT / "cache"
@@ -43,6 +46,13 @@ CMF_THEME_ID = "535"
 CSV_MAX_AGE_S = 24 * 3600
 RETRY_AFTER_MAX_S = 60
 GZIP_MAGIC = bytes([0x1F, 0x8B])
+ALLOWED_HOST = "cdn.rebrickable.com"
+MAX_IMAGE_BYTES = 20 * 1024 * 1024
+MAX_CSV_BYTES = 100 * 1024 * 1024
+ALLOWED_EXTS = {".jpg", ".jpeg", ".png", ".webp"}
+SET_NUM_RE = re.compile(r"[A-Za-z0-9]+-[0-9]+", re.ASCII)
+SERIES_ID_RE = re.compile(r"[A-Za-z0-9]+", re.ASCII)
+WINDOWS_RESERVED_RE = re.compile(r"(CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9])", re.I)
 USER_AGENT = "minifigures-extractor/1.0 (personal, non-commercial)"
 
 GROUP_RE = re.compile(r"complete|all sets", re.I)
@@ -65,13 +75,52 @@ def _retry_after(value, attempt):
         return 2 ** attempt
 
 
-def http_get(url, retries=3):
-    """GET with retries and backoff. Returns bytes or None on 404."""
+def valid_set_num(value):
+    return isinstance(value, str) and SET_NUM_RE.fullmatch(value) is not None
+
+
+def check_url(url):
+    """Raise ValueError unless url is https://cdn.rebrickable.com/... (exact host)."""
+    try:
+        u = urllib.parse.urlsplit(url)
+        host, user = u.hostname, u.username
+    except (ValueError, AttributeError):
+        raise ValueError(f"URL not allowed: {str(url)[:80]!r}") from None
+    if u.scheme != "https" or host != ALLOWED_HOST or user is not None or u.port not in (None, 443):
+        raise ValueError(f"URL not allowed: {str(url)[:80]!r}")
+
+
+class _CheckedRedirect(urllib.request.HTTPRedirectHandler):
+    """Validate every redirect target before it is requested."""
+
+    def redirect_request(self, req, fp, code, msg, headers, newurl):
+        check_url(newurl)
+        return super().redirect_request(req, fp, code, msg, headers, newurl)
+
+
+OPENER = urllib.request.build_opener(_CheckedRedirect)
+
+
+def http_get(url, retries=3, max_bytes=MAX_IMAGE_BYTES):
+    """GET with retries and backoff. Returns bytes or None on 404.
+
+    Only https://cdn.rebrickable.com URLs (also after redirects) are fetched, and the
+    body may not exceed max_bytes; violations raise ValueError (never retried).
+    """
+    check_url(url)
     for attempt in range(retries):
         try:
             req = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
-            with urllib.request.urlopen(req, timeout=60) as resp:
-                return resp.read()
+            with OPENER.open(req, timeout=60) as resp:
+                check_url(resp.geturl())
+                data = resp.read(max_bytes + 1)
+                if len(data) > max_bytes:
+                    raise ValueError(f"Response larger than {max_bytes} bytes")
+                expected = resp.headers.get("Content-Length") if resp.headers else None
+                if expected is not None and expected.isdigit() and len(data) != int(expected):
+                    raise urllib.error.URLError(
+                        f"truncated download ({len(data)} of {expected} bytes)")  # retried
+                return data
         except urllib.error.HTTPError as e:
             if e.code == 404:
                 return None
@@ -96,7 +145,7 @@ def load_csv(name):
     path = CACHE / f"{name}.csv.gz"
     if not path.exists() or time.time() - path.stat().st_mtime > CSV_MAX_AGE_S:
         print(f"Downloading {name}.csv.gz")
-        data = http_get(CSV_BASE + f"{name}.csv.gz")
+        data = http_get(CSV_BASE + f"{name}.csv.gz", max_bytes=MAX_CSV_BYTES)
         if data is None:
             raise RuntimeError(f"Could not download {name}.csv.gz (404 Not Found)")
         tmp = path.with_name(path.name + ".tmp")
@@ -123,6 +172,9 @@ def build_catalog(themes, sets):
     """Pure function: themes + sets rows -> list of series dicts (no images yet)."""
     by_theme = defaultdict(list)
     for s in sets:
+        if not valid_set_num(s["set_num"]):
+            print(f"  skipping set with invalid set_num {str(s.get('set_num'))[:40]!r}")
+            continue
         by_theme[s["theme_id"]].append(s)
 
     catalog = []
@@ -183,8 +235,16 @@ def minifig_images(inventories, inventory_minifigs, minifigs):
 
 
 def local_path(series_id, set_num, src):
-    ext = Path(src).suffix.lower() or ".jpg"
-    return ORIG / series_id / f"{set_num}{ext}"
+    if (not SERIES_ID_RE.fullmatch(series_id or "") or WINDOWS_RESERVED_RE.fullmatch(series_id)
+            or not valid_set_num(set_num)):
+        raise ValueError(f"invalid id: {series_id!r} / {set_num!r}")
+    ext = Path(urllib.parse.urlsplit(src).path).suffix.lower()
+    if ext not in ALLOWED_EXTS:
+        ext = ".jpg"
+    dest = ORIG / series_id / f"{set_num}{ext}"
+    if not dest.resolve().is_relative_to(ORIG.resolve()):
+        raise ValueError(f"path escapes repo: {dest}")
+    return dest
 
 
 def download_one(job):
@@ -210,7 +270,7 @@ def download_one(job):
                     im.verify()
             except Exception as e:  # bad bytes: try the next source
                 last_err = e
-                print(f"  invalid image from {src}: {type(e).__name__}", flush=True)
+                print(f"  invalid image from {src!r}: {type(e).__name__}", flush=True)
                 continue
             os.replace(tmp, dest)
             return "ok", job
@@ -218,7 +278,7 @@ def download_one(job):
             return "missing", job
         raise last_err
     except Exception as e:  # one bad image must not abort the run
-        print(f"  ERROR {item.get('src')}: {type(e).__name__}: {e}", flush=True)
+        print(f"  ERROR {item.get('src')!r}: {type(e).__name__}: {e}", flush=True)
         return "error", job
     finally:
         if tmp.exists():
@@ -273,7 +333,10 @@ def main():
             if item:
                 item["img"] = item["orig"] = None
                 if item["src"]:
-                    jobs.append((item, local_path(s["id"], item["set_num"], item["src"])))
+                    try:
+                        jobs.append((item, local_path(s["id"], item["set_num"], item["src"])))
+                    except ValueError as e:
+                        print(f"  skipping {item['set_num']!r}: {e}")
 
     print(f"{len(catalog)} series, {sum(len(s['figures']) for s in catalog)} figures, "
           f"{len(jobs)} images")
