@@ -68,6 +68,11 @@ Items reconstructed from commit 3b525d1 and decisions.md (owner to confirm wordi
 | E7-05 | Catalog logic edge cases | Correct bag/series picking | Deterministic series-id tie break; bag/group classification tests | S | sonnet | | Ready |
 | E7-06 | Repo hygiene decision | Owner decides | `originals/` kept; site public (see decisions) | S | — | | Done |
 
+### E8 Photo quality
+| ID | Title | Goal | Acceptance criteria | Size | Model | Flags | Status |
+|---|---|---|---|---|---|---|---|
+| E8-01 | Real minifig photos, no cut-outs | Figures look like the real minifig, group shot intact | Figure image = Rebrickable minifig photo (`.fig.jpg` original), set image as fallback; `src` recorded in data.json; no background removal (trim + pad 3:4, group resize only); `--rebuild` flag; rounded photo cards on site | M | sonnet | UI (owner-requested, minimal CSS) | In progress |
+
 E4-02 also gets: 160 px thumbnails, hero `fetchpriority=high` + width/height.
 
 ## Process fixes (from HANDOFF)

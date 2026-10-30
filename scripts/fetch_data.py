@@ -7,13 +7,16 @@ Source: Rebrickable public CSV dumps (no API key). For each CMF sub-theme
   - figures: every other <base>-N set (one per minifigure)
 
 Outputs:
-  originals/<base>/<set_num>.jpg   every downloaded image, untouched
-  site/img/<base>/<set_num>.webp   web image: bag = flat artwork crop, figure/group = transparent cut-out
+  originals/<base>/<set_num>.jpg   every downloaded set image, untouched
+  originals/<base>/<set_num>.fig.jpg   the real Rebrickable minifig photo of a figure (preferred)
+  site/img/<base>/<set_num>.webp   web image: bag = flat artwork crop, figure = trimmed/padded photo,
+                                   group = resized photo (no background removal)
   site/data.json   catalog (series -> figures, local image paths)
   site/data.js     same catalog as `window.CATALOG = ...` (works from file://)
-Re-running skips images that already exist (incremental update).
+Re-running skips images that already exist (incremental update); --rebuild reprocesses all web images.
 """
 
+import argparse
 import csv
 import gzip
 import json
@@ -234,14 +237,33 @@ def minifig_images(inventories, inventory_minifigs, minifigs):
     return out
 
 
-def local_path(series_id, set_num, src):
+def plan_figure_source(item, fig_url):
+    """Choose the image for a figure: the minifig photo when its URL is allowed, else the set image.
+
+    Sets item["source"] ("fig" | "set"), item["src"] (URL to fetch) and item["alt"] (set image URL).
+    """
+    set_url = item.get("src") or None
+    item["alt"] = set_url
+    if fig_url:
+        try:
+            check_url(fig_url)
+        except ValueError as e:
+            print(f"  ignoring minifig photo of {item['set_num']!r}: {e}")
+            fig_url = None
+    if fig_url:
+        item["source"], item["src"] = "fig", fig_url
+    else:
+        item["source"], item["src"] = "set", set_url or ""
+
+
+def local_path(series_id, set_num, src, fig=False):
     if (not SERIES_ID_RE.fullmatch(series_id or "") or WINDOWS_RESERVED_RE.fullmatch(series_id)
             or not valid_set_num(set_num)):
         raise ValueError(f"invalid id: {series_id!r} / {set_num!r}")
     ext = Path(urllib.parse.urlsplit(src).path).suffix.lower()
     if ext not in ALLOWED_EXTS:
         ext = ".jpg"
-    dest = ORIG / series_id / f"{set_num}{ext}"
+    dest = ORIG / series_id / (f"{set_num}.fig{ext}" if fig else f"{set_num}{ext}")
     if not dest.resolve().is_relative_to(ORIG.resolve()):
         raise ValueError(f"path escapes repo: {dest}")
     return dest
@@ -285,8 +307,9 @@ def download_one(job):
             tmp.unlink()
 
 
-def process_all(catalog):
-    """Make the web image for every downloaded original that has none yet."""
+def process_all(catalog, rebuild=False):
+    """Make the web image for every downloaded original that has none yet, or whose original
+    is newer than it (source changed), or all of them with rebuild=True."""
     from process_images import color_hex, safe_process_file
 
     todo = []
@@ -296,7 +319,7 @@ def process_all(catalog):
                 if item and item.get("orig"):
                     dest = IMG / s["id"] / f"{item['set_num']}.webp"
                     item["img"] = dest.relative_to(SITE).as_posix()
-                    if not dest.exists():
+                    if rebuild or not dest.exists() or dest.stat().st_mtime < Path(item["orig"]).stat().st_mtime:
                         todo.append((item["orig"], dest, kind, item))
     print(f"Processing {len(todo)} images")
     errors = 0
@@ -319,49 +342,87 @@ def process_all(catalog):
                 s["color"] = color_hex(np.asarray(im.convert("RGB").resize((32, 32))))
 
 
-def main():
+def parse_args(argv=None):
+    ap = argparse.ArgumentParser(description="Fetch LEGO CMF data and images, build the site data.")
+    ap.add_argument("--rebuild", action="store_true",
+                    help="reprocess all web images from the originals")
+    return ap.parse_args(argv)
+
+
+def main(argv=None):
+    args = parse_args(argv)
     themes, sets, inventories, inventory_minifigs, minifigs = (load_csv(n) for n in CSV_FILES)
     catalog = build_catalog(themes, sets)
-    fallback = minifig_images(inventories, inventory_minifigs, minifigs)
+    fig_photos = minifig_images(inventories, inventory_minifigs, minifigs)
 
-    jobs = []
+    jobs = []  # (download item, dest, real catalog item)
     for s in catalog:
         for f in s["figures"]:
-            f["alt"] = fallback.get(f["set_num"])
-            f["src"] = f["src"] or f["alt"]
+            plan_figure_source(f, fig_photos.get(f["set_num"]))
         for item in [s["bag"], s["group"], *s["figures"]]:
             if item:
                 item["img"] = item["orig"] = None
                 if item["src"]:
+                    fig = item.get("source") == "fig"
                     try:
-                        jobs.append((item, local_path(s["id"], item["set_num"], item["src"])))
+                        dest = local_path(s["id"], item["set_num"], item["src"], fig=fig)
                     except ValueError as e:
                         print(f"  skipping {item['set_num']!r}: {e}")
+                        continue
+                    # Figure photos are fetched alone (no alt): a failure falls back to the set image below.
+                    job_item = {"src": item["src"], "set_num": item["set_num"]} if fig else item
+                    jobs.append((job_item, dest, item))
 
     print(f"{len(catalog)} series, {sum(len(s['figures']) for s in catalog)} figures, "
           f"{len(jobs)} images")
     counts = Counter()
     missing = []
-    with ThreadPoolExecutor(max_workers=6) as pool:
-        for i, (status, (item, dest)) in enumerate(pool.map(download_one, jobs), 1):
-            counts[status] += 1
+    series_of = {id(f): s["id"] for s in catalog for f in s["figures"]}
+
+    def run(batch):
+        with ThreadPoolExecutor(max_workers=6) as pool:
+            results = pool.map(download_one, [(ji, d) for ji, d, _ in batch])
+            for i, (status, _) in enumerate(results, 1):
+                _, dest, item = batch[i - 1]
+                counts[status] += 1
+                if status in ("ok", "skip"):
+                    item["orig"] = dest
+                if i % 100 == 0:
+                    print(f"  {i}/{len(batch)} {dict(counts)}")
+                yield status, dest, item
+
+    fallback = []
+    for status, dest, item in run(jobs):
+        if item.get("source") == "fig" and status not in ("ok", "skip"):
+            if item.get("alt"):
+                item["source"], item["src"] = "set", item["alt"]
+                try:
+                    fallback.append((item, local_path(series_of[id(item)], item["set_num"], item["src"]), item))
+                except ValueError as e:
+                    print(f"  skipping {item['set_num']!r}: {e}")
+            else:
+                missing.append(item["set_num"])
+        elif status == "missing":
+            missing.append(item["set_num"])
+    if fallback:
+        print(f"Falling back to set image for {len(fallback)} figures")
+        for status, dest, item in run(fallback):
             if status == "missing":
                 missing.append(item["set_num"])
-            elif status != "error":
-                item["orig"] = dest
-            if i % 100 == 0:
-                print(f"  {i}/{len(jobs)} {dict(counts)}")
     print(f"Download: {dict(counts)}")
     if missing:
         print("Missing images:", ", ".join(missing))
 
-    process_all(catalog)
+    process_all(catalog, rebuild=args.rebuild)
 
     for s in catalog:
         for item in [s["bag"], s["group"], *s["figures"]]:
             if item:
+                source = item.pop("source", None)
                 for k in ("src", "alt", "orig"):
                     item.pop(k, None)
+                if source:
+                    item["src"] = source  # "fig" | "set": which image the figure uses
 
     payload = json.dumps(catalog, ensure_ascii=False, indent=1)
     (SITE / "data.json").write_text(payload, encoding="utf-8")

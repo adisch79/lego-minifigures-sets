@@ -1,8 +1,8 @@
-"""Turn downloaded product photos into clean web images.
+"""Turn downloaded product photos into web images. No background removal.
 
-  - figures / group shots: background removed with the u2net model (rembg), trimmed to content,
-    saved as WebP with transparency. u2net keeps white plastic (e.g. white trousers) solid and
-    drops the soft floor shadow, which simple white-thresholding cannot do.
+  - figures: real Rebrickable minifig photo, uniform border trimmed, padded to 3:4 with the
+    photo's own background colour, max 900 px tall.
+  - group shots: only resized (max 1800 px wide).
   - bags / boxes: cropped to the largest flat rectangle inside the packaging, so the tile shows
     the artwork itself (no bag outline, no white corners).
 """
@@ -10,25 +10,15 @@
 import os
 
 import numpy as np
-from PIL import Image, ImageFilter
+from PIL import Image
 from scipy import ndimage
 
-GROUP_WHITE_MIN = 253    # group shots: pixels this white are always background
 BAG_WHITE_MIN = 245      # background pixels: all channels at least this bright ...
 WHITE_SPREAD = 22        # ... and nearly gray (max - min channel)
 BAG_EDGE_FILL = 0.985    # a crop edge must be this much artwork
-PAD = 0.02               # padding around trimmed cut-outs, fraction of size
-MODEL = "u2net"
-
-_session = None
-
-
-def _rembg_session():
-    global _session
-    if _session is None:
-        from rembg import new_session  # heavy import, only when cut-outs are needed
-        _session = new_session(MODEL)
-    return _session
+TRIM_TOL = 14            # figure photos: pixel differs from the corner colour by more than this
+TRIM_MARGIN = 0.04       # margin kept around the figure, fraction of its size
+FIG_ASPECT = 3 / 4       # figure image width / height
 
 
 def background_mask(rgb):
@@ -81,40 +71,53 @@ def flatten_bag(img, max_size):
     return img.crop(box) if box else img
 
 
-def cleanup_alpha(rgb, alpha):
-    """Group shots: u2net leaves white haze and semi-transparent figures among many small objects.
-    Pure-white background pixels -> fully transparent; clearly colored covered pixels -> solid."""
-    a = rgb.astype(np.int16)
-    pure_white = a.min(axis=2) >= GROUP_WHITE_MIN
-    colored = (a.min(axis=2) < BAG_WHITE_MIN) | (a.max(axis=2) - a.min(axis=2) > WHITE_SPREAD)
-    alpha = alpha.copy()
-    alpha[pure_white] = 0
-    alpha[colored & (alpha > 40)] = 255
-    return alpha
-
-
-def cut_out(img, max_size, kind="figure"):
-    """Figure / group shot -> RGBA with transparent background, trimmed to content."""
-    from rembg import remove
+def trim_and_pad(img, aspect=FIG_ASPECT):
+    """Trim the uniform border (colour of the corners) and pad to width/height = aspect
+    with the photo's own background colour."""
     img = img.convert("RGB")
-    img.thumbnail((max_size, max_size), Image.LANCZOS)
-    out = remove(img, session=_rembg_session())
-    if kind == "group":
-        alpha = cleanup_alpha(np.asarray(img), np.asarray(out.getchannel("A")))
-        out.putalpha(Image.fromarray(alpha).filter(ImageFilter.GaussianBlur(0.6)))
-    box = out.getchannel("A").point(lambda v: 255 if v > 16 else 0).getbbox()
-    if box:
+    a = np.asarray(img).astype(np.int16)
+    corners = np.stack([a[0, 0], a[0, -1], a[-1, 0], a[-1, -1]])
+    bg = tuple(int(v) for v in np.median(corners, axis=0))
+    diff = np.abs(a - np.array(bg, np.int16)).max(axis=2) > TRIM_TOL
+    rows, cols = np.where(diff)
+    if rows.size:
+        l, r, t, b = cols.min(), cols.max() + 1, rows.min(), rows.max() + 1
+        m = int(max(r - l, b - t) * TRIM_MARGIN)
+        w, h = img.size
+        img = img.crop((max(0, l - m), max(0, t - m), min(w, r + m), min(h, b + m)))
+    w, h = img.size
+    cw, ch = (w, round(w / aspect)) if w / h > aspect else (round(h * aspect), h)
+    canvas = Image.new("RGB", (cw, ch), bg)
+    canvas.paste(img, ((cw - w) // 2, (ch - h) // 2))
+    return canvas
+
+
+def prepare_figure(img, max_height):
+    out = trim_and_pad(img)
+    if out.size[1] > max_height:
         w, h = out.size
-        p = int(max(w, h) * PAD)
-        out = out.crop((max(0, box[0] - p), max(0, box[1] - p), min(w, box[2] + p), min(h, box[3] + p)))
+        out = out.resize((max(1, round(w * max_height / h)), max_height), Image.LANCZOS)
     return out
+
+
+def prepare_group(img, max_width):
+    """Group shot: unchanged except for a downscale to max_width."""
+    img = img.convert("RGB")
+    if img.size[0] > max_width:
+        w, h = img.size
+        img = img.resize((max_width, max(1, round(h * max_width / w))), Image.LANCZOS)
+    return img
 
 
 def process_file(src, dest, kind):
     """Process one downloaded file to WebP. kind: 'bag' | 'figure' | 'group'."""
-    max_size = {"bag": 700, "figure": 900, "group": 1800}[kind]
     with Image.open(src) as img:
-        out = flatten_bag(img, max_size) if kind == "bag" else cut_out(img, max_size, kind)
+        if kind == "bag":
+            out = flatten_bag(img, 700)
+        elif kind == "figure":
+            out = prepare_figure(img, 900)
+        else:
+            out = prepare_group(img, 1800)
     dest.parent.mkdir(parents=True, exist_ok=True)
     # Save to a temp file first so a failed save never leaves a corrupt WebP behind.
     tmp = dest.with_name(dest.stem + ".tmp.webp")

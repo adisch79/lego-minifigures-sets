@@ -7,8 +7,8 @@ banner with all figures, then every minifigure one at a time.
 ## What it is
 - `scripts/fetch_data.py` — downloads the catalog from Rebrickable's public CSV dumps (no API key)
   and every image (bag, group shot, each figure) into `originals/`, then builds web images in `site/img/`.
-- `scripts/process_images.py` — figures and group shots: background removed with the u2net model
-  (rembg) → transparent WebP. Bags: cropped to the flat artwork rectangle.
+- `scripts/process_images.py` — figures: real Rebrickable minifig photo, border trimmed, padded to 3:4
+  → WebP. Group shots: resized only. Bags: cropped to the flat artwork rectangle. No background removal.
 - `site/` — the website (plain HTML/CSS/JS, no build step). Works opened from disk and on GitHub Pages.
 
 ## Install
@@ -16,10 +16,11 @@ Python 3.10+, then:
 ```
 python -m pip install --user -r requirements.txt -c constraints.txt
 ```
-First run downloads the u2net model (~170 MB) to `~/.u2net` or `~/.rembg`.
+No model download is needed (rembg was removed in E8-01).
 
 ## Use
 ```
+python scripts/fetch_data.py --rebuild   # reprocess every web image from originals
 python scripts/fetch_data.py        # first run: download + process all (~30 min); re-run: new series only
 start site\index.html               # open the site locally (Windows)
 python -m unittest discover tests   # run tests
