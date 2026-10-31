@@ -22,9 +22,11 @@
 
 ## Next step
 1. V1-01 merged into dev (PR #8, 2026-11-01); MVP 0 merged (PR #7). Vite/React/TS app in `app/`, CI `app-ci.yml`; Pages deploy of `app/dist` disabled until V1-05. TypeScript pinned ~6.0 (typescript-eslint needs <6.1). `.env` also in `.git/info/exclude`.
-2. V1-02 DONE on `feature/V1-02-catalog-v2` (code-reviewed, should-fix applied; py 93 OK, app 19 tests, lint, build green): `scripts/build_catalog.py` + `catalog_overrides.json` -> `app/public/catalog.json` (52 series, 787 figures), `app/scripts/copy-images.mjs`, `app/src/catalog.ts`. PR into dev open; owner merges. NEXT: V1-03 images for all series (+ verify 71001 gap 17/18, ages, BrickLink codes). Deferred nits: copy-images re-copies 30 MB each dev start (fix with V1-05 deploy size).
-3. Merges into dev need the owner (auto mode blocks agent merges): `gh pr merge <n> --merge`.
-4. Later polish (not blocking): series page hero in mockup D still uses the bag image.
+2. V1-02 merged into dev (PR #9).
+3. **V1-03 in progress** on `feature/V1-03-images` (pushed). Done: (a) BrickLink codes for 51/52 series, visually verified (docs/spike/V1-03-codes-sheet-1..3.png); 71049 F1 has no code and keeps v1 images; 71001-19 -> bricklinkNo 17. (b) `scripts/fetch_figures.py <ids>` (resumable, 1 req/2 s, cut-out via `scripts/cutout.py`) -> `site/img/<id>/<id>-<n>.webp`. Batches 1-5 committed (34 series). Batch 6 (71001 71000 8909 8833 8831) was started at session end: re-run it (skips finished files) and commit.
+   NEXT: `python scripts/fetch_figures.py 71001 71000 8909 8833 8831` then `... 8827 8805 8804 8803 8684`; commit each. Then: QA sheet of all cut-outs; set imgFallback false where a cut-out exists (still read from site/data.json); ages for 46 series from bag images; gap report (haiku); code-reviewer; PR into dev.
+4. Merges into dev need the owner (auto mode blocks agent merges): `gh pr merge <n> --merge`.
+5. Later polish (not blocking): series page hero in mockup D still uses the bag image.
 
 ## Owner-needed later (MVP 2)
 - Supabase: owner added keys to `.env` (2026-10-31, file 191 -> 377 bytes; contents unread, deny rule). Nothing owner-needed left for MVP 2.
