@@ -75,6 +75,7 @@ describe('parseCatalog', () => {
   it('rejects a duplicate figure id', () => {
     const c = minimal()
     c.series[0].figures[1].id = '71045-1'
+    c.series[0].figures[1].no = 1
     expect(() => parseCatalog(c)).toThrow(/duplicate/)
   })
 
