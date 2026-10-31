@@ -34,13 +34,16 @@ Legend: **UI** = needs approved direction first. **Owner** = needs something onl
 |---|---|---|---|---|---|---|
 | V0-01 | Image spike: transparent bag + figures | 71019 bag: white background removed, artwork intact, edges clean. 20 figures: background removed with an edge flood-fill (no ML) vs CSS `multiply` on a light background; side-by-side sheet for owner; choice logged | S | sonnet | | Done (docs/spike/) |
 | V0-02 | 3 design directions, one real example | Each direction = home (6 real series tiles, sort + search bar) + series 71019 page (20 real figures, name + number, owned/wanted controls as static UI). lego.com palette. Screenshots desktop + 375 px | M | opus → senior-frontend-dev | UI | Done (mockups/a,b,c) |
-| V0-03 | Owner picks direction | Choice + notes in decisions.md | S | — | Owner | Ready |
+| V0-03 | Owner picks direction | Choice + notes in decisions.md | S | — | Owner | Done (decisions.md 2026-10-31) |
+| V0-04 | Series card variants | 3 composed card variants for 71019 | S | opus | UI | Done (mockups/cards) |
+| V0-05 | Card v4 | Owner-approved card template | S | opus | UI | Done (mockups/cards/v4.png) |
+| V0-06 | Cards for 6 series | Figure cut-outs + cards for 6 mockup series | M | sonnet | UI | Done (mockups/cards/all.png) |
 
 ## MVP 1 — New site, read-only catalog, all series · demo: live Pages URL
 | ID | Title | Acceptance criteria | Size | Model | Flags | Status |
 |---|---|---|---|---|---|---|
-| V1-01 | Scaffold app + CI | Vite/React/TS app in `app/`; lint, unit tests (Vitest), build in CI; Pages deploys `app/dist` | S | sonnet | | Ready |
-| V1-02 | Catalog contract v2 | `catalog.json`: series {id, seriesNo, name, year, figureCount, bag}, figure {id, no, name, img}; series number/label parsed (e.g. "Series 25"); schema test | M | sonnet (design review opus) | | Ready |
+| V1-01 | Scaffold app + CI | Vite/React/TS app in `app/`; lint, unit tests (Vitest), build in CI; Pages deploys `app/dist` | S | sonnet | | Done (PR #8) |
+| V1-02 | Catalog contract v2 | `catalog.json` per `docs/design/V1-02-catalog-v2.md`: series {id, name, line, seriesNo, year, age, bricklinkCode, figureCount, bag, card}, figure {id, no, name, img, imgFallback}; overrides table; image copy step; schema tests (py + TS guard) | M | sonnet (design review opus) | | Done (PR into dev) |
 | V1-03 | Images for all series | Approved V0-01 method on all ~52 bags and ~790 figures; gap report (haiku review list) | M | sonnet + haiku | | Ready |
 | V1-04 | Home: grid, sort, search | Sort: newest, oldest, A–Z, series number, figure count. Search: series name/number/year and figure name. State in URL | M | senior-frontend-dev | UI | Ready |
 | V1-05 | Series page | All figures with name + number; works on desktop and 375 px; keyboard accessible | M | senior-frontend-dev | UI | Ready |

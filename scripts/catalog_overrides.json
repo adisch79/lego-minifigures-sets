@@ -1,0 +1,13 @@
+{
+  "_comment": "Hand-kept per-series facts not in Rebrickable. Keys are base set numbers. Every entry carries a source.",
+  "series": {
+    "71004": {"line": "The LEGO Movie", "seriesNo": 1, "source": "OWNER-SUPPLIED: design V1-02 (pairs with 71023 'II')"},
+    "71023": {"line": "The LEGO Movie", "seriesNo": 2, "source": "OWNER-SUPPLIED: design V1-02 (Roman numeral II)"},
+    "71038": {"line": "Disney 100", "seriesNo": null, "age": "5+", "bricklinkCode": "coldis100", "source": "OWNER-SUPPLIED: design V1-02 (own theme, not Disney Series 3); age: bag image site/img/71038/71038-0.webp; code: V0-06 verification"},
+    "71053": {"age": "6+", "bricklinkCode": "colshr", "source": "age: bag image site/img/71053/71053-0.webp; code: V0-06 verification"},
+    "71045": {"age": "5+", "bricklinkCode": "col25", "source": "age: bag image site/img/71045/71045-0.webp; code: V0-06 verification"},
+    "71031": {"age": "5+", "bricklinkCode": "colmar", "source": "age: bag image site/img/71031/71031-0.webp; code: V0-06 verification"},
+    "71019": {"age": "5+", "bricklinkCode": "coltlnm", "source": "age: bag image site/img/71019/71019-0.webp; code: V0-06 verification"},
+    "8683": {"age": "5+", "bricklinkCode": "col01", "source": "age: bag image site/img/8683/8683-0.webp; code: V0-06 verification"}
+  }
+}
