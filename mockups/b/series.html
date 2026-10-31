@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>71019 The LEGO Ninjago Movie - Minifig Vault</title>
+<link rel="stylesheet" href="leaflet.css">
+</head>
+<body>
+<header class="masthead">
+  <div class="masthead__inner">
+    <a class="logo" href="index.html" aria-label="Minifig Vault home">
+      <span class="logo__mark" aria-hidden="true"></span>
+      <span>Minifig Vault<small>CMF COLLECTOR CHECKLIST</small></span>
+    </a>
+  </div>
+</header>
+
+<main class="wrap">
+  <a class="crumb" href="index.html">&larr; All series</a>
+
+  <section class="brick hero" aria-labelledby="title">
+    <div class="hero__bag"><img id="bag" src="../assets/bags/71019.webp" alt=""></div>
+    <div>
+      <div class="hero__row">
+        <span class="chip chip--solid" id="sid"></span>
+        <span class="chip" id="syear"></span>
+        <span class="chip" id="scount"></span>
+      </div>
+      <h1 class="hero__title" id="title"></h1>
+      <div class="progress">
+        <div class="progress__label"><span class="hero__big" id="big"></span><span id="pct"></span></div>
+        <div class="pips" id="pips" role="img"></div>
+      </div>
+      <div class="hero__actions">
+        <button class="btn btn--want btn--lg" type="button" id="wantAll" aria-pressed="false">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" aria-hidden="true"><path d="M3 12V4h8l10 10-8 8z"/><circle cx="7.5" cy="8.5" r="1.5" fill="currentColor"/></svg>
+          Want whole series
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <section class="grid-figs" id="figs" aria-label="Figures"></section>
+</main>
+
+<script src="../assets/data.js"></script>
+<script>
+  // Mock collection state for the mockup only.
+  const owned = new Set([1, 3, 4, 7, 10, 13, 16]);
+  const wanted = new Set([2, 5, 20]);
+  const d = window.MOCK.detail;
+  const figsEl = document.getElementById("figs");
+
+  const check = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5 9.5 18 20 6"/></svg>';
+  const tagIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" aria-hidden="true"><path d="M3 12V4h8l10 10-8 8z"/><circle cx="7.5" cy="8.5" r="1.5" fill="currentColor"/></svg>';
+
+  function esc(s) {
+    return String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+  }
+
+  document.getElementById("sid").textContent = d.id;
+  document.getElementById("syear").textContent = d.year;
+  document.getElementById("scount").textContent = d.figures.length + " figures";
+  document.getElementById("title").textContent = d.name;
+  document.getElementById("bag").alt = d.name + " blind bag";
+
+  function updateProgress() {
+    const n = owned.size, total = d.figures.length;
+    document.getElementById("big").innerHTML = `${n}<small>/${total}</small>`;
+    document.getElementById("pct").textContent = `${Math.round(n / total * 100)}% owned`;
+    const pips = document.getElementById("pips");
+    pips.setAttribute("aria-label", `Owned ${n} of ${total}`);
+    pips.innerHTML = d.figures.map(f => `<i class="${owned.has(f.no) ? "on" : ""}"></i>`).join("");
+  }
+
+  figsEl.innerHTML = d.figures.map(f => {
+    const o = owned.has(f.no), w = wanted.has(f.no);
+    return `<article class="brick fig${o ? " is-owned" : ""}${w ? " is-wanted" : ""}" data-no="${f.no}">
+      <span class="fig__no" aria-label="Number ${f.no}">${f.no}</span>
+      <div class="fig__art">
+        <img src="../${esc(f.img)}" alt="${esc(f.name)}" loading="lazy">
+        <span class="stamp" aria-hidden="true">${check}</span>
+        <span class="tag" aria-hidden="true">WANTED</span>
+      </div>
+      <h2 class="fig__name">${esc(f.name)}</h2>
+      <div class="fig__btns">
+        <button class="btn btn--own" type="button" data-act="own" aria-pressed="${o}" aria-label="Owned: ${esc(f.name)}">${check}Owned</button>
+        <button class="btn btn--want" type="button" data-act="want" aria-pressed="${w}" aria-label="Wanted: ${esc(f.name)}">${tagIcon}Wanted</button>
+      </div>
+    </article>`;
+  }).join("");
+
+  figsEl.addEventListener("click", e => {
+    const b = e.target.closest("button[data-act]");
+    if (!b) return;
+    const card = b.closest(".fig");
+    const no = Number(card.dataset.no);
+    const on = b.getAttribute("aria-pressed") !== "true";
+    b.setAttribute("aria-pressed", on);
+    const set = b.dataset.act === "own" ? owned : wanted;
+    on ? set.add(no) : set.delete(no);
+    card.classList.toggle(b.dataset.act === "own" ? "is-owned" : "is-wanted", on);
+    updateProgress();
+  });
+
+  document.getElementById("wantAll").addEventListener("click", e => {
+    const b = e.currentTarget;
+    const on = b.getAttribute("aria-pressed") !== "true";
+    b.setAttribute("aria-pressed", on);
+    b.lastChild.textContent = on ? " Whole series wanted" : " Want whole series";
+  });
+
+  updateProgress();
+</script>
+</body>
+</html>

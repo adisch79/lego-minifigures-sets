@@ -1,46 +1,38 @@
 # HANDOFF
 
-## Resume on any PC
-1. `git clone https://github.com/adisch79/lego-minifigures-sets.git` (or `git fetch --all`), then `git checkout dev`.
-2. `python -m pip install --user -r requirements.txt -c constraints.txt`, then `python -m unittest discover tests` (expect 76 pass on `dev`).
-3. Open Claude Code in the repo, read this file, and continue from **Next step**.
-
 ## Current state (2026-10-31)
-- **Site live:** https://adisch79.github.io/lego-minifigures-sets/. Released E7-02, E7-03 and E8-01 (master `5b64810`, deploy OK, live `data.js` = 768 `fig` + 19 `set`).
-- Figures = real Rebrickable minifig photos. 19 have no photo and use the set image (12 F1 cars, 7 DFB players). Hero = uncut group photo in a white rounded card. No background removal; rembg is gone.
-- **Branches (all pushed):**
+- **v2 refactor started**: collector app (sort/search, owned/wanted for invited users, Telegram alerts, lowest prices). Plan: [backlog.md](backlog.md). v1 backlog archived: [archive/backlog-v1.md](archive/backlog-v1.md).
+- Owner answers (see decisions.md): invite-only users; Telegram alerts; prices later by moderate scraping (no API keys); English first, Hebrew later; prices in original currency + ILS.
+- **V0-01 done**: images will come from BrickLink catalog images (`img.bricklink.com/ItemImage/SN/0/coltlnm-<n>.png`). Border flood fill gives clean transparency on 20/20 figures + bag. Proof: `docs/spike/V0-01-bricklink-cutout-71019.webp`; script `docs/spike/V0-01-cutout.py`.
+- Live v1 site (unchanged): https://adisch79.github.io/lego-minifigures-sets/
+- Branch: `feature/V0-00-refactor-plan` (from `dev`), plan + spike only, no app code yet.
 
-| Branch | State |
-|---|---|
-| `master` | production; a push deploys Pages |
-| `dev` | integration, = master + docs |
-| `feature/E7-04-site-a11y` | **WIP, 1 commit (`f64b716`), NOT rebased on E8-01**. 60 tests pass on it. |
-| other `feature/*` | merged, can be deleted |
-| `gh-pages` (local only) | stale, unused (Pages deploys from Actions); delete |
+- Backlog approved. **V0-02 done**: 3 directions in `mockups/a` (Toy Shelf), `mockups/b` (Collector Leaflet), `mockups/c` (Unboxing); screenshots in `mockups/<x>/shots/`. Shared assets `mockups/assets` (6 bags + 20 BrickLink figure cut-outs of 71019).
 
-- Flow: `feature/<story>` → `dev` (local `git merge --no-ff`, no `gh` CLI) → release merge `dev` → `master` + push. The owner said "push ok" for the last release; ask again before the next `master` push.
-- Headless check: `chrome.exe --headless=new --window-size=1280,1600 --virtual-time-budget=8000 --screenshot=<png> <url>`. Mobile: 375 px iframe wrapper (headless minimum width is ~500 px).
+- Owner picked a mix (decisions.md 2026-10-31 V0-03); flat series artwork spike `docs/spike/V0-03-flatten.py`. **Combined mockup D** in `mockups/d` (shots in `mockups/d/shots/`), awaiting owner sign-off.
+
+- Owner rejected cropped flat art: series image must be a NEW composed card (decisions.md). **3 card variants for 71019** in `mockups/cards/` (v1 bag-front, v2 poster, v3 collector; side-by-side `compare.png`); generator `docs/spike/V0-04-cards-gen.py`; logos `mockups/assets/logos/` (Wikimedia, see SOURCES.md).
+
+- **V0-05 done, owner approved v4 (2026-10-31)**: `mockups/cards/v4.png`. Bag-style round seal (LIMITED EDITION / 20 / TO COLLECT, SVG `seal()` in generator), official coloured Ninjago Movie logo with LEGO brick (real alpha, smaller, clear of the seal), HD LEGO Minifigures lockup (1600 px). Crowd raised to fill the gap, clamped inside card, Lloyd centre front.
+- Logo rule: only files that already have real alpha; find them with Google Images filter `&udm=2&tbs=ic:trans,isz:l` in Chrome, then read original URLs from the page HTML (`["url",h,w]` triples). Sources in `mockups/assets/logos/SOURCES.md`.
+
+- **V0-06 in progress**: figure cut-outs for all 6 mockup series in `mockups/assets/figs/<set>-<n>.webp` (70 new + 20 of 71019). Script `docs/spike/V0-06-figs.py` (V0-01 flood fill + speck removal). BrickLink CMF codes verified (image n = Rebrickable figure n, next number 404): 71053 `colshr` (12), 71045 `col25` (12), 71038 `coldis100` (18), 71031 `colmar` (12), 71019 `coltlnm` (20), 8683 `col01` (16). URL `img.bricklink.com/ItemImage/SN/0/<code>-<n>.png`.
+
+- **V0-06 done (2026-10-31)**: 6 series cards from the v4 template, `docs/spike/V0-06-cards.py` (renders with headless Chrome) -> `mockups/cards/<id>.png`, overview `mockups/cards/all.png`. Logos `shrek.png`, `disney-100.png`, `marvel-studios.png` (real alpha, SOURCES.md). Numbered series use lockup + red SERIES N badge. Backgrounds sampled from each bag (71019 keeps approved v4). Mockup D home now shows the cards (`mockups/d/shots/home-desktop.png`, `mobile.png`).
 
 ## Next step
-1. **E7-04** on `feature/E7-04-site-a11y`:
-   - `git rebase dev`. Conflicts are expected in `site/series.html` and `site/style.css`: keep E8-01's `.photo` cards and the hero `max-width`, and add E7-04's a11y bits.
-   - Fix 3 code-review should-fix items:
-     - (a) Focus is lost when the focused ←/→ arrow becomes disabled. Move focus to the other arrow or the track.
-     - (b) An empty figures list still shows the viewer with "1 / 0". Hide the viewer and show "No figures".
-     - (c) The track has an `aria-label` but no `role`. Add `role="region"` (or `group`) + `aria-roledescription="carousel"`.
-   - Then code-reviewer → qa → merge into `dev`.
-2. E7-05 catalog edge cases (deterministic series-id tie break; bag/group classification tests).
-3. E4-02 mobile performance: lazy-load, 160 px thumbs, hero `fetchpriority=high` + width/height.
-4. P-07 golden set is obsolete. Drop it, or repurpose it as an E2-03 photo review page.
+1. V1-01 done on `feature/V1-01-scaffold`, PR #8 into dev: Vite/React/TS in `app/`, ESLint, Vitest, CI `app-ci.yml` green (f42e4dc), code review no blocking findings. Pages deploy of `app/dist` disabled until V1-05 (pages.yml unchanged). TypeScript pinned ~6.0 (typescript-eslint needs <6.1).
+2. OWNER: merge PR #7 (this branch, MVP 0) and PR #8 into dev: `gh pr merge 7 --merge` then `gh pr merge 8 --merge` (auto mode blocks agent merges). `.env` is also in `.git/info/exclude` locally.
+3. Then V1-02 catalog contract v2 (design review opus first).
+4. Later polish (not blocking): series page hero in mockup D still uses the bag image; switch to the card when the real app is built.
+
+## Owner-needed later (MVP 2)
+- Supabase: owner added keys to `.env` (2026-10-31, file 191 -> 377 bytes; contents unread, deny rule). Nothing owner-needed left for MVP 2.
+- Telegram bot token + chat id: PC: repo-root `.env` (git-ignored; key names unverified, read blocked by deny rule); NAS copy too (owner, 2026-10-31); read from env, never commit.
 
 ## Open questions
-- Owner feedback on the live E8-01 look.
-- E6-01..E6-06 wording was reconstructed and never confirmed (E6-01/E6-02 are superseded by E8-01).
-- Auto mode blocks reading stored git credentials. GitHub settings changes need the owner.
-
-## Session rules learned
-- The owner works hands-off: no mid-task questions. Stop only on real permission blocks.
-- Commit and push HANDOFF + all WIP branches at every milestone, and before the context fills. Never leave work local-only.
+- BrickLink CMF codes for the other ~45 series still to map (6 done above); V1-02.
+- "Flatten" bag: current bag image shows slight 3D bag shape; V0-02 shows options (as-is cut-out vs flat artwork crop).
 
 ## Docs
 [backlog](backlog.md) · [decisions](decisions.md) · [README](../README.md) · [CLAUDE.md](../CLAUDE.md)

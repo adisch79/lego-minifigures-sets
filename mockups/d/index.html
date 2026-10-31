@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Minifig Vault - Collectible Minifigures</title>
+<link rel="stylesheet" href="vault.css">
+</head>
+<body>
+<header class="band">
+  <div class="wrap">
+    <div class="band-top">
+      <a class="brand" href="index.html" aria-label="Minifig Vault home"><span class="brand-mark" aria-hidden="true"><i></i></span><span><b>Minifig Vault</b><small>Collectible Minifigures</small></span></a>
+      <div class="controls">
+        <label class="field">
+          <span class="sr">Search series</span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+          <input id="q" type="search" placeholder="Search name, number, year" autocomplete="off">
+        </label>
+        <label>
+          <span class="sr">Sort series</span>
+          <select id="sort">
+            <option value="new">Newest</option>
+            <option value="old">Oldest</option>
+            <option value="az">A-Z</option>
+            <option value="count">Figure count</option>
+          </select>
+        </label>
+      </div>
+    </div>
+    <div class="band-hero">
+      <h1 class="big">Every series.<br>Every <em>figure.</em></h1>
+      <div>
+        <p class="lede">Track the figures you own, the ones still missing, and the series you want complete.</p>
+        <div class="stats" id="stats"></div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="rule" aria-live="polite"><span id="resultCount"></span><span>Owned counts are mock data</span></div>
+  <ul class="grid" id="grid"></ul>
+</main>
+
+<script src="../assets/data.js"></script>
+<script>
+  // Mock ownership per series id (visual only, not persisted).
+  var OWNED = { "71053": 4, "71045": 12, "71038": 7, "71031": 2, "71019": 9, "8683": 13 };
+  var wanted = { "71031": true };
+
+  var grid = document.getElementById('grid');
+  var q = document.getElementById('q');
+  var sortSel = document.getElementById('sort');
+
+  var heart = '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 21s-8-5.3-8-11a4.5 4.5 0 0 1 8-2.8A4.5 4.5 0 0 1 20 10c0 5.7-8 11-8 11z"/></svg>';
+
+  function esc(s) {
+    return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; });
+  }
+
+  // Segmented bar: one block per figure, first `owned` blocks filled.
+  function pips(owned, total, delay) {
+    var out = '';
+    for (var i = 0; i < total; i++) out += '<i class="' + (i < owned ? 'on' : '') + '" style="animation-delay:' + (delay + i * 25) + 'ms"></i>';
+    return '<div class="pips' + (owned === total ? ' done' : '') + '" role="img" aria-label="Owned ' + owned + ' of ' + total + '">' + out + '</div>';
+  }
+
+  function renderStats() {
+    var total = 0, owned = 0;
+    MOCK.series.forEach(function (s) { total += s.figureCount; owned += OWNED[s.id] || 0; });
+    document.getElementById('stats').innerHTML =
+      '<div><strong>' + MOCK.series.length + '</strong>Series</div>' +
+      '<div><strong>' + owned + '<span>/' + total + '</span></strong>Figures owned</div>' +
+      '<div><strong>' + Math.round(owned / total * 100) + '%</strong>Complete</div>';
+  }
+
+  function render() {
+    var term = q.value.trim().toLowerCase();
+    var list = MOCK.series.filter(function (s) {
+      return !term || (s.name + ' ' + s.id + ' ' + s.year).toLowerCase().indexOf(term) !== -1;
+    });
+    var mode = sortSel.value;
+    list.sort(function (a, b) {
+      if (mode === 'new') return b.year - a.year;
+      if (mode === 'old') return a.year - b.year;
+      if (mode === 'az') return a.name.localeCompare(b.name);
+      return b.figureCount - a.figureCount || b.year - a.year;
+    });
+
+    document.getElementById('resultCount').innerHTML = '<b>' + list.length + '</b> of ' + MOCK.series.length + ' series';
+
+    if (!list.length) {
+      grid.innerHTML = '<li class="empty"><strong>No series match "' + esc(term) + '"</strong>Try a series name, a set number like 71019, or a year.</li>';
+      return;
+    }
+
+    grid.innerHTML = list.map(function (s, i) {
+      var owned = OWNED[s.id] || 0;
+      var on = !!wanted[s.id];
+      return '<li class="tile" style="animation-delay:' + (i * 70) + 'ms">' +
+        '<a class="tile-link" href="series.html" aria-label="' + esc(s.name) + ', set ' + s.id + ', ' + s.year + '">' +
+          '<div class="art"><img src="../' + s.card + '" alt="' + esc(s.name) + ' series card" loading="lazy"></div>' +
+        '</a>' +
+        '<div class="meta">' +
+          '<div class="meta-row"><span class="num">No. ' + s.id + ' &middot; ' + s.year + '</span>' +
+          '<span class="count-badge">' + s.figureCount + ' figures</span></div>' +
+          '<h2><a href="series.html" tabindex="-1">' + esc(s.name) + '</a></h2>' +
+          '<div class="progress-head"><span>Owned</span><b>' + owned + '/' + s.figureCount + '</b></div>' +
+          pips(owned, s.figureCount, 300 + i * 70) +
+          '<button type="button" class="want" data-id="' + s.id + '" aria-pressed="' + on + '">' + heart +
+          '<span class="lbl">' + (on ? 'Wanted: whole series' : 'Want whole series') + '</span></button>' +
+        '</div>' +
+      '</li>';
+    }).join('');
+  }
+
+  grid.addEventListener('click', function (e) {
+    var btn = e.target.closest('.want');
+    if (!btn) return;
+    var id = btn.getAttribute('data-id');
+    wanted[id] = !wanted[id];
+    btn.setAttribute('aria-pressed', String(wanted[id]));
+    btn.querySelector('.lbl').textContent = wanted[id] ? 'Wanted: whole series' : 'Want whole series';
+  });
+  q.addEventListener('input', render);
+  sortSel.addEventListener('change', render);
+
+  renderStats();
+  render();
+</script>
+</body>
+</html>

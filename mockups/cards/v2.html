@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><title>71019 card v2</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:600px;height:800px;overflow:hidden;background:#000}
+body{font-family:"Segoe UI","Helvetica Neue",Arial,system-ui,sans-serif}
+.card{position:relative;width:600px;height:800px;overflow:hidden}
+.fig{position:absolute;width:auto;user-select:none}
+.lockup{display:block;width:300px;height:auto}
+/* SOURCE: colours sampled from the LEGO logo on the 71019 bag image (originals/71019/71019-0.jpg) */
+:root{--lego-red:#DF0012;--lego-yellow:#FDE01B}
+
+.card{background:radial-gradient(90% 70% at 50% 75%, #6d0a10 0%, #2a0507 55%, #0b0203 100%)}
+.rays{position:absolute;inset:-200px;background:repeating-conic-gradient(from 0deg at 50% 62%, rgba(255,255,255,.035) 0 6deg, transparent 6deg 14deg)}
+.huge{position:absolute;left:0;right:0;top:74px;text-align:center;font-size:400px;font-weight:900;line-height:.8;
+  letter-spacing:-.06em;color:transparent;-webkit-text-stroke:3px var(--lego-yellow);opacity:.95}
+.top{position:absolute;left:28px;right:28px;top:26px;display:flex;justify-content:space-between;align-items:center;z-index:60}
+.chips{display:flex;gap:8px}
+.chip{font-weight:900;font-size:20px;padding:6px 12px;border-radius:6px;line-height:1}
+.chip.age{background:#fff;color:#111}
+.chip.num{background:transparent;color:#fff;border:2px solid rgba(255,255,255,.7)}
+.label{position:absolute;left:0;right:0;text-align:center;top:404px;color:var(--lego-yellow);font-weight:900;font-size:15px;letter-spacing:.35em;z-index:1}
+.series{position:absolute;left:0;right:0;top:432px;text-align:center;z-index:1}
+.series .the{font-size:14px;font-weight:700;letter-spacing:.5em;color:rgba(255,255,255,.75)}
+.series .name{font-size:44px;font-weight:900;font-style:italic;letter-spacing:.02em;color:#fff;text-transform:uppercase;
+  text-shadow:0 3px 0 var(--lego-red),0 10px 24px rgba(0,0,0,.6)}
+.stage{position:absolute;inset:0}
+.fade{position:absolute;left:0;right:0;bottom:0;height:90px;background:linear-gradient(180deg,transparent,rgba(11,2,3,.9));z-index:40}
+.foot{position:absolute;left:0;right:0;bottom:16px;text-align:center;z-index:45;color:#fff;font-size:12px;font-weight:700;letter-spacing:.4em;opacity:.8}
+</style></head>
+<body><div class="card">
+<div class="rays"></div>
+<div class="huge">20</div>
+<div class="label">TO COLLECT</div>
+<div class="top"><img class="lockup" src="../assets/logos/lego-minifigures-lockup.png" alt="LEGO Minifigures" style="width:250px">
+<div class="chips"><span class="chip age">5+</span><span class="chip num">71019</span></div></div>
+<div class="series"><div class="the">THE LEGO</div><div class="name">Ninjago Movie</div></div>
+<div class="stage">
+<img class="fig" src="../assets/figs/71019-15.webp" alt="" style="left:14px;bottom:150px;height:150px;z-index:1;filter:brightness(0.62) drop-shadow(0 6px 8px rgba(0,0,0,.35))">
+<img class="fig" src="../assets/figs/71019-5.webp" alt="" style="left:90px;bottom:156px;height:150px;z-index:2;filter:brightness(0.62) drop-shadow(0 6px 8px rgba(0,0,0,.35))">
+<img class="fig" src="../assets/figs/71019-9.webp" alt="" style="left:167px;bottom:146px;height:150px;z-index:3;filter:brightness(0.62) drop-shadow(0 6px 8px rgba(0,0,0,.35))">
+<img class="fig" src="../assets/figs/71019-12.webp" alt="" style="left:225px;bottom:158px;height:150px;z-index:4;filter:brightness(0.62) drop-shadow(0 6px 8px rgba(0,0,0,.35))">
+<img class="fig" src="../assets/figs/71019-16.webp" alt="" style="left:320px;bottom:148px;height:150px;z-index:5;filter:brightness(0.62) drop-shadow(0 6px 8px rgba(0,0,0,.35))">
+<img class="fig" src="../assets/figs/71019-6.webp" alt="" style="left:397px;bottom:155px;height:150px;z-index:6;filter:brightness(0.62) drop-shadow(0 6px 8px rgba(0,0,0,.35))">
+<img class="fig" src="../assets/figs/71019-18.webp" alt="" style="left:474px;bottom:144px;height:150px;z-index:7;filter:brightness(0.62) drop-shadow(0 6px 8px rgba(0,0,0,.35))">
+<img class="fig" src="../assets/figs/71019-11.webp" alt="" style="left:-76px;bottom:60px;height:190px;z-index:15;filter:brightness(0.82) drop-shadow(0 6px 8px rgba(0,0,0,.35))">
+<img class="fig" src="../assets/figs/71019-7.webp" alt="" style="left:26px;bottom:66px;height:190px;z-index:16;filter:brightness(0.82) drop-shadow(0 6px 8px rgba(0,0,0,.35))">
+<img class="fig" src="../assets/figs/71019-19.webp" alt="" style="left:103px;bottom:56px;height:190px;z-index:17;filter:brightness(0.82) drop-shadow(0 6px 8px rgba(0,0,0,.35))">
+<img class="fig" src="../assets/figs/71019-13.webp" alt="" style="left:229px;bottom:68px;height:190px;z-index:18;filter:brightness(0.82) drop-shadow(0 6px 8px rgba(0,0,0,.35))">
+<img class="fig" src="../assets/figs/71019-4.webp" alt="" style="left:307px;bottom:58px;height:190px;z-index:19;filter:brightness(0.82) drop-shadow(0 6px 8px rgba(0,0,0,.35))">
+<img class="fig" src="../assets/figs/71019-17.webp" alt="" style="left:432px;bottom:65px;height:190px;z-index:20;filter:brightness(0.82) drop-shadow(0 6px 8px rgba(0,0,0,.35))">
+<img class="fig" src="../assets/figs/71019-10.webp" alt="" style="left:534px;bottom:54px;height:190px;z-index:21;filter:brightness(0.82) drop-shadow(0 6px 8px rgba(0,0,0,.35))">
+<img class="fig" src="../assets/figs/71019-20.webp" alt="" style="left:-167px;bottom:-60px;height:250px;z-index:29;filter:brightness(1.0) drop-shadow(0 6px 8px rgba(0,0,0,.35))">
+<img class="fig" src="../assets/figs/71019-1.webp" alt="" style="left:-49px;bottom:-54px;height:250px;z-index:30;filter:brightness(1.0) drop-shadow(0 6px 8px rgba(0,0,0,.35))">
+<img class="fig" src="../assets/figs/71019-2.webp" alt="" style="left:132px;bottom:-64px;height:250px;z-index:31;filter:brightness(1.0) drop-shadow(0 6px 8px rgba(0,0,0,.35))">
+<img class="fig" src="../assets/figs/71019-3.webp" alt="" style="left:250px;bottom:-52px;height:250px;z-index:32;filter:brightness(1.0) drop-shadow(0 6px 8px rgba(0,0,0,.35))">
+<img class="fig" src="../assets/figs/71019-8.webp" alt="" style="left:399px;bottom:-62px;height:250px;z-index:33;filter:brightness(1.0) drop-shadow(0 6px 8px rgba(0,0,0,.35))">
+<img class="fig" src="../assets/figs/71019-14.webp" alt="" style="left:548px;bottom:-55px;height:250px;z-index:34;filter:brightness(1.0) drop-shadow(0 6px 8px rgba(0,0,0,.35))">
+</div>
+<div class="fade"></div>
+<div class="foot">COLLECTIBLE MINIFIGURES</div>
+</div></body></html>

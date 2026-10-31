@@ -1,83 +1,72 @@
-# Backlog — minifigures-extractor
+# Backlog v2 — LEGO Minifigures Collector (refactor)
 
-Scope: LEGO Collectible Minifigures (CMF) series only (~50 series, ~800–1,000 figures).
-Output: static site on GitHub Pages; images downloaded once, stored as WebP in repo.
+v1 backlog (static gallery, E1–E8): `docs/archive/backlog-v1.md`.
 
-Legend: **UI** = starts with 3 mockups. **Install** = delivers a setup script.
+## Product (owner brief, 2026-10-31)
+- Home: every CMF series as its **flat bag/box artwork** (series number, name, logo, icons kept). Sort + search.
+- Series page: every minifigure as the **real figure photo** (not a posed promo render), with **name + number**.
+- Images on a transparent background, or an equivalent visual solution.
+- **Invited users** sign in and mark each figure, or a whole series, as **owned** or **wanted**.
+- Every **wanted** mark sends the admin (owner) a **Telegram** message.
+- **Lowest price** per series/figure: BrickLink stores that ship to Israel, eBay, other online shops. **No API keys**: moderate scraping. Price in the original currency + ILS.
+- Look: simple, innovative, lego.com colours (yellow `#FFCF00`, red `#E3000B`, black, white; values to be verified against lego.com in V0-02).
+- UI in English first; Hebrew (RTL) toggle later.
 
-## MVP 0 — POC: one series end to end (71019 Ninjago Movie)
+## Architecture (default, see decisions.md)
+- Frontend: Vite + React + TypeScript, static build on GitHub Pages. i18n-ready strings from day 1.
+- Catalog: existing Python pipeline (Rebrickable CSV + images) → `catalog.json` + WebP images.
+- Users / marks: Supabase free tier (auth by email magic link, allowlist table, Postgres + RLS).
+- Notification: Postgres trigger → Supabase Edge Function → Telegram Bot API.
+- Prices: scheduled GitHub Action (daily, ~1 request / 4 s, cached) → `prices.json`. FX: Bank of Israel daily rate.
 
-### E1 Data + page for one series
-| ID | Title | Goal | Acceptance criteria | Size | Model | Flags | Status |
-|---|---|---|---|---|---|---|---|
-| E1-01 | Data source spike (no API keys) | Pick keyless source for series list, figure list, images | Script prints 71019 figures (name, id, image URL) from Rebrickable CSV dumps; group-shot source found (BrickLink/other); choice + reason in decisions.md | S | sonnet | Install | Done |
-| E1-02 | Image pipeline (1 series) | Download + convert images for 71019 | `site/data.json` catalog; group shot + 20 figure images (originals kept, see decisions); re-run skips existing | S | sonnet | Install | Done |
-| E1-03 | Series page | Hero banner (group shot) + figures one at a time | Page renders 71019 from manifest; works at 375 px and desktop; no console errors | M | sonnet | UI | Done |
+## Ways of working
+- Flow: `feature/<id>-<slug>` → `dev` → release into `master` (deploys).
+- Each story: design review (M/L) → coder → code-reviewer → qa (+ security-reviewer for auth, data, scraping).
+- Every task is ≤ 5 minutes; bigger work is split. One step per subagent.
+- Models: **haiku** for bulk/mechanical work (data checks, image QA lists, doc edits); **sonnet** for coding, QA and S/M reviews; **opus** for design, architecture, security and L reviews. GUI is built by `senior-frontend-dev` after the owner picks a direction.
+- Depth before breadth: one series (71019 Ninjago Movie) gets full depth and owner sign-off, then all series.
+- Every MVP ends with a demo URL.
 
-## MVP 1 — Full catalog, local
+Legend: **UI** = needs approved direction first. **Owner** = needs something only the owner can give.
 
-### E2 All series data
-| ID | Title | Goal | Acceptance criteria | Size | Model | Flags | Status |
-|---|---|---|---|---|---|---|---|
-| E2-01 | List all CMF series | Full series index | `site/data.json` with id, name, year, figure count, cover image for every series | S | sonnet | | Done |
-| E2-02 | Batch download | All figures + images | Rate-limited, resumable, retries; log of missing images; total size reported | M | sonnet | | Done |
-| E2-03 | Review page for gaps | Human check of missing/wrong images | Local page: image beside fields, dropdown correct/wrong/missing, keyboard shortcuts, JSON export | M | sonnet | UI | Ready |
+## MVP 0 — Look & images proven on one series (71019) · demo: 3 mockup pages
+| ID | Title | Acceptance criteria | Size | Model | Flags | Status |
+|---|---|---|---|---|---|---|
+| V0-01 | Image spike: transparent bag + figures | 71019 bag: white background removed, artwork intact, edges clean. 20 figures: background removed with an edge flood-fill (no ML) vs CSS `multiply` on a light background; side-by-side sheet for owner; choice logged | S | sonnet | | Done (docs/spike/) |
+| V0-02 | 3 design directions, one real example | Each direction = home (6 real series tiles, sort + search bar) + series 71019 page (20 real figures, name + number, owned/wanted controls as static UI). lego.com palette. Screenshots desktop + 375 px | M | opus → senior-frontend-dev | UI | Done (mockups/a,b,c) |
+| V0-03 | Owner picks direction | Choice + notes in decisions.md | S | — | Owner | Ready |
 
-### E3 Home page
-| ID | Title | Goal | Acceptance criteria | Size | Model | Flags | Status |
-|---|---|---|---|---|---|---|---|
-| E3-01 | Series grid | Home page lists all series | Tile per series (cover, name, year); click opens series page; sorted newest first | M | sonnet | UI | Done |
-| E3-02 | Search / filter | Find a series fast | Filter by name/year; works on phone | S | sonnet | | Done |
+## MVP 1 — New site, read-only catalog, all series · demo: live Pages URL
+| ID | Title | Acceptance criteria | Size | Model | Flags | Status |
+|---|---|---|---|---|---|---|
+| V1-01 | Scaffold app + CI | Vite/React/TS app in `app/`; lint, unit tests (Vitest), build in CI; Pages deploys `app/dist` | S | sonnet | | Ready |
+| V1-02 | Catalog contract v2 | `catalog.json`: series {id, seriesNo, name, year, figureCount, bag}, figure {id, no, name, img}; series number/label parsed (e.g. "Series 25"); schema test | M | sonnet (design review opus) | | Ready |
+| V1-03 | Images for all series | Approved V0-01 method on all ~52 bags and ~790 figures; gap report (haiku review list) | M | sonnet + haiku | | Ready |
+| V1-04 | Home: grid, sort, search | Sort: newest, oldest, A–Z, series number, figure count. Search: series name/number/year and figure name. State in URL | M | senior-frontend-dev | UI | Ready |
+| V1-05 | Series page | All figures with name + number; works on desktop and 375 px; keyboard accessible | M | senior-frontend-dev | UI | Ready |
 
-## MVP 2 — Published on phone
+## MVP 2 — Invited collectors + Telegram alerts · demo: sign in, mark wanted, phone pings
+| ID | Title | Acceptance criteria | Size | Model | Flags | Status |
+|---|---|---|---|---|---|---|
+| V2-01 | Supabase project + schema | Tables: allowlist, profiles, marks (user, figure_id or series_id, owned/wanted); RLS: users see/write only their own marks; migrations in repo | M | opus design + security review | Owner (create free Supabase account) | Ready |
+| V2-02 | Invite-only sign-in | Email magic link; addresses not on the allowlist are refused; sign-out | M | sonnet | | Ready |
+| V2-03 | Mark owned / wanted | Per figure and per whole series; progress (e.g. 12/20 owned); filter "my wanted" / "missing" | M | sonnet + senior-frontend-dev | UI | Ready |
+| V2-04 | Telegram alert on wanted | New wanted mark → one Telegram message (who, what, link) within 1 min; repeat clicks not re-sent; token only in Supabase secrets | S | sonnet + security review | Owner (bot token) | Ready |
+| V2-05 | Admin page | Owner manages the allowlist and sees all wanted items | S | sonnet | UI | Ready |
 
-### E4 Publish
-| ID | Title | Goal | Acceptance criteria | Size | Model | Flags | Status |
-|---|---|---|---|---|---|---|---|
-| E4-01 | GitHub Pages deploy | Site reachable from phone | Repo + Pages live; README has URL | S | sonnet | Install | Done (live 2026-10-31) |
-| E4-02 | Mobile performance | Fast on phone | Lazy-load images; series page LCP < 2.5 s on 4G | S | sonnet | | Ready |
+## MVP 3 — Lowest prices · demo: price chip on every series/figure
+| ID | Title | Acceptance criteria | Size | Model | Flags | Status |
+|---|---|---|---|---|---|---|
+| V3-01 | Price source spike | Per source (BrickLink stores shipping to IL, eBay, 2–3 shops): page structure, robots.txt/ToS notes, block risk, rate limit; pick sources | S | opus | | Ready |
+| V3-02 | Scheduled price scraper | Daily GitHub Action; ≤ 1 req / 4 s per host; cache; failures logged, last good price kept; `prices.json` with source, URL, date | M | sonnet + security review | | Ready |
+| V3-03 | Currency | Original currency + ILS from the Bank of Israel daily rate (`SOURCE:` in code) | S | sonnet | | Ready |
+| V3-04 | Show lowest price | Price chip on tile and figure, link to the offer, date of the price | S | senior-frontend-dev | UI | Ready |
 
-## MVP 3 — Stay current
+## MVP 4 — Hebrew
+| ID | Title | Acceptance criteria | Size | Model | Flags | Status |
+|---|---|---|---|---|---|---|
+| V4-01 | Hebrew + RTL toggle | All UI strings translated; RTL layout correct on both pages | M | sonnet + haiku (string extraction) | UI | Ready |
 
-### E5 Updates
-| ID | Title | Goal | Acceptance criteria | Size | Model | Flags | Status |
-|---|---|---|---|---|---|---|---|
-| E5-01 | Incremental update | Add new series with one command | Re-run fetches only new series/figures; existing files untouched | S | sonnet | | Done |
-
-## Round 2 — owner feedback on MVP 1 (shipped in 3b525d1 without review; retro review in P-01)
-
-Items reconstructed from commit 3b525d1 and decisions.md (owner to confirm wording).
-
-### E6 Visual redesign
-| ID | Title | Goal | Acceptance criteria | Size | Model | Flags | Status |
-|---|---|---|---|---|---|---|---|
-| E6-01 | Figure cut-outs | Figures without photo background | Transparent WebP per figure; white plastic stays solid; no floor shadow | M | sonnet | | Done (golden set pending, P-07) |
-| E6-02 | Group-shot hero cut-out | Clean transparent hero | Group shot transparent; no white haze around figures | S | sonnet | | Done |
-| E6-03 | Flat bag artwork tiles | Tiles show bag art, not crumpled bag | Crop to flat artwork rectangle on every series | S | sonnet | UI | Done (no mockups, see P-06) |
-| E6-04 | Uniform tiles + title overlay | Same-size home tiles | All tiles 3:4; title overlaid; no layout jumps | S | sonnet | UI | Done |
-| E6-05 | Big set number | Series number readable at a glance | Large set-number badge on every tile | S | sonnet | UI | Done |
-| E6-06 | Dark stage + swipe viewer | No big gaps; one figure at a time | Dark theme; horizontal swipe viewer + thumbnail strip + ←/→ keys; works at 375 px | M | sonnet | UI | Done |
-
-### E7 Retro-review fixes (P-01 findings, 2026-10-31)
-| ID | Title | Goal | Acceptance criteria | Size | Model | Flags | Status |
-|---|---|---|---|---|---|---|---|
-| E7-01 | Robust download + processing | One bad file never breaks or poisons a run | CSV 404 raises clear error; CSV/image/WebP writes atomic (tmp + `os.replace`); downloaded image verified with PIL; per-file errors in download + process caught, logged, run continues; `import urllib.error`; 429 honours Retry-After; `suffix()` tolerates non-numeric; tests for each | M | sonnet | | Done |
-| E7-02 | Input validation (security S1/S2) | Untrusted CSV can't write outside repo or fetch other hosts | Only `https://cdn.rebrickable.com` URLs fetched; read size capped (20 MB image, 100 MB CSV); `set_num` must match `[A-Za-z0-9]+-\d+`; ext allowlist; tests | S | sonnet | | Done |
-| E7-03 | Supply-chain pins (security S3/S4) | Reproducible, tamper-resistant builds | requirements.txt exact versions; workflow actions pinned to commit SHA | S | sonnet | | Done |
-| E7-04 | Site robustness + a11y | Site correct on edge data, usable by keyboard | null year hidden; empty cover guarded; reduced-motion respected; ←/→ ignores modifier keys; off-screen slides `inert`; `aria-current` on thumb; `:focus-visible` styles; favicon (no console 404); resize re-aligns viewer | M | sonnet | | Ready |
-| E7-05 | Catalog logic edge cases | Correct bag/series picking | Deterministic series-id tie break; bag/group classification tests | S | sonnet | | Ready |
-| E7-06 | Repo hygiene decision | Owner decides | `originals/` kept; site public (see decisions) | S | — | | Done |
-
-### E8 Photo quality
-| ID | Title | Goal | Acceptance criteria | Size | Model | Flags | Status |
-|---|---|---|---|---|---|---|---|
-| E8-01 | Real minifig photos, no cut-outs | Figures look like the real minifig, group shot intact | Figure image = Rebrickable minifig photo (`.fig.jpg` original), set image as fallback; `src` recorded in data.json; no background removal (trim + pad 3:4, group resize only); `--rebuild` flag; rounded photo cards on site | M | sonnet | UI (owner-requested, minimal CSS) | Done |
-
-E4-02 also gets: 160 px thumbnails, hero `fetchpriority=high` + width/height.
-
-## Process fixes (from HANDOFF)
-| ID | Title | Status |
-|---|---|---|
-| P-01 | security-reviewer agent; retro code/QA/security review of 0088846~1..3b525d1 | Done (QA pass; 0 blocking security; 5 blocking code → E7-01, E4-01) |
-| P-06 | 3 mockups before next UI story | Rule — applies from now |
-| P-07 | Golden set for u2net cut-outs (via E2-03 review page, ~50 labelled) | Ready |
+## Risks
+- BrickLink and eBay terms restrict automated access: scraping can be blocked. Mitigation: low rate, daily cache, link-out fallback.
+- Rebrickable images have no transparency. V0-01 tests a non-ML cut-out (u2net failed in v1).

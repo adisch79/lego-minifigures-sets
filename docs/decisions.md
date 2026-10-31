@@ -19,3 +19,27 @@
 - 2026-10-31 — u2net model downloaded by rembg from github.com release assets and hash-checked (md5 via pooch) by rembg itself; no extra check in our code.
 - 2026-10-31 — Figure image = Rebrickable minifig photo (real, straight pose); set promo render only as fallback. Owner: posed renders unwanted.
 - 2026-10-31 — No background removal (u2net erased figures in group shots); photos shown as-is in rounded cards. Supersedes 2026-10-30 rembg decision. rembg/onnxruntime removed from requirements.
+- 2026-10-31 — v2 refactor: collector app (owned/wanted, alerts, prices). Backlog v1 archived to docs/archive/backlog-v1.md.
+- 2026-10-31 — Users: invite-only (allowlist). Owner choice.
+- 2026-10-31 — Admin alerts on "wanted": Telegram bot. Owner choice.
+- 2026-10-31 — Prices: later MVP (MVP 3), no API keys, moderate scraping. Owner choice.
+- 2026-10-31 — UI English first, Hebrew toggle later; prices in original currency + ILS. Owner choice.
+- 2026-10-31 — Stack default: Vite + React + TS static on GitHub Pages; Supabase free tier (magic-link auth, Postgres RLS, Edge Function for Telegram); prices by scheduled GitHub Action. Reason: no own server, free, keeps Pages hosting.
+- 2026-10-31 — Image transparency: test a non-ML edge flood fill and CSS multiply on a light background (V0-01) before choosing; u2net rejected in v1.
+- 2026-10-31 — V0-01 result: image source = BrickLink catalog images (`img.bricklink.com/ItemImage/SN/0/<cmf-id>-<n>.png`, e.g. coltlnm-1). Owner's example file is byte-identical to that image. Real figure + accessories on pure white; border flood fill (no ML) gives clean transparency on 20/20 figures of 71019 + bag. Rebrickable fig photos rejected: 8/20 grey gradient backgrounds, no accessories. Download once, ≤1 req / 2 s. Figure order/name mapping BrickLink ↔ Rebrickable handled in V1-02.
+- 2026-10-31 — Backlog v2 approved by owner.
+- 2026-10-31 — Figure numbering: BrickLink `coltlnm-N` = Rebrickable `71019-N` (spot check N=2, 11, 20 by BrickLink page title). Names/numbers from Rebrickable; images from BrickLink.
+- 2026-10-31 — Palette: lego.com returns 403 to automated fetch; colours sampled from the LEGO logo on the 71019 bag image: red #DF0012, yellow #FDE01B.
+- 2026-10-31 — V0-02 directions: A Toy Shelf (white + yellow band, shelves, baseplate), B Collector Leaflet (yellow page, brick cards, big numbers), C Unboxing (white editorial, colour glow, red badges). Mockups in mockups/a|b|c, shared assets mockups/assets.
+- 2026-10-31 — V0-03 owner pick (mix): home = A layout (yellow/white split) but no shelf/floor/shadow, and series shown as FLAT artwork (not a bag/box shape) keeping age, set number, figure count, LEGO logo, Minifigures logo, figure picture; search + sort = C; series hero = C; progress bar = B (segmented); figure tiles = B layout without brick/stud styling; overall light theme (B too dark).
+- 2026-10-31 — Owner correction: series image = NEW composed card, not a crop of the bag photo. Must contain age, set number, figure count, LEGO logo, Minifigures logo, and a minifigures picture. Plan: HTML/CSS card template rendered per series by headless Chrome; group picture composed from the BrickLink figure cut-outs; logos from Wikimedia (mockups/assets/logos/SOURCES.md). Flat-crop spike (V0-03-flatten) superseded.
+- 2026-10-31 — Open data gap: age mark (5+/6+) is not in the Rebrickable catalog; needs a per-series table (source: bag image) in V1-02.
+- 2026-10-31 — Owner card pick: mix of V1 (bag-front layout) + V2 (big "N to collect" count); official theme logo required per series.
+- 2026-10-31 — Theme logos sourced from Google Images (owner direction) as official logo PNGs, background cut by border flood fill; source URL logged per file in mockups/assets/logos/SOURCES.md.
+- 2026-10-31 — Owner: flat-background logos keyed out look dirty; use only logo files with real transparency (Google Images transparent+large filter). Count badge on cards copies the bag seal style (white disc, arc text, red italic number).
+- 2026-10-31 — Owner approved card v4 (bag-front layout, bag-style seal, official theme logo) as the series card template.
+- 2026-10-31 — Figure images for all series come from BrickLink CMF catalog images (code per series, e.g. colshr, col25, coldis100, colmar, col01); numbering verified equal to Rebrickable figure numbers for 6 series.
+- 2026-10-31 — Owner: Telegram bot token and chat id already exist in the repo-root .env (git-ignored) on the PC and on the NAS (OWNER-SUPPLIED). MVP 2 reads them from env vars; never committed. Exact key names to confirm when MVP 2 starts.
+- 2026-10-31 — Owner has a Supabase account (OWNER-SUPPLIED). Keys go in the git-ignored repo-root .env as SUPABASE_URL, SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY.
+- 2026-10-31 — Series cards: one composed card per series from the approved v4 template (docs/spike/V0-06-cards.py). Seal top arc says LIMITED EDITION only where the bag says so (71019, 71031); numbered series show SERIES N; other themes show MINIFIGURES. Series with 12 or fewer figures use two crowd rows. Card backgrounds sampled from the bag image.
+- 2026-10-31 — Owner: do not wait for approval between steps; keep working.
