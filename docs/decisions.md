@@ -38,3 +38,4 @@
 - 2026-10-31 — Theme logos sourced from Google Images (owner direction) as official logo PNGs, background cut by border flood fill; source URL logged per file in mockups/assets/logos/SOURCES.md.
 - 2026-10-31 — Owner: flat-background logos keyed out look dirty; use only logo files with real transparency (Google Images transparent+large filter). Count badge on cards copies the bag seal style (white disc, arc text, red italic number).
 - 2026-10-31 — Owner approved card v4 (bag-front layout, bag-style seal, official theme logo) as the series card template.
+- 2026-10-31 — Figure images for all series come from BrickLink CMF catalog images (code per series, e.g. colshr, col25, coldis100, colmar, col01); numbering verified equal to Rebrickable figure numbers for 6 series.

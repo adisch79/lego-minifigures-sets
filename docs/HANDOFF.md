@@ -16,17 +16,19 @@
 - **V0-05 done, owner approved v4 (2026-10-31)**: `mockups/cards/v4.png`. Bag-style round seal (LIMITED EDITION / 20 / TO COLLECT, SVG `seal()` in generator), official coloured Ninjago Movie logo with LEGO brick (real alpha, smaller, clear of the seal), HD LEGO Minifigures lockup (1600 px). Crowd raised to fill the gap, clamped inside card, Lloyd centre front.
 - Logo rule: only files that already have real alpha; find them with Google Images filter `&udm=2&tbs=ic:trans,isz:l` in Chrome, then read original URLs from the page HTML (`["url",h,w]` triples). Sources in `mockups/assets/logos/SOURCES.md`.
 
+- **V0-06 in progress**: figure cut-outs for all 6 mockup series in `mockups/assets/figs/<set>-<n>.webp` (70 new + 20 of 71019). Script `docs/spike/V0-06-figs.py` (V0-01 flood fill + speck removal). BrickLink CMF codes verified (image n = Rebrickable figure n, next number 404): 71053 `colshr` (12), 71045 `col25` (12), 71038 `coldis100` (18), 71031 `colmar` (12), 71019 `coltlnm` (20), 8683 `col01` (16). URL `img.bricklink.com/ItemImage/SN/0/<code>-<n>.png`.
+
 ## Next step
-1. Card v4 approved. Minor known: Zane hidden behind Lloyd; Lloyd's spare hair piece at bottom (in source photo).
-2. Logo per series: one official logo per licensed theme (Google Images transparent filter in Chrome); numbered "Series N" sets use the Minifigures lockup plus a series badge. Needs a per-series logo table (V1-02).
-3. Swap v4 into mockup D home, owner signs off, then MVP 1: V1-01 scaffold (Vite/React/TS in `app/`), V1-02 catalog contract with BrickLink image ids. Known: flat-art left edge clipped on 71053/71045, grey seal band on 71038, mobile search placeholder cut.
+1. Theme logos (real alpha only, Google Images `&udm=2&tbs=ic:trans,isz:l` in Chrome, URLs from `["url",h,w]` triples in page HTML): Shrek, Disney 100, Marvel Studios. Series 25 and Series 1 use the Minifigures lockup + "SERIES N" badge.
+2. Generalise `v4` in `docs/spike/V0-04-cards-gen.py` into a per-series function (id, age, count, logo, front-row main characters) and render 6 cards to `mockups/cards/<id>.png`.
+3. Swap the 6 cards into mockup D home (`mockups/d/index.html`), screenshot, owner sign-off, then MVP 1 V1-01 scaffold.
 
 ## Owner-needed later (MVP 2)
 - Free Supabase account (project for auth + database).
 - Telegram bot token from @BotFather + your chat id.
 
 ## Open questions
-- BrickLink CMF ids per series (e.g. `coltlnm` = 71019) need a mapping table; V1-02.
+- BrickLink CMF codes for the other ~45 series still to map (6 done above); V1-02.
 - "Flatten" bag: current bag image shows slight 3D bag shape; V0-02 shows options (as-is cut-out vs flat artwork crop).
 
 ## Docs
