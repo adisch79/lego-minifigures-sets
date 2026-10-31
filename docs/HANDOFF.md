@@ -11,8 +11,11 @@
 
 - Owner picked a mix (decisions.md 2026-10-31 V0-03); flat series artwork spike `docs/spike/V0-03-flatten.py`. **Combined mockup D** in `mockups/d` (shots in `mockups/d/shots/`), awaiting owner sign-off.
 
+- Owner rejected cropped flat art: series image must be a NEW composed card (decisions.md). **3 card variants for 71019** in `mockups/cards/` (v1 bag-front, v2 poster, v3 collector; side-by-side `compare.png`); generator `docs/spike/V0-04-cards-gen.py`; logos `mockups/assets/logos/` (Wikimedia, see SOURCES.md).
+
 ## Next step
-1. Owner signs off mockup D (or lists tweaks). Known: flat-art left edge clipped on 71053/71045, grey seal band on 71038, mobile search placeholder cut.
+1. Owner picks card variant, then swap it into mockup D home and sign off D.
+(old) Owner signs off mockup D (or lists tweaks). Known: flat-art left edge clipped on 71053/71045, grey seal band on 71038, mobile search placeholder cut.
 2. MVP 1: V1-01 scaffold (Vite/React/TS in `app/`), then V1-02 catalog contract with BrickLink image ids.
 
 ## Owner-needed later (MVP 2)
