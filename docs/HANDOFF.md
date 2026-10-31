@@ -22,7 +22,7 @@
 
 ## Next step
 1. V1-01 merged into dev (PR #8, 2026-11-01); MVP 0 merged (PR #7). Vite/React/TS app in `app/`, CI `app-ci.yml`; Pages deploy of `app/dist` disabled until V1-05. TypeScript pinned ~6.0 (typescript-eslint needs <6.1). `.env` also in `.git/info/exclude`.
-2. V1-02 in progress on `feature/V1-02-catalog-v2`: design `docs/design/V1-02-catalog-v2.md` under design review (opus); then coder builds `scripts/build_catalog.py` -> `app/public/catalog.json` + tests.
+2. V1-02 on `feature/V1-02-catalog-v2`: design `docs/design/V1-02-catalog-v2.md` REVISED after opus design review (all blocking/should-fix addressed). NEXT: launch `coder` (sonnet) with that doc to build `scripts/catalog_overrides.json`, `scripts/build_catalog.py` -> `app/public/catalog.json`, `app/scripts/copy-images.mjs` (site/img -> app/public/img, git-ignored), `app/src/catalog.ts` + tests; then code-reviewer, PR into dev.
 3. Merges into dev need the owner (auto mode blocks agent merges): `gh pr merge <n> --merge`.
 4. Later polish (not blocking): series page hero in mockup D still uses the bag image.
 
