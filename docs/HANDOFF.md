@@ -21,10 +21,10 @@
 - **V0-06 done (2026-10-31)**: 6 series cards from the v4 template, `docs/spike/V0-06-cards.py` (renders with headless Chrome) -> `mockups/cards/<id>.png`, overview `mockups/cards/all.png`. Logos `shrek.png`, `disney-100.png`, `marvel-studios.png` (real alpha, SOURCES.md). Numbered series use lockup + red SERIES N badge. Backgrounds sampled from each bag (71019 keeps approved v4). Mockup D home now shows the cards (`mockups/d/shots/home-desktop.png`, `mobile.png`).
 
 ## Next step
-1. V1-01 done on `feature/V1-01-scaffold`, PR #8 into dev: Vite/React/TS in `app/`, ESLint, Vitest, CI `app-ci.yml` green (f42e4dc), code review no blocking findings. Pages deploy of `app/dist` disabled until V1-05 (pages.yml unchanged). TypeScript pinned ~6.0 (typescript-eslint needs <6.1).
-2. OWNER: merge PR #7 (this branch, MVP 0) and PR #8 into dev: `gh pr merge 7 --merge` then `gh pr merge 8 --merge` (auto mode blocks agent merges). `.env` is also in `.git/info/exclude` locally.
-3. Then V1-02 catalog contract v2 (design review opus first).
-4. Later polish (not blocking): series page hero in mockup D still uses the bag image; switch to the card when the real app is built.
+1. V1-01 merged into dev (PR #8, 2026-11-01); MVP 0 merged (PR #7). Vite/React/TS app in `app/`, CI `app-ci.yml`; Pages deploy of `app/dist` disabled until V1-05. TypeScript pinned ~6.0 (typescript-eslint needs <6.1). `.env` also in `.git/info/exclude`.
+2. V1-02 in progress on `feature/V1-02-catalog-v2`: design `docs/design/V1-02-catalog-v2.md` under design review (opus); then coder builds `scripts/build_catalog.py` -> `app/public/catalog.json` + tests.
+3. Merges into dev need the owner (auto mode blocks agent merges): `gh pr merge <n> --merge`.
+4. Later polish (not blocking): series page hero in mockup D still uses the bag image.
 
 ## Owner-needed later (MVP 2)
 - Supabase: owner added keys to `.env` (2026-10-31, file 191 -> 377 bytes; contents unread, deny rule). Nothing owner-needed left for MVP 2.
