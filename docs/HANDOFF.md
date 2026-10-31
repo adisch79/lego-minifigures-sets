@@ -13,11 +13,13 @@
 
 - Owner rejected cropped flat art: series image must be a NEW composed card (decisions.md). **3 card variants for 71019** in `mockups/cards/` (v1 bag-front, v2 poster, v3 collector; side-by-side `compare.png`); generator `docs/spike/V0-04-cards-gen.py`; logos `mockups/assets/logos/` (Wikimedia, see SOURCES.md).
 
+- **V0-05 done (awaiting owner sign-off)**: card v4 = V1 layout + V2 outlined "20 TO COLLECT" + official Ninjago Movie logo. `mockups/cards/v4.png` (side-by-side `compare.png`). Crowd clamped inside card (no edge cut); front row Kai, Jay, Cole, Lloyd (centre, on top), Zane, Nya. Known: Zane mostly hidden behind Lloyd; Lloyd's spare hair piece shows at bottom (in source image).
+- Theme logos: Google Images works via Chrome (curl gets JS-only page; fandom wikis return 403 to curl). Cut background with `docs/spike/V0-05-logo-cutout.py <in> <out> [tol]`. Sources in `mockups/assets/logos/SOURCES.md`.
+
 ## Next step
-1. **V0-05 card v4 = V1 + V2 mix** (owner 2026-10-31): V1 bag-front layout (age/set no top-left, LEGO logo, crowd, bottom strip) + V2 big outlined "N to collect" count (owner loves it). Edit `docs/spike/V0-04-cards-gen.py`, output `mockups/cards/v4.png`. Fix: figures cut at left edge; put main characters in front.
-2. **Official theme logo** per series (owner: all 3 cards showed a made-up Ninjago Movie logo). Lookups done: Wikimedia Commons has no Ninjago Movie logo; en.wikipedia only has the poster (`upload.wikimedia.org/wikipedia/en/9/9f/The_Lego_Ninjago_Movie.jpg`); ninjago.fandom.com returns 402 to fetch. Next tries: lego.fandom.com / brickipedia file search, Brickset theme images, logopedia (logos.fandom.com), or cut the logo out of the bag image (`originals/71019/71019-0.jpg`, logo at about x 380-1200, y 480-760) on a per-series crop table. Numbered "Series N" sets need only the Minifigures logo plus a series badge.
-3. Swap v4 into the mockup D home, owner signs off, then MVP 1 (V1-01 scaffold). Known: flat-art left edge clipped on 71053/71045, grey seal band on 71038, mobile search placeholder cut.
-2. MVP 1: V1-01 scaffold (Vite/React/TS in `app/`), then V1-02 catalog contract with BrickLink image ids.
+1. Owner reviews `mockups/cards/v4.png`; apply tweaks (Zane visibility, hair piece).
+2. Logo per series: one official logo per licensed theme (Google Images in Chrome + cutout script); numbered "Series N" sets use the Minifigures lockup plus a series badge. Needs a per-series logo table (V1-02).
+3. Swap v4 into mockup D home, owner signs off, then MVP 1: V1-01 scaffold (Vite/React/TS in `app/`), V1-02 catalog contract with BrickLink image ids. Known: flat-art left edge clipped on 71053/71045, grey seal band on 71038, mobile search placeholder cut.
 
 ## Owner-needed later (MVP 2)
 - Free Supabase account (project for auth + database).

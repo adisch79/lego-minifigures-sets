@@ -35,3 +35,4 @@
 - 2026-10-31 — Owner correction: series image = NEW composed card, not a crop of the bag photo. Must contain age, set number, figure count, LEGO logo, Minifigures logo, and a minifigures picture. Plan: HTML/CSS card template rendered per series by headless Chrome; group picture composed from the BrickLink figure cut-outs; logos from Wikimedia (mockups/assets/logos/SOURCES.md). Flat-crop spike (V0-03-flatten) superseded.
 - 2026-10-31 — Open data gap: age mark (5+/6+) is not in the Rebrickable catalog; needs a per-series table (source: bag image) in V1-02.
 - 2026-10-31 — Owner card pick: mix of V1 (bag-front layout) + V2 (big "N to collect" count); official theme logo required per series.
+- 2026-10-31 — Theme logos sourced from Google Images (owner direction) as official logo PNGs, background cut by border flood fill; source URL logged per file in mockups/assets/logos/SOURCES.md.
