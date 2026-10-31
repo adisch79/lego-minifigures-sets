@@ -20,12 +20,13 @@ body{font-family:"Segoe UI","Helvetica Neue",Arial,system-ui,sans-serif}
 .meta .age{font-size:52px;font-weight:900;letter-spacing:-.02em;margin-top:2px}
 .meta .rule{width:118px;height:2px;background:#111;margin:6px 0 6px}
 .meta .num{font-size:26px;font-weight:800;letter-spacing:.02em}
-.count{position:absolute;right:26px;top:6px;text-align:center;z-index:2}
-.count .huge{font-size:230px;font-weight:900;line-height:.82;letter-spacing:-.06em;color:transparent;
-  -webkit-text-stroke:4px #9e0f12;text-shadow:0 0 0 transparent}
-.count .lab{margin-top:4px;font-size:15px;font-weight:900;letter-spacing:.35em;color:#3a0306}
-.theme{position:absolute;left:30px;right:30px;top:214px;text-align:center;z-index:3}
-.theme img{width:520px;height:auto;filter:drop-shadow(0 6px 10px rgba(0,0,0,.45))}
+.seal{position:absolute;right:30px;top:26px;z-index:6;transform:rotate(-14deg);
+  filter:drop-shadow(0 6px 10px rgba(0,0,0,.35))}
+.seal .arc{font-family:"Arial Black","Segoe UI Black",Arial,sans-serif;font-weight:900;font-size:17px;fill:#111;letter-spacing:.5px}
+.seal .num{font-family:"Arial Black","Segoe UI Black",Arial,sans-serif;font-weight:900;font-style:italic;font-size:74px;
+  fill:var(--lego-red);letter-spacing:-4px}
+.theme{position:absolute;left:0;right:0;top:206px;text-align:center;z-index:5}
+.theme img{width:430px;height:auto;filter:drop-shadow(0 5px 8px rgba(0,0,0,.4))}
 .stage{position:absolute;left:0;right:0;top:0;bottom:96px;overflow:hidden;z-index:4}
 .band{position:absolute;left:0;right:0;bottom:0;height:96px;background:linear-gradient(180deg,#151515,#050505);
   border-top:3px solid var(--lego-yellow);display:flex;align-items:center;justify-content:space-between;padding:0 30px;z-index:50}
@@ -35,30 +36,40 @@ body{font-family:"Segoe UI","Helvetica Neue",Arial,system-ui,sans-serif}
 <body><div class="card">
 <div class="sky"></div>
 <div class="meta"><div class="lab">Ages</div><div class="age">5+</div><div class="rule"></div><div class="num">71019</div></div>
-<div class="count"><div class="huge">20</div><div class="lab">TO COLLECT</div></div>
-<div class="theme"><img src="../assets/logos/ninjago-movie-cut.png" alt="The LEGO Ninjago Movie"></div>
+<svg class="seal" width="150" height="150" viewBox="0 0 160 160" aria-label="Limited edition, 20 to collect">
+<defs>
+<path id="sealTop" d="M 22,80 A 58,58 0 0 1 138,80"/>
+<path id="sealBot" d="M 14,80 A 66,66 0 0 0 146,80"/>
+</defs>
+<circle cx="80" cy="80" r="77" fill="#fff"/>
+<text class="arc"><textPath href="#sealTop" startOffset="50%" text-anchor="middle">LIMITED EDITION</textPath></text>
+<text class="arc"><textPath href="#sealBot" startOffset="50%" text-anchor="middle">TO COLLECT</textPath></text>
+<circle cx="24" cy="104" r="4" fill="var(--lego-red)"/><circle cx="136" cy="104" r="4" fill="var(--lego-red)"/>
+<text class="num" x="78" y="107" text-anchor="middle">20</text>
+</svg>
+<div class="theme"><img src="../assets/logos/ninjago-movie.png" alt="LEGO The Ninjago Movie"></div>
 <div class="stage">
-<img class="fig" src="../assets/figs/71019-15.webp" alt="" style="left:19px;bottom:175px;height:150px;z-index:2;filter:brightness(0.7) drop-shadow(0 6px 8px rgba(0,0,0,.35))">
-<img class="fig" src="../assets/figs/71019-12.webp" alt="" style="left:75px;bottom:181px;height:150px;z-index:5;filter:brightness(0.7) drop-shadow(0 6px 8px rgba(0,0,0,.35))">
-<img class="fig" src="../assets/figs/71019-16.webp" alt="" style="left:169px;bottom:171px;height:150px;z-index:8;filter:brightness(0.7) drop-shadow(0 6px 8px rgba(0,0,0,.35))">
-<img class="fig" src="../assets/figs/71019-9.webp" alt="" style="left:244px;bottom:183px;height:150px;z-index:11;filter:brightness(0.7) drop-shadow(0 6px 8px rgba(0,0,0,.35))">
-<img class="fig" src="../assets/figs/71019-13.webp" alt="" style="left:319px;bottom:173px;height:150px;z-index:10;filter:brightness(0.7) drop-shadow(0 6px 8px rgba(0,0,0,.35))">
-<img class="fig" src="../assets/figs/71019-17.webp" alt="" style="left:393px;bottom:180px;height:150px;z-index:9;filter:brightness(0.7) drop-shadow(0 6px 8px rgba(0,0,0,.35))">
-<img class="fig" src="../assets/figs/71019-14.webp" alt="" style="left:449px;bottom:169px;height:150px;z-index:8;filter:brightness(0.7) drop-shadow(0 6px 8px rgba(0,0,0,.35))">
-<img class="fig" src="../assets/figs/71019-11.webp" alt="" style="left:10px;bottom:90px;height:185px;z-index:16;filter:brightness(0.86) drop-shadow(0 6px 8px rgba(0,0,0,.35))">
-<img class="fig" src="../assets/figs/71019-18.webp" alt="" style="left:84px;bottom:96px;height:185px;z-index:19;filter:brightness(0.86) drop-shadow(0 6px 8px rgba(0,0,0,.35))">
-<img class="fig" src="../assets/figs/71019-5.webp" alt="" style="left:157px;bottom:86px;height:185px;z-index:22;filter:brightness(0.86) drop-shadow(0 6px 8px rgba(0,0,0,.35))">
-<img class="fig" src="../assets/figs/71019-19.webp" alt="" style="left:208px;bottom:98px;height:185px;z-index:25;filter:brightness(0.86) drop-shadow(0 6px 8px rgba(0,0,0,.35))">
-<img class="fig" src="../assets/figs/71019-4.webp" alt="" style="left:281px;bottom:88px;height:185px;z-index:24;filter:brightness(0.86) drop-shadow(0 6px 8px rgba(0,0,0,.35))">
-<img class="fig" src="../assets/figs/71019-20.webp" alt="" style="left:378px;bottom:95px;height:185px;z-index:23;filter:brightness(0.86) drop-shadow(0 6px 8px rgba(0,0,0,.35))">
-<img class="fig" src="../assets/figs/71019-7.webp" alt="" style="left:451px;bottom:84px;height:185px;z-index:22;filter:brightness(0.86) drop-shadow(0 6px 8px rgba(0,0,0,.35))">
-<img class="fig" src="../assets/figs/71019-1.webp" alt="" style="left:-4px;bottom:-14px;height:230px;z-index:30;filter:brightness(1.0) drop-shadow(0 6px 8px rgba(0,0,0,.35))">
-<img class="fig" src="../assets/figs/71019-6.webp" alt="" style="left:100px;bottom:-8px;height:230px;z-index:33;filter:brightness(1.0) drop-shadow(0 6px 8px rgba(0,0,0,.35))">
-<img class="fig" src="../assets/figs/71019-8.webp" alt="" style="left:147px;bottom:-18px;height:230px;z-index:36;filter:brightness(1.0) drop-shadow(0 6px 8px rgba(0,0,0,.35))">
-<img class="fig" src="../assets/figs/71019-3.webp" alt="" style="left:223px;bottom:-6px;height:230px;z-index:37;filter:brightness(1.0) drop-shadow(0 6px 8px rgba(0,0,0,.35))">
-<img class="fig" src="../assets/figs/71019-10.webp" alt="" style="left:327px;bottom:-16px;height:230px;z-index:36;filter:brightness(1.0) drop-shadow(0 6px 8px rgba(0,0,0,.35))">
-<img class="fig" src="../assets/figs/71019-2.webp" alt="" style="left:403px;bottom:-9px;height:230px;z-index:35;filter:brightness(1.0) drop-shadow(0 6px 8px rgba(0,0,0,.35))">
+<img class="fig" src="../assets/figs/71019-15.webp" alt="" style="left:20px;bottom:232px;height:160px;z-index:2;filter:brightness(0.7) drop-shadow(0 6px 8px rgba(0,0,0,.35))">
+<img class="fig" src="../assets/figs/71019-12.webp" alt="" style="left:73px;bottom:238px;height:160px;z-index:5;filter:brightness(0.7) drop-shadow(0 6px 8px rgba(0,0,0,.35))">
+<img class="fig" src="../assets/figs/71019-16.webp" alt="" style="left:167px;bottom:228px;height:160px;z-index:8;filter:brightness(0.7) drop-shadow(0 6px 8px rgba(0,0,0,.35))">
+<img class="fig" src="../assets/figs/71019-9.webp" alt="" style="left:240px;bottom:240px;height:160px;z-index:11;filter:brightness(0.7) drop-shadow(0 6px 8px rgba(0,0,0,.35))">
+<img class="fig" src="../assets/figs/71019-13.webp" alt="" style="left:313px;bottom:230px;height:160px;z-index:10;filter:brightness(0.7) drop-shadow(0 6px 8px rgba(0,0,0,.35))">
+<img class="fig" src="../assets/figs/71019-17.webp" alt="" style="left:387px;bottom:237px;height:160px;z-index:9;filter:brightness(0.7) drop-shadow(0 6px 8px rgba(0,0,0,.35))">
+<img class="fig" src="../assets/figs/71019-14.webp" alt="" style="left:440px;bottom:226px;height:160px;z-index:8;filter:brightness(0.7) drop-shadow(0 6px 8px rgba(0,0,0,.35))">
+<img class="fig" src="../assets/figs/71019-11.webp" alt="" style="left:10px;bottom:128px;height:200px;z-index:16;filter:brightness(0.86) drop-shadow(0 6px 8px rgba(0,0,0,.35))">
+<img class="fig" src="../assets/figs/71019-18.webp" alt="" style="left:82px;bottom:134px;height:200px;z-index:19;filter:brightness(0.86) drop-shadow(0 6px 8px rgba(0,0,0,.35))">
+<img class="fig" src="../assets/figs/71019-5.webp" alt="" style="left:153px;bottom:124px;height:200px;z-index:22;filter:brightness(0.86) drop-shadow(0 6px 8px rgba(0,0,0,.35))">
+<img class="fig" src="../assets/figs/71019-19.webp" alt="" style="left:200px;bottom:136px;height:200px;z-index:25;filter:brightness(0.86) drop-shadow(0 6px 8px rgba(0,0,0,.35))">
+<img class="fig" src="../assets/figs/71019-4.webp" alt="" style="left:272px;bottom:126px;height:200px;z-index:24;filter:brightness(0.86) drop-shadow(0 6px 8px rgba(0,0,0,.35))">
+<img class="fig" src="../assets/figs/71019-20.webp" alt="" style="left:368px;bottom:133px;height:200px;z-index:23;filter:brightness(0.86) drop-shadow(0 6px 8px rgba(0,0,0,.35))">
+<img class="fig" src="../assets/figs/71019-7.webp" alt="" style="left:440px;bottom:122px;height:200px;z-index:22;filter:brightness(0.86) drop-shadow(0 6px 8px rgba(0,0,0,.35))">
+<img class="fig" src="../assets/figs/71019-1.webp" alt="" style="left:-6px;bottom:-10px;height:250px;z-index:30;filter:brightness(1.0) drop-shadow(0 6px 8px rgba(0,0,0,.35))">
+<img class="fig" src="../assets/figs/71019-6.webp" alt="" style="left:98px;bottom:-4px;height:250px;z-index:33;filter:brightness(1.0) drop-shadow(0 6px 8px rgba(0,0,0,.35))">
+<img class="fig" src="../assets/figs/71019-8.webp" alt="" style="left:139px;bottom:-14px;height:250px;z-index:36;filter:brightness(1.0) drop-shadow(0 6px 8px rgba(0,0,0,.35))">
+<img class="fig" src="../assets/figs/71019-3.webp" alt="" style="left:211px;bottom:-2px;height:250px;z-index:37;filter:brightness(1.0) drop-shadow(0 6px 8px rgba(0,0,0,.35))">
+<img class="fig" src="../assets/figs/71019-10.webp" alt="" style="left:315px;bottom:-12px;height:250px;z-index:36;filter:brightness(1.0) drop-shadow(0 6px 8px rgba(0,0,0,.35))">
+<img class="fig" src="../assets/figs/71019-2.webp" alt="" style="left:387px;bottom:-5px;height:250px;z-index:35;filter:brightness(1.0) drop-shadow(0 6px 8px rgba(0,0,0,.35))">
 </div>
-<div class="band"><img class="lockup" src="../assets/logos/lego-minifigures-lockup.png" alt="LEGO Minifigures" style="width:260px">
+<div class="band"><img class="lockup" src="../assets/logos/lego-minifigures-lockup.png" alt="LEGO Minifigures" style="width:250px">
 <div class="tag">SERIES <span>71019</span><br>1 MINIFIGURE PER BAG</div></div>
 </div></body></html>

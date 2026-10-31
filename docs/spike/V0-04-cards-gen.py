@@ -186,12 +186,30 @@ v3_body = f"""<div class="card">
 <div class="count"><b>20</b><small>TO COLLECT</small></div></div>
 </div>"""
 
-# ---------- V4: V1 bag-front layout + V2 big outlined count, official theme logo ----------
-# Owner 2026-10-31: keep V1 layout, add V2 outlined "N to collect", main characters in front,
-# no figure cut at the card edge, real series logo (mockups/assets/logos/SOURCES.md).
+# ---------- V4: V1 bag-front layout + bag-style count badge, official theme logo ----------
+# Owner 2026-10-31: keep V1 layout, main characters in front, no figure cut at the card edge,
+# real series logo, count badge styled like the "LIMITED EDITION / 20 / TO COLLECT" seal on the bag
+# (reference: originals/71019/71019-0.jpg, top right). Logos: mockups/assets/logos/SOURCES.md.
 V4_BACK = [15, 12, 16, 9, 13, 17, 14]
 V4_MID = [11, 18, 5, 19, 4, 20, 7]
 V4_FRONT = [1, 6, 8, 3, 10, 2]  # Kai, Jay, Cole, Lloyd (centre, on top), Zane, Nya
+
+
+def seal(count, size=150):
+    """Round white seal: arc text top and bottom, big red italic count in the middle."""
+    return f"""<svg class="seal" width="{size}" height="{size}" viewBox="0 0 160 160" aria-label="Limited edition, {count} to collect">
+<defs>
+<path id="sealTop" d="M 22,80 A 58,58 0 0 1 138,80"/>
+<path id="sealBot" d="M 14,80 A 66,66 0 0 0 146,80"/>
+</defs>
+<circle cx="80" cy="80" r="77" fill="#fff"/>
+<text class="arc"><textPath href="#sealTop" startOffset="50%" text-anchor="middle">LIMITED EDITION</textPath></text>
+<text class="arc"><textPath href="#sealBot" startOffset="50%" text-anchor="middle">TO COLLECT</textPath></text>
+<circle cx="24" cy="104" r="4" fill="var(--lego-red)"/><circle cx="136" cy="104" r="4" fill="var(--lego-red)"/>
+<text class="num" x="78" y="107" text-anchor="middle">{count}</text>
+</svg>"""
+
+
 v4_css = """
 .card{background:
   radial-gradient(120% 60% at 70% 18%, #f6d7b0 0%, #c99a7a 30%, #6b4b4a 62%, #1d1416 100%)}
@@ -203,12 +221,13 @@ v4_css = """
 .meta .age{font-size:52px;font-weight:900;letter-spacing:-.02em;margin-top:2px}
 .meta .rule{width:118px;height:2px;background:#111;margin:6px 0 6px}
 .meta .num{font-size:26px;font-weight:800;letter-spacing:.02em}
-.count{position:absolute;right:26px;top:6px;text-align:center;z-index:2}
-.count .huge{font-size:230px;font-weight:900;line-height:.82;letter-spacing:-.06em;color:transparent;
-  -webkit-text-stroke:4px #9e0f12;text-shadow:0 0 0 transparent}
-.count .lab{margin-top:4px;font-size:15px;font-weight:900;letter-spacing:.35em;color:#3a0306}
-.theme{position:absolute;left:30px;right:30px;top:214px;text-align:center;z-index:3}
-.theme img{width:520px;height:auto;filter:drop-shadow(0 6px 10px rgba(0,0,0,.45))}
+.seal{position:absolute;right:30px;top:26px;z-index:6;transform:rotate(-14deg);
+  filter:drop-shadow(0 6px 10px rgba(0,0,0,.35))}
+.seal .arc{font-family:"Arial Black","Segoe UI Black",Arial,sans-serif;font-weight:900;font-size:17px;fill:#111;letter-spacing:.5px}
+.seal .num{font-family:"Arial Black","Segoe UI Black",Arial,sans-serif;font-weight:900;font-style:italic;font-size:74px;
+  fill:var(--lego-red);letter-spacing:-4px}
+.theme{position:absolute;left:0;right:0;top:206px;text-align:center;z-index:5}
+.theme img{width:430px;height:auto;filter:drop-shadow(0 5px 8px rgba(0,0,0,.4))}
 .stage{position:absolute;left:0;right:0;top:0;bottom:96px;overflow:hidden;z-index:4}
 .band{position:absolute;left:0;right:0;bottom:0;height:96px;background:linear-gradient(180deg,#151515,#050505);
   border-top:3px solid var(--lego-yellow);display:flex;align-items:center;justify-content:space-between;padding:0 30px;z-index:50}
@@ -218,12 +237,12 @@ v4_css = """
 v4_body = f"""<div class="card">
 <div class="sky"></div>
 <div class="meta"><div class="lab">Ages</div><div class="age">5+</div><div class="rule"></div><div class="num">71019</div></div>
-<div class="count"><div class="huge">20</div><div class="lab">TO COLLECT</div></div>
-<div class="theme"><img src="../assets/logos/ninjago-movie-cut.png" alt="The LEGO Ninjago Movie"></div>
+{seal(20)}
+<div class="theme"><img src="../assets/logos/ninjago-movie.png" alt="LEGO The Ninjago Movie"></div>
 <div class="stage">
-{crowd([(V4_BACK, 150, 175, 0.70), (V4_MID, 185, 90, 0.86), (V4_FRONT, 230, -14, 1.0)], fit=(10, 590), center_top=True)}
+{crowd([(V4_BACK, 160, 232, 0.70), (V4_MID, 200, 128, 0.86), (V4_FRONT, 250, -10, 1.0)], fit=(10, 590), center_top=True)}
 </div>
-<div class="band"><img class="lockup" src="../assets/logos/lego-minifigures-lockup.png" alt="LEGO Minifigures" style="width:260px">
+<div class="band"><img class="lockup" src="../assets/logos/lego-minifigures-lockup.png" alt="LEGO Minifigures" style="width:250px">
 <div class="tag">SERIES <span>71019</span><br>1 MINIFIGURE PER BAG</div></div>
 </div>"""
 

@@ -36,3 +36,4 @@
 - 2026-10-31 — Open data gap: age mark (5+/6+) is not in the Rebrickable catalog; needs a per-series table (source: bag image) in V1-02.
 - 2026-10-31 — Owner card pick: mix of V1 (bag-front layout) + V2 (big "N to collect" count); official theme logo required per series.
 - 2026-10-31 — Theme logos sourced from Google Images (owner direction) as official logo PNGs, background cut by border flood fill; source URL logged per file in mockups/assets/logos/SOURCES.md.
+- 2026-10-31 — Owner: flat-background logos keyed out look dirty; use only logo files with real transparency (Google Images transparent+large filter). Count badge on cards copies the bag seal style (white disc, arc text, red italic number).
