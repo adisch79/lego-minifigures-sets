@@ -205,8 +205,8 @@ def seal(count, size=150):
 <circle cx="80" cy="80" r="77" fill="#fff"/>
 <text class="arc"><textPath href="#sealTop" startOffset="50%" text-anchor="middle">LIMITED EDITION</textPath></text>
 <text class="arc"><textPath href="#sealBot" startOffset="50%" text-anchor="middle">TO COLLECT</textPath></text>
-<circle cx="24" cy="104" r="4" fill="var(--lego-red)"/><circle cx="136" cy="104" r="4" fill="var(--lego-red)"/>
-<text class="num" x="78" y="107" text-anchor="middle">{count}</text>
+<circle cx="15" cy="101" r="4" fill="var(--lego-red)"/><circle cx="145" cy="101" r="4" fill="var(--lego-red)"/>
+<text class="num" x="72" y="107" text-anchor="middle">{count}</text>
 </svg>"""
 
 
