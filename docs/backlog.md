@@ -62,11 +62,16 @@ Items reconstructed from commit 3b525d1 and decisions.md (owner to confirm wordi
 | ID | Title | Goal | Acceptance criteria | Size | Model | Flags | Status |
 |---|---|---|---|---|---|---|---|
 | E7-01 | Robust download + processing | One bad file never breaks or poisons a run | CSV 404 raises clear error; CSV/image/WebP writes atomic (tmp + `os.replace`); downloaded image verified with PIL; per-file errors in download + process caught, logged, run continues; `import urllib.error`; 429 honours Retry-After; `suffix()` tolerates non-numeric; tests for each | M | sonnet | | Done |
-| E7-02 | Input validation (security S1/S2) | Untrusted CSV can't write outside repo or fetch other hosts | Only `https://cdn.rebrickable.com` URLs fetched; read size capped (20 MB image, 100 MB CSV); `set_num` must match `[A-Za-z0-9]+-\d+`; ext allowlist; tests | S | sonnet | | Ready |
-| E7-03 | Supply-chain pins (security S3/S4) | Reproducible, tamper-resistant builds | requirements.txt exact versions; workflow actions pinned to commit SHA | S | sonnet | | Ready |
+| E7-02 | Input validation (security S1/S2) | Untrusted CSV can't write outside repo or fetch other hosts | Only `https://cdn.rebrickable.com` URLs fetched; read size capped (20 MB image, 100 MB CSV); `set_num` must match `[A-Za-z0-9]+-\d+`; ext allowlist; tests | S | sonnet | | Done |
+| E7-03 | Supply-chain pins (security S3/S4) | Reproducible, tamper-resistant builds | requirements.txt exact versions; workflow actions pinned to commit SHA | S | sonnet | | Done |
 | E7-04 | Site robustness + a11y | Site correct on edge data, usable by keyboard | null year hidden; empty cover guarded; reduced-motion respected; ←/→ ignores modifier keys; off-screen slides `inert`; `aria-current` on thumb; `:focus-visible` styles; favicon (no console 404); resize re-aligns viewer | M | sonnet | | Ready |
 | E7-05 | Catalog logic edge cases | Correct bag/series picking | Deterministic series-id tie break; bag/group classification tests | S | sonnet | | Ready |
 | E7-06 | Repo hygiene decision | Owner decides | `originals/` kept; site public (see decisions) | S | — | | Done |
+
+### E8 Photo quality
+| ID | Title | Goal | Acceptance criteria | Size | Model | Flags | Status |
+|---|---|---|---|---|---|---|---|
+| E8-01 | Real minifig photos, no cut-outs | Figures look like the real minifig, group shot intact | Figure image = Rebrickable minifig photo (`.fig.jpg` original), set image as fallback; `src` recorded in data.json; no background removal (trim + pad 3:4, group resize only); `--rebuild` flag; rounded photo cards on site | M | sonnet | UI (owner-requested, minimal CSS) | Done |
 
 E4-02 also gets: 160 px thumbnails, hero `fetchpriority=high` + width/height.
 
