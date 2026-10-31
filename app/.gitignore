@@ -22,3 +22,6 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Copied from ../site/img by scripts/copy-images.mjs
+public/img

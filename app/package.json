@@ -4,7 +4,10 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
+    "copy-images": "node scripts/copy-images.mjs",
+    "predev": "npm run copy-images",
     "dev": "vite",
+    "prebuild": "npm run copy-images",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "test": "vitest run",
