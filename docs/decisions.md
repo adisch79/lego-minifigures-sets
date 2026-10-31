@@ -27,3 +27,7 @@
 - 2026-10-31 — Stack default: Vite + React + TS static on GitHub Pages; Supabase free tier (magic-link auth, Postgres RLS, Edge Function for Telegram); prices by scheduled GitHub Action. Reason: no own server, free, keeps Pages hosting.
 - 2026-10-31 — Image transparency: test a non-ML edge flood fill and CSS multiply on a light background (V0-01) before choosing; u2net rejected in v1.
 - 2026-10-31 — V0-01 result: image source = BrickLink catalog images (`img.bricklink.com/ItemImage/SN/0/<cmf-id>-<n>.png`, e.g. coltlnm-1). Owner's example file is byte-identical to that image. Real figure + accessories on pure white; border flood fill (no ML) gives clean transparency on 20/20 figures of 71019 + bag. Rebrickable fig photos rejected: 8/20 grey gradient backgrounds, no accessories. Download once, ≤1 req / 2 s. Figure order/name mapping BrickLink ↔ Rebrickable handled in V1-02.
+- 2026-10-31 — Backlog v2 approved by owner.
+- 2026-10-31 — Figure numbering: BrickLink `coltlnm-N` = Rebrickable `71019-N` (spot check N=2, 11, 20 by BrickLink page title). Names/numbers from Rebrickable; images from BrickLink.
+- 2026-10-31 — Palette: lego.com returns 403 to automated fetch; colours sampled from the LEGO logo on the 71019 bag image: red #DF0012, yellow #FDE01B.
+- 2026-10-31 — V0-02 directions: A Toy Shelf (white + yellow band, shelves, baseplate), B Collector Leaflet (yellow page, brick cards, big numbers), C Unboxing (white editorial, colour glow, red badges). Mockups in mockups/a|b|c, shared assets mockups/assets.

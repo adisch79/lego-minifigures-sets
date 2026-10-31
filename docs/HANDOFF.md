@@ -7,10 +7,11 @@
 - Live v1 site (unchanged): https://adisch79.github.io/lego-minifigures-sets/
 - Branch: `feature/V0-00-refactor-plan` (from `dev`), plan + spike only, no app code yet.
 
+- Backlog approved. **V0-02 done**: 3 directions in `mockups/a` (Toy Shelf), `mockups/b` (Collector Leaflet), `mockups/c` (Unboxing); screenshots in `mockups/<x>/shots/`. Shared assets `mockups/assets` (6 bags + 20 BrickLink figure cut-outs of 71019).
+
 ## Next step
-1. Owner approves the v2 backlog.
-2. V0-02: 3 design directions on ONE real example (home with 6 series + series 71019 page), lego.com palette, BrickLink cut-outs. Built by `senior-frontend-dev`; screenshots desktop + 375 px.
-3. V0-03: owner picks a direction, then MVP 1 (V1-01 scaffold).
+1. V0-03: owner picks a direction (A, B, C or a mix), logged in decisions.md.
+2. MVP 1: V1-01 scaffold (Vite/React/TS in `app/`), then V1-02 catalog contract with BrickLink image ids.
 
 ## Owner-needed later (MVP 2)
 - Free Supabase account (project for auth + database).

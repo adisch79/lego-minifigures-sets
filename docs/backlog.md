@@ -33,7 +33,7 @@ Legend: **UI** = needs approved direction first. **Owner** = needs something onl
 | ID | Title | Acceptance criteria | Size | Model | Flags | Status |
 |---|---|---|---|---|---|---|
 | V0-01 | Image spike: transparent bag + figures | 71019 bag: white background removed, artwork intact, edges clean. 20 figures: background removed with an edge flood-fill (no ML) vs CSS `multiply` on a light background; side-by-side sheet for owner; choice logged | S | sonnet | | Done (docs/spike/) |
-| V0-02 | 3 design directions, one real example | Each direction = home (6 real series tiles, sort + search bar) + series 71019 page (20 real figures, name + number, owned/wanted controls as static UI). lego.com palette. Screenshots desktop + 375 px | M | opus → senior-frontend-dev | UI | Ready |
+| V0-02 | 3 design directions, one real example | Each direction = home (6 real series tiles, sort + search bar) + series 71019 page (20 real figures, name + number, owned/wanted controls as static UI). lego.com palette. Screenshots desktop + 375 px | M | opus → senior-frontend-dev | UI | Done (mockups/a,b,c) |
 | V0-03 | Owner picks direction | Choice + notes in decisions.md | S | — | Owner | Ready |
 
 ## MVP 1 — New site, read-only catalog, all series · demo: live Pages URL

@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>71019 The LEGO Ninjago Movie - Minifig Vault</title>
+<link rel="stylesheet" href="shelf.css">
+</head>
+<body>
+<header class="band">
+  <div class="wrap">
+    <div class="top">
+      <a class="logo" href="index.html" aria-label="Minifig Vault home">
+        <span class="logo-brick" aria-hidden="true"></span>
+        <span class="logo-text">Minifig Vault<small>Collectible Minifigures</small></span>
+      </a>
+      <a class="back" href="index.html">All series</a>
+    </div>
+    <div class="series-head">
+      <img id="bag" src="" alt="">
+      <div>
+        <span class="tile-label" id="tag"></span>
+        <h1 id="title"></h1>
+        <div class="head-row">
+          <div class="progress-box">
+            <div class="prog-row"><span>Owned</span><b id="own-txt"></b></div>
+            <div class="progress" role="progressbar" aria-label="Owned figures" aria-valuemin="0" id="bar"><i></i></div>
+          </div>
+          <button class="btn" type="button" id="want-all" aria-pressed="false">
+            <svg class="heart" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.5s-7.5-4.6-9.3-9.2C1.4 7.9 3.6 4.5 7 4.5c2 0 3.6 1.1 5 3 1.4-1.9 3-3 5-3 3.4 0 5.6 3.4 4.3 6.8-1.8 4.6-9.3 9.2-9.3 9.2z"/></svg>
+            <span>Want whole series</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="section-title" style="margin-top:6px">
+    <h2>The line-up</h2>
+    <span class="legend" id="legend"></span>
+  </div>
+  <div class="baseplate"><div class="fig-grid" id="figs"></div></div>
+</main>
+
+<footer><div class="wrap">Mockup A "Toy Shelf". Images: BrickLink catalog. Data: Rebrickable. LEGO is a trademark of the LEGO Group.</div></footer>
+
+<script src="../assets/data.js"></script>
+<script>
+(function () {
+  "use strict";
+  var d = window.MOCK.detail;
+  var bagEntry = window.MOCK.series.filter(function (s) { return s.id === d.id; })[0];
+  // Mock collection state (visual only): figure numbers owned and wanted.
+  var owned = { 1: 1, 3: 1, 4: 1, 6: 1, 9: 1, 11: 1, 14: 1, 17: 1, 20: 1 };
+  var wanted = { 2: 1, 5: 1, 12: 1 };
+
+  var CHECK = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  var PLUS = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round"/></svg>';
+  var HEART = '<svg class="heart" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.5s-7.5-4.6-9.3-9.2C1.4 7.9 3.6 4.5 7 4.5c2 0 3.6 1.1 5 3 1.4-1.9 3-3 5-3 3.4 0 5.6 3.4 4.3 6.8-1.8 4.6-9.3 9.2-9.3 9.2z"/></svg>';
+
+  function esc(s) {
+    return String(s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; });
+  }
+
+  var bag = document.getElementById("bag");
+  if (bagEntry) { bag.src = "../" + bagEntry.bag; bag.alt = d.name + " blind bag"; }
+  document.getElementById("tag").innerHTML = '<span class="y">#' + esc(d.id) + '</span> ' + d.year + ' &middot; ' + d.figures.length + ' figures';
+  document.getElementById("title").textContent = d.name;
+
+  var grid = document.getElementById("figs");
+  grid.innerHTML = d.figures.map(function (f) {
+    var o = !!owned[f.no], w = !!wanted[f.no];
+    return '<article class="fig' + (o ? ' is-owned' : '') + '" data-no="' + f.no + '">' +
+      '<div class="fig-img"><img src="../' + esc(f.img) + '" alt="' + esc(f.name) + '"></div>' +
+      '<div class="fig-label"><span class="fig-no">' + f.no + '</span><span class="fig-name">' + esc(f.name) + '</span></div>' +
+      '<div class="fig-toggles">' +
+        '<button type="button" class="chip own" aria-pressed="' + o + '" aria-label="Owned: ' + esc(f.name) + '">' + CHECK + 'Owned</button>' +
+        '<button type="button" class="chip wish" aria-pressed="' + w + '" aria-label="Wanted: ' + esc(f.name) + '">' + HEART + 'Wanted</button>' +
+      '</div>' +
+    '</article>';
+  }).join("");
+
+  function update() {
+    var n = grid.querySelectorAll('.chip.own[aria-pressed="true"]').length;
+    var wn = grid.querySelectorAll('.chip.wish[aria-pressed="true"]').length;
+    var total = d.figures.length;
+    document.getElementById("own-txt").textContent = n + "/" + total;
+    var bar = document.getElementById("bar");
+    bar.setAttribute("aria-valuemax", total);
+    bar.setAttribute("aria-valuenow", n);
+    bar.firstElementChild.style.width = (n / total * 100) + "%";
+    document.getElementById("legend").textContent = n + " owned, " + wn + " wanted, " + (total - n) + " to go";
+  }
+
+  grid.addEventListener("click", function (e) {
+    var b = e.target.closest(".chip");
+    if (!b) return;
+    var on = b.getAttribute("aria-pressed") !== "true";
+    b.setAttribute("aria-pressed", String(on));
+    if (b.classList.contains("own")) b.closest(".fig").classList.toggle("is-owned", on);
+    update();
+  });
+
+  var wantAll = document.getElementById("want-all");
+  wantAll.addEventListener("click", function () {
+    var on = wantAll.getAttribute("aria-pressed") !== "true";
+    wantAll.setAttribute("aria-pressed", String(on));
+    wantAll.querySelector("span").textContent = on ? "Whole series wanted" : "Want whole series";
+  });
+
+  update();
+})();
+</script>
+</body>
+</html>
