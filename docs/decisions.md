@@ -19,3 +19,11 @@
 - 2026-10-31 — u2net model downloaded by rembg from github.com release assets and hash-checked (md5 via pooch) by rembg itself; no extra check in our code.
 - 2026-10-31 — Figure image = Rebrickable minifig photo (real, straight pose); set promo render only as fallback. Owner: posed renders unwanted.
 - 2026-10-31 — No background removal (u2net erased figures in group shots); photos shown as-is in rounded cards. Supersedes 2026-10-30 rembg decision. rembg/onnxruntime removed from requirements.
+- 2026-10-31 — v2 refactor: collector app (owned/wanted, alerts, prices). Backlog v1 archived to docs/archive/backlog-v1.md.
+- 2026-10-31 — Users: invite-only (allowlist). Owner choice.
+- 2026-10-31 — Admin alerts on "wanted": Telegram bot. Owner choice.
+- 2026-10-31 — Prices: later MVP (MVP 3), no API keys, moderate scraping. Owner choice.
+- 2026-10-31 — UI English first, Hebrew toggle later; prices in original currency + ILS. Owner choice.
+- 2026-10-31 — Stack default: Vite + React + TS static on GitHub Pages; Supabase free tier (magic-link auth, Postgres RLS, Edge Function for Telegram); prices by scheduled GitHub Action. Reason: no own server, free, keeps Pages hosting.
+- 2026-10-31 — Image transparency: test a non-ML edge flood fill and CSS multiply on a light background (V0-01) before choosing; u2net rejected in v1.
+- 2026-10-31 — V0-01 result: image source = BrickLink catalog images (`img.bricklink.com/ItemImage/SN/0/<cmf-id>-<n>.png`, e.g. coltlnm-1). Owner's example file is byte-identical to that image. Real figure + accessories on pure white; border flood fill (no ML) gives clean transparency on 20/20 figures of 71019 + bag. Rebrickable fig photos rejected: 8/20 grey gradient backgrounds, no accessories. Download once, ≤1 req / 2 s. Figure order/name mapping BrickLink ↔ Rebrickable handled in V1-02.
