@@ -6,42 +6,48 @@ window.MOCK = {
    "name": "Shrek",
    "year": 2026,
    "figureCount": 12,
-   "bag": "assets/bags/71053.webp"
+   "bag": "assets/bags/71053.webp",
+  "art": "assets/flat/71053.webp"
   },
   {
    "id": "71045",
    "name": "Series 25 Minifigures",
    "year": 2024,
    "figureCount": 12,
-   "bag": "assets/bags/71045.webp"
+   "bag": "assets/bags/71045.webp",
+  "art": "assets/flat/71045.webp"
   },
   {
    "id": "71038",
    "name": "Disney 100",
    "year": 2023,
    "figureCount": 18,
-   "bag": "assets/bags/71038.webp"
+   "bag": "assets/bags/71038.webp",
+  "art": "assets/flat/71038.webp"
   },
   {
    "id": "71031",
    "name": "Marvel Series 1",
    "year": 2021,
    "figureCount": 12,
-   "bag": "assets/bags/71031.webp"
+   "bag": "assets/bags/71031.webp",
+  "art": "assets/flat/71031.webp"
   },
   {
    "id": "71019",
    "name": "The LEGO Ninjago Movie",
    "year": 2017,
    "figureCount": 20,
-   "bag": "assets/bags/71019.webp"
+   "bag": "assets/bags/71019.webp",
+  "art": "assets/flat/71019.webp"
   },
   {
    "id": "8683",
    "name": "Series 1 Minifigures",
    "year": 2010,
    "figureCount": 16,
-   "bag": "assets/bags/8683.webp"
+   "bag": "assets/bags/8683.webp",
+  "art": "assets/flat/8683.webp"
   }
  ],
  "detail": {
