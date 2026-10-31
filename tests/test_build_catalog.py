@@ -185,7 +185,7 @@ class RealData(unittest.TestCase):
     def test_overrides_applied(self):
         self.assertEqual(self.by["71045"]["bricklinkCode"], "col25")
         self.assertEqual(self.by["71053"]["age"], "6+")
-        self.assertEqual(sum(s["bricklinkCode"] is not None for s in self.cat["series"]), 52)
+        self.assertEqual(sum(s["bricklinkCode"] is not None for s in self.cat["series"]), 51)  # 71049 F1 cars: BrickLink 71049-1 is the blind box, keep v1 images
 
     def test_bricklink_no_override(self):
         figs = {f["id"]: f for f in self.by["71001"]["figures"]}
