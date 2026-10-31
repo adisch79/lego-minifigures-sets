@@ -14,8 +14,9 @@
 - Owner rejected cropped flat art: series image must be a NEW composed card (decisions.md). **3 card variants for 71019** in `mockups/cards/` (v1 bag-front, v2 poster, v3 collector; side-by-side `compare.png`); generator `docs/spike/V0-04-cards-gen.py`; logos `mockups/assets/logos/` (Wikimedia, see SOURCES.md).
 
 ## Next step
-1. Owner picks card variant, then swap it into mockup D home and sign off D.
-(old) Owner signs off mockup D (or lists tweaks). Known: flat-art left edge clipped on 71053/71045, grey seal band on 71038, mobile search placeholder cut.
+1. **V0-05 card v4 = V1 + V2 mix** (owner 2026-10-31): V1 bag-front layout (age/set no top-left, LEGO logo, crowd, bottom strip) + V2 big outlined "N to collect" count (owner loves it). Edit `docs/spike/V0-04-cards-gen.py`, output `mockups/cards/v4.png`. Fix: figures cut at left edge; put main characters in front.
+2. **Official theme logo** per series (owner: all 3 cards showed a made-up Ninjago Movie logo). Lookups done: Wikimedia Commons has no Ninjago Movie logo; en.wikipedia only has the poster (`upload.wikimedia.org/wikipedia/en/9/9f/The_Lego_Ninjago_Movie.jpg`); ninjago.fandom.com returns 402 to fetch. Next tries: lego.fandom.com / brickipedia file search, Brickset theme images, logopedia (logos.fandom.com), or cut the logo out of the bag image (`originals/71019/71019-0.jpg`, logo at about x 380-1200, y 480-760) on a per-series crop table. Numbered "Series N" sets need only the Minifigures logo plus a series badge.
+3. Swap v4 into the mockup D home, owner signs off, then MVP 1 (V1-01 scaffold). Known: flat-art left edge clipped on 71053/71045, grey seal band on 71038, mobile search placeholder cut.
 2. MVP 1: V1-01 scaffold (Vite/React/TS in `app/`), then V1-02 catalog contract with BrickLink image ids.
 
 ## Owner-needed later (MVP 2)
