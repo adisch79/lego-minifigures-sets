@@ -9,8 +9,10 @@
 
 - Backlog approved. **V0-02 done**: 3 directions in `mockups/a` (Toy Shelf), `mockups/b` (Collector Leaflet), `mockups/c` (Unboxing); screenshots in `mockups/<x>/shots/`. Shared assets `mockups/assets` (6 bags + 20 BrickLink figure cut-outs of 71019).
 
+- Owner picked a mix (decisions.md 2026-10-31 V0-03); flat series artwork spike `docs/spike/V0-03-flatten.py`. **Combined mockup D** in `mockups/d` (shots in `mockups/d/shots/`), awaiting owner sign-off.
+
 ## Next step
-1. V0-03: owner picks a direction (A, B, C or a mix), logged in decisions.md.
+1. Owner signs off mockup D (or lists tweaks). Known: flat-art left edge clipped on 71053/71045, grey seal band on 71038, mobile search placeholder cut.
 2. MVP 1: V1-01 scaffold (Vite/React/TS in `app/`), then V1-02 catalog contract with BrickLink image ids.
 
 ## Owner-needed later (MVP 2)
