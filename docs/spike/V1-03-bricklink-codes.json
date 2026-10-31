@@ -1,0 +1,474 @@
+{
+ "requests": 105,
+ "series": {
+  "71053": {
+   "code": "colshr",
+   "maxNo": 12,
+   "status": {
+    "1": 200,
+    "12": 200
+   },
+   "verified": true
+  },
+  "71052": {
+   "code": "col29",
+   "maxNo": 12,
+   "status": {
+    "1": 200,
+    "12": 200
+   },
+   "verified": true
+  },
+  "71051": {
+   "code": "col28",
+   "maxNo": 12,
+   "status": {
+    "1": 200,
+    "12": 200
+   },
+   "verified": true
+  },
+  "71050": {
+   "code": "colsm",
+   "maxNo": 12,
+   "status": {
+    "1": 404,
+    "12": 404
+   },
+   "verified": false
+  },
+  "71049": {
+   "code": "colf1",
+   "maxNo": 12,
+   "status": {
+    "1": 404,
+    "12": 404
+   },
+   "verified": false
+  },
+  "71048": {
+   "code": "col27",
+   "maxNo": 12,
+   "status": {
+    "1": 200,
+    "12": 200
+   },
+   "verified": true
+  },
+  "71047": {
+   "code": "coldnd",
+   "maxNo": 12,
+   "status": {
+    "1": 200,
+    "12": 200
+   },
+   "verified": true
+  },
+  "71046": {
+   "code": "col26",
+   "maxNo": 12,
+   "status": {
+    "1": 200,
+    "12": 200
+   },
+   "verified": true
+  },
+  "71045": {
+   "code": "col25",
+   "maxNo": 12,
+   "status": {
+    "1": 200,
+    "12": 200
+   },
+   "verified": true
+  },
+  "71039": {
+   "code": "colmar2",
+   "maxNo": 12,
+   "status": {
+    "1": 200,
+    "12": 200
+   },
+   "verified": true
+  },
+  "71038": {
+   "code": "coldis100",
+   "maxNo": 18,
+   "status": {
+    "1": 200,
+    "18": 200
+   },
+   "verified": true
+  },
+  "71037": {
+   "code": "col24",
+   "maxNo": 12,
+   "status": {
+    "1": 200,
+    "12": 200
+   },
+   "verified": true
+  },
+  "71034": {
+   "code": "col23",
+   "maxNo": 12,
+   "status": {
+    "1": 200,
+    "12": 200
+   },
+   "verified": true
+  },
+  "71033": {
+   "code": "colmup",
+   "maxNo": 12,
+   "status": {
+    "1": 404,
+    "12": 404
+   },
+   "verified": false
+  },
+  "71032": {
+   "code": "col22",
+   "maxNo": 12,
+   "status": {
+    "1": 200,
+    "12": 200
+   },
+   "verified": true
+  },
+  "71031": {
+   "code": "colmar",
+   "maxNo": 12,
+   "status": {
+    "1": 200,
+    "12": 200
+   },
+   "verified": true
+  },
+  "71030": {
+   "code": "collt",
+   "maxNo": 12,
+   "status": {
+    "1": 200,
+    "12": 200
+   },
+   "verified": true
+  },
+  "71029": {
+   "code": "col21",
+   "maxNo": 12,
+   "status": {
+    "1": 200,
+    "12": 200
+   },
+   "verified": true
+  },
+  "71028": {
+   "code": "colhp2",
+   "maxNo": 16,
+   "status": {
+    "1": 200,
+    "16": 200
+   },
+   "verified": true
+  },
+  "71027": {
+   "code": "col20",
+   "maxNo": 16,
+   "status": {
+    "1": 200,
+    "16": 200
+   },
+   "verified": true
+  },
+  "71026": {
+   "code": "coldc",
+   "maxNo": 16,
+   "status": {
+    "1": 404,
+    "16": 404
+   },
+   "verified": false
+  },
+  "71025": {
+   "code": "col19",
+   "maxNo": 16,
+   "status": {
+    "1": 200,
+    "16": 200
+   },
+   "verified": true
+  },
+  "71024": {
+   "code": "coldis2",
+   "maxNo": 18,
+   "status": {
+    "1": 200,
+    "18": 200
+   },
+   "verified": true
+  },
+  "71023": {
+   "code": "coltlm2",
+   "maxNo": 20,
+   "status": {
+    "1": 200,
+    "20": 200
+   },
+   "verified": true
+  },
+  "71022": {
+   "code": "colhp",
+   "maxNo": 22,
+   "status": {
+    "1": 200,
+    "22": 200
+   },
+   "verified": true
+  },
+  "71021": {
+   "code": "col18",
+   "maxNo": 17,
+   "status": {
+    "1": 200,
+    "17": 200
+   },
+   "verified": true
+  },
+  "71020": {
+   "code": "coltlbm2",
+   "maxNo": 20,
+   "status": {
+    "1": 200,
+    "20": 200
+   },
+   "verified": true
+  },
+  "71019": {
+   "code": "coltlnm",
+   "maxNo": 20,
+   "status": {
+    "1": 200,
+    "20": 200
+   },
+   "verified": true
+  },
+  "71018": {
+   "code": "col17",
+   "maxNo": 16,
+   "status": {
+    "1": 200,
+    "16": 200
+   },
+   "verified": true
+  },
+  "71017": {
+   "code": "coltlbm",
+   "maxNo": 20,
+   "status": {
+    "1": 200,
+    "20": 200
+   },
+   "verified": true
+  },
+  "71014": {
+   "code": "coldfb",
+   "maxNo": 16,
+   "status": {
+    "1": 200,
+    "16": 200
+   },
+   "verified": true
+  },
+  "71013": {
+   "code": "col16",
+   "maxNo": 16,
+   "status": {
+    "1": 200,
+    "16": 200
+   },
+   "verified": true
+  },
+  "71012": {
+   "code": "coldis",
+   "maxNo": 18,
+   "status": {
+    "1": 200,
+    "18": 200
+   },
+   "verified": true
+  },
+  "71011": {
+   "code": "col15",
+   "maxNo": 16,
+   "status": {
+    "1": 200,
+    "16": 200
+   },
+   "verified": true
+  },
+  "71010": {
+   "code": "col14",
+   "maxNo": 16,
+   "status": {
+    "1": 200,
+    "16": 200
+   },
+   "verified": true
+  },
+  "71009": {
+   "code": "colsim2",
+   "maxNo": 16,
+   "status": {
+    "1": 200,
+    "16": 200
+   },
+   "verified": true
+  },
+  "71008": {
+   "code": "col13",
+   "maxNo": 16,
+   "status": {
+    "1": 200,
+    "16": 200
+   },
+   "verified": true
+  },
+  "71007": {
+   "code": "col12",
+   "maxNo": 16,
+   "status": {
+    "1": 200,
+    "16": 200
+   },
+   "verified": true
+  },
+  "71005": {
+   "code": "colsim",
+   "maxNo": 16,
+   "status": {
+    "1": 200,
+    "16": 200
+   },
+   "verified": true
+  },
+  "71004": {
+   "code": "coltlm",
+   "maxNo": 16,
+   "status": {
+    "1": 200,
+    "16": 200
+   },
+   "verified": true
+  },
+  "71002": {
+   "code": "col11",
+   "maxNo": 16,
+   "status": {
+    "1": 200,
+    "16": 200
+   },
+   "verified": true
+  },
+  "71001": {
+   "code": "col10",
+   "maxNo": 19,
+   "status": {
+    "1": 200,
+    "19": 404,
+    "17": 200
+   },
+   "verified": false
+  },
+  "71000": {
+   "code": "col09",
+   "maxNo": 16,
+   "status": {
+    "1": 200,
+    "16": 200
+   },
+   "verified": true
+  },
+  "8909": {
+   "code": "coltgb",
+   "maxNo": 9,
+   "status": {
+    "1": 200,
+    "9": 200
+   },
+   "verified": true
+  },
+  "8833": {
+   "code": "col08",
+   "maxNo": 16,
+   "status": {
+    "1": 200,
+    "16": 200
+   },
+   "verified": true
+  },
+  "8831": {
+   "code": "col07",
+   "maxNo": 16,
+   "status": {
+    "1": 200,
+    "16": 200
+   },
+   "verified": true
+  },
+  "8827": {
+   "code": "col06",
+   "maxNo": 16,
+   "status": {
+    "1": 200,
+    "16": 200
+   },
+   "verified": true
+  },
+  "8805": {
+   "code": "col05",
+   "maxNo": 16,
+   "status": {
+    "1": 200,
+    "16": 200
+   },
+   "verified": true
+  },
+  "8804": {
+   "code": "col04",
+   "maxNo": 16,
+   "status": {
+    "1": 200,
+    "16": 200
+   },
+   "verified": true
+  },
+  "8803": {
+   "code": "col03",
+   "maxNo": 16,
+   "status": {
+    "1": 200,
+    "16": 200
+   },
+   "verified": true
+  },
+  "8684": {
+   "code": "col02",
+   "maxNo": 16,
+   "status": {
+    "1": 200,
+    "16": 200
+   },
+   "verified": true
+  },
+  "8683": {
+   "code": "col01",
+   "maxNo": 16,
+   "status": {
+    "1": 200,
+    "16": 200
+   },
+   "verified": true
+  }
+ }
+}

@@ -185,7 +185,7 @@ class RealData(unittest.TestCase):
     def test_overrides_applied(self):
         self.assertEqual(self.by["71045"]["bricklinkCode"], "col25")
         self.assertEqual(self.by["71053"]["age"], "6+")
-        self.assertEqual(sum(s["bricklinkCode"] is not None for s in self.cat["series"]), 6)
+        self.assertEqual(sum(s["bricklinkCode"] is not None for s in self.cat["series"]), 47)
 
     def test_deterministic(self):
         with tempfile.TemporaryDirectory() as t:
