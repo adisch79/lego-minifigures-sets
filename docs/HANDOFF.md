@@ -25,7 +25,7 @@
 
 ## Owner-needed later (MVP 2)
 - Free Supabase account (project for auth + database).
-- Telegram bot token + chat id: already in a .env on PC and NAS (owner, 2026-10-31); read from env, never commit.
+- Telegram bot token + chat id: PC: repo-root `.env` (git-ignored; key names unverified, read blocked by deny rule); NAS copy too (owner, 2026-10-31); read from env, never commit.
 
 ## Open questions
 - BrickLink CMF codes for the other ~45 series still to map (6 done above); V1-02.
