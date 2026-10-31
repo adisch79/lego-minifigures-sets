@@ -7,7 +7,8 @@ window.MOCK = {
    "year": 2026,
    "figureCount": 12,
    "bag": "assets/bags/71053.webp",
-  "art": "assets/flat/71053.webp"
+  "art": "assets/flat/71053.webp",
+  "card": "cards/71053.png"
   },
   {
    "id": "71045",
@@ -15,7 +16,8 @@ window.MOCK = {
    "year": 2024,
    "figureCount": 12,
    "bag": "assets/bags/71045.webp",
-  "art": "assets/flat/71045.webp"
+  "art": "assets/flat/71045.webp",
+  "card": "cards/71045.png"
   },
   {
    "id": "71038",
@@ -23,7 +25,8 @@ window.MOCK = {
    "year": 2023,
    "figureCount": 18,
    "bag": "assets/bags/71038.webp",
-  "art": "assets/flat/71038.webp"
+  "art": "assets/flat/71038.webp",
+  "card": "cards/71038.png"
   },
   {
    "id": "71031",
@@ -31,7 +34,8 @@ window.MOCK = {
    "year": 2021,
    "figureCount": 12,
    "bag": "assets/bags/71031.webp",
-  "art": "assets/flat/71031.webp"
+  "art": "assets/flat/71031.webp",
+  "card": "cards/71031.png"
   },
   {
    "id": "71019",
@@ -39,7 +43,8 @@ window.MOCK = {
    "year": 2017,
    "figureCount": 20,
    "bag": "assets/bags/71019.webp",
-  "art": "assets/flat/71019.webp"
+  "art": "assets/flat/71019.webp",
+  "card": "cards/71019.png"
   },
   {
    "id": "8683",
@@ -47,7 +52,8 @@ window.MOCK = {
    "year": 2010,
    "figureCount": 16,
    "bag": "assets/bags/8683.webp",
-  "art": "assets/flat/8683.webp"
+  "art": "assets/flat/8683.webp",
+  "card": "cards/8683.png"
   }
  ],
  "detail": {

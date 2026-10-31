@@ -73,8 +73,9 @@ select { padding-right:36px; appearance:none; cursor:pointer; font-weight:600;
 .grid { list-style:none; margin:0; padding:0 0 96px; display:grid; grid-template-columns:repeat(3,1fr); gap:48px 32px; }
 .tile { animation:rise .6s var(--ease) both; }
 .tile-link { display:block; text-decoration:none; color:inherit; border-radius:var(--radius); }
-.art { aspect-ratio:4/5; background:var(--grey-50); border-radius:var(--radius); display:flex; align-items:center; justify-content:center; padding:22px; transition:background .3s; }
-.art img { max-width:100%; max-height:100%; border-radius:8px; display:block; transition:transform .45s var(--ease); }
+/* series cards are 600x800 composed images (docs/spike/V0-06-cards.py): show them edge to edge */
+.art { aspect-ratio:3/4; background:var(--grey-50); border-radius:var(--radius); overflow:hidden; transition:background .3s; }
+.art img { width:100%; height:100%; object-fit:cover; display:block; transition:transform .45s var(--ease); }
 .tile-link:hover .art, .tile-link:focus-visible .art { background:var(--grey-100); }
 .tile-link:hover .art img, .tile-link:focus-visible .art img { transform:translateY(-6px) scale(1.02); }
 .meta { padding:16px 2px 0; }
@@ -161,7 +162,7 @@ select { padding-right:36px; appearance:none; cursor:pointer; font-weight:600;
   .stats { gap:20px; }
   .stats strong { font-size:24px; }
   .grid { grid-template-columns:1fr; gap:36px; padding-bottom:64px; }
-  .art { aspect-ratio:1/1; }
+  .art { aspect-ratio:3/4; }
   .rule { padding-top:28px; margin-bottom:24px; }
   .hero { grid-template-columns:1fr; padding:12px 0 32px; gap:12px; }
   .art-stage { height:250px; width:170px; }

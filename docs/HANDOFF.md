@@ -18,10 +18,11 @@
 
 - **V0-06 in progress**: figure cut-outs for all 6 mockup series in `mockups/assets/figs/<set>-<n>.webp` (70 new + 20 of 71019). Script `docs/spike/V0-06-figs.py` (V0-01 flood fill + speck removal). BrickLink CMF codes verified (image n = Rebrickable figure n, next number 404): 71053 `colshr` (12), 71045 `col25` (12), 71038 `coldis100` (18), 71031 `colmar` (12), 71019 `coltlnm` (20), 8683 `col01` (16). URL `img.bricklink.com/ItemImage/SN/0/<code>-<n>.png`.
 
+- **V0-06 done (2026-10-31)**: 6 series cards from the v4 template, `docs/spike/V0-06-cards.py` (renders with headless Chrome) -> `mockups/cards/<id>.png`, overview `mockups/cards/all.png`. Logos `shrek.png`, `disney-100.png`, `marvel-studios.png` (real alpha, SOURCES.md). Numbered series use lockup + red SERIES N badge. Backgrounds sampled from each bag (71019 keeps approved v4). Mockup D home now shows the cards (`mockups/d/shots/home-desktop.png`, `mobile.png`).
+
 ## Next step
-1. DONE: theme logos `shrek.png`, `disney-100.png`, `marvel-studios.png` in `mockups/assets/logos/` (sources in SOURCES.md). Series 25 and Series 1 use the Minifigures lockup + "SERIES N" badge.
-2. Generalise `v4` in `docs/spike/V0-04-cards-gen.py` into a per-series function (id, age, count, logo, front-row main characters) and render 6 cards to `mockups/cards/<id>.png`.
-3. Swap the 6 cards into mockup D home (`mockups/d/index.html`), screenshot, owner sign-off, then MVP 1 V1-01 scaffold.
+1. MVP 1 V1-01 scaffold (see backlog.md). Owner said: do not wait for sign-off, keep working.
+2. Later polish (not blocking): series page hero in mockup D still uses the bag image; switch to the card when the real app is built.
 
 ## Owner-needed later (MVP 2)
 - Supabase: owner added keys to `.env` (2026-10-31, file 191 -> 377 bytes; contents unread, deny rule). Nothing owner-needed left for MVP 2.

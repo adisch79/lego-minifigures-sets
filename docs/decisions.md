@@ -41,3 +41,5 @@
 - 2026-10-31 — Figure images for all series come from BrickLink CMF catalog images (code per series, e.g. colshr, col25, coldis100, colmar, col01); numbering verified equal to Rebrickable figure numbers for 6 series.
 - 2026-10-31 — Owner: Telegram bot token and chat id already exist in the repo-root .env (git-ignored) on the PC and on the NAS (OWNER-SUPPLIED). MVP 2 reads them from env vars; never committed. Exact key names to confirm when MVP 2 starts.
 - 2026-10-31 — Owner has a Supabase account (OWNER-SUPPLIED). Keys go in the git-ignored repo-root .env as SUPABASE_URL, SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY.
+- 2026-10-31 — Series cards: one composed card per series from the approved v4 template (docs/spike/V0-06-cards.py). Seal top arc says LIMITED EDITION only where the bag says so (71019, 71031); numbered series show SERIES N; other themes show MINIFIGURES. Series with 12 or fewer figures use two crowd rows. Card backgrounds sampled from the bag image.
+- 2026-10-31 — Owner: do not wait for approval between steps; keep working.
