@@ -47,6 +47,11 @@
     "8805": {"bricklinkCode": "col05", "source": "code: https://img.bricklink.com/ItemImage/SN/0/col05-1.png and -16.png return 200 (V1-03)"},
     "8804": {"bricklinkCode": "col04", "source": "code: https://img.bricklink.com/ItemImage/SN/0/col04-1.png and -16.png return 200 (V1-03)"},
     "8803": {"bricklinkCode": "col03", "source": "code: https://img.bricklink.com/ItemImage/SN/0/col03-1.png and -16.png return 200 (V1-03)"},
-    "8684": {"bricklinkCode": "col02", "source": "code: https://img.bricklink.com/ItemImage/SN/0/col02-1.png and -16.png return 200 (V1-03)"}
+    "8684": {"bricklinkCode": "col02", "source": "code: https://img.bricklink.com/ItemImage/SN/0/col02-1.png and -16.png return 200 (V1-03)"},
+    "71050": {"bricklinkCode": "colspi", "source": "code: brickset.com/minifigs/category-Collectible-Minifigures/subcategory-Super-Heroes-Spider-Man-Across-the-Spider-Verse; GET 200 (V1-03 a2)"},
+    "71033": {"bricklinkCode": "coltm", "source": "code: en.brickimedia.org/wiki/71033_The_Muppets_Series; GET 200 (V1-03 a2)"},
+    "71026": {"bricklinkCode": "colsh", "source": "code: brickset.com/minifigs/in-71026-17; GET 200 (V1-03 a2)"},
+    "71049": {"bricklinkCode": "71049", "source": "code: brickset.com/article/121068 (F1 cars catalogued as sets); GET 200 (V1-03 a2)"},
+    "71001": {"bricklinkCode": "col10", "figures": {"71001-19": {"bricklinkNo": 17}}, "source": "code: https://img.bricklink.com/ItemImage/SN/0/col10-1.png and -17.png return 200 (V1-03); 71001-19 bricklinkNo 17: BrickLink col10 runs 1..17, Rebrickable 1..16 and 19 (coordinator probe V1-03)"}
   }
 }

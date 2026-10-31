@@ -160,4 +160,16 @@ describe('seriesNoSortKey', () => {
     const all = [...c.series].sort(compareSeriesNo)
     expect(all.slice(0, main.length).every((x) => x.line === 'Series')).toBe(true)
   })
+
+  it('accepts an optional bricklinkNo that differs from no', () => {
+    const c = minimal()
+    ;(c.series[0].figures[1] as unknown as Record<string, unknown>).bricklinkNo = 7
+    expect(parseCatalog(c).series[0].figures[1].bricklinkNo).toBe(7)
+  })
+
+  it('rejects a bricklinkNo equal to no', () => {
+    const c = minimal()
+    ;(c.series[0].figures[1] as unknown as Record<string, unknown>).bricklinkNo = 2
+    expect(() => parseCatalog(c)).toThrow(/bricklinkNo/)
+  })
 })

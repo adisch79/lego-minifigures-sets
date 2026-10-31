@@ -185,7 +185,21 @@ class RealData(unittest.TestCase):
     def test_overrides_applied(self):
         self.assertEqual(self.by["71045"]["bricklinkCode"], "col25")
         self.assertEqual(self.by["71053"]["age"], "6+")
-        self.assertEqual(sum(s["bricklinkCode"] is not None for s in self.cat["series"]), 47)
+        self.assertEqual(sum(s["bricklinkCode"] is not None for s in self.cat["series"]), 52)
+
+    def test_bricklink_no_override(self):
+        figs = {f["id"]: f for f in self.by["71001"]["figures"]}
+        self.assertEqual(figs["71001-19"]["bricklinkNo"], 17)
+        self.assertEqual(sum("bricklinkNo" in f for s in self.cat["series"] for f in s["figures"]), 1)
+
+    def test_bricklink_no_override_validation(self):
+        d = [{"id": "71001", "name": "Series 10 Minifigures", "year": "2013", "bag": None,
+              "figures": [{"set_num": "71001-5", "name": "A", "img": None}]}]
+        out = build(d, {"series": {"71001": {"source": "t", "figures": {"71001-5": {"bricklinkNo": 5}}}}}, ROOT / "site")
+        self.assertNotIn("bricklinkNo", out["series"][0]["figures"][0])
+        for bad in ({"71001-9": {"bricklinkNo": 2}}, {"71001-5": {"bricklinkNo": "x"}}):
+            with self.assertRaises(ValueError):
+                build(d, {"series": {"71001": {"source": "t", "figures": bad}}}, ROOT / "site")
 
     def test_deterministic(self):
         with tempfile.TemporaryDirectory() as t:
