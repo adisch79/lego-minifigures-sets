@@ -37,3 +37,4 @@
 - 2026-10-31 — Owner card pick: mix of V1 (bag-front layout) + V2 (big "N to collect" count); official theme logo required per series.
 - 2026-10-31 — Theme logos sourced from Google Images (owner direction) as official logo PNGs, background cut by border flood fill; source URL logged per file in mockups/assets/logos/SOURCES.md.
 - 2026-10-31 — Owner: flat-background logos keyed out look dirty; use only logo files with real transparency (Google Images transparent+large filter). Count badge on cards copies the bag seal style (white disc, arc text, red italic number).
+- 2026-10-31 — Owner approved card v4 (bag-front layout, bag-style seal, official theme logo) as the series card template.

@@ -13,11 +13,11 @@
 
 - Owner rejected cropped flat art: series image must be a NEW composed card (decisions.md). **3 card variants for 71019** in `mockups/cards/` (v1 bag-front, v2 poster, v3 collector; side-by-side `compare.png`); generator `docs/spike/V0-04-cards-gen.py`; logos `mockups/assets/logos/` (Wikimedia, see SOURCES.md).
 
-- **V0-05 v4 rev 2 (awaiting owner sign-off)**: `mockups/cards/v4.png`. Bag-style round seal (LIMITED EDITION / 20 / TO COLLECT, SVG `seal()` in generator), official coloured Ninjago Movie logo with LEGO brick (real alpha, smaller, clear of the seal), HD LEGO Minifigures lockup (1600 px). Crowd raised to fill the gap, clamped inside card, Lloyd centre front.
+- **V0-05 done, owner approved v4 (2026-10-31)**: `mockups/cards/v4.png`. Bag-style round seal (LIMITED EDITION / 20 / TO COLLECT, SVG `seal()` in generator), official coloured Ninjago Movie logo with LEGO brick (real alpha, smaller, clear of the seal), HD LEGO Minifigures lockup (1600 px). Crowd raised to fill the gap, clamped inside card, Lloyd centre front.
 - Logo rule: only files that already have real alpha; find them with Google Images filter `&udm=2&tbs=ic:trans,isz:l` in Chrome, then read original URLs from the page HTML (`["url",h,w]` triples). Sources in `mockups/assets/logos/SOURCES.md`.
 
 ## Next step
-1. Owner reviews `mockups/cards/v4.png`. Known: Zane hidden behind Lloyd; Lloyd's spare hair piece at bottom (in source photo).
+1. Card v4 approved. Minor known: Zane hidden behind Lloyd; Lloyd's spare hair piece at bottom (in source photo).
 2. Logo per series: one official logo per licensed theme (Google Images transparent filter in Chrome); numbered "Series N" sets use the Minifigures lockup plus a series badge. Needs a per-series logo table (V1-02).
 3. Swap v4 into mockup D home, owner signs off, then MVP 1: V1-01 scaffold (Vite/React/TS in `app/`), V1-02 catalog contract with BrickLink image ids. Known: flat-art left edge clipped on 71053/71045, grey seal band on 71038, mobile search placeholder cut.
 
