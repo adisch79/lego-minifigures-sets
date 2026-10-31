@@ -90,6 +90,25 @@ describe('parseCatalog', () => {
     expect(() => parseCatalog(c)).toThrow()
   })
 
+  it('rejects no less than 1', () => {
+    const c = minimal()
+    c.series[0].figures[0].no = 0
+    expect(() => parseCatalog(c)).toThrow(/no/)
+  })
+
+  it('rejects no that differs from the id suffix', () => {
+    const c = minimal()
+    c.series[0].figures[1].no = 5
+    expect(() => parseCatalog(c)).toThrow(/does not match/)
+  })
+
+  it('rejects a duplicate no within a series', () => {
+    const c = minimal()
+    c.series[0].figures[1].id = '71045-1'
+    c.series[0].figures[1].no = 1
+    expect(() => parseCatalog(c)).toThrow(/duplicate no/)
+  })
+
   it('rejects a wrong field type', () => {
     const c = minimal() as unknown as { series: Record<string, unknown>[] }
     c.series[0].year = '2024'

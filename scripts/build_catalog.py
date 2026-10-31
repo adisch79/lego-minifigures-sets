@@ -48,6 +48,15 @@ def build(data, overrides, site=SITE):
             raise ValueError(f"override for unknown series {sid}")
         if not ov.get("source"):
             raise ValueError(f"override {sid} has no source")
+        if "seriesNo" in ov and ov["seriesNo"] is not None and (
+                type(ov["seriesNo"]) is not int):
+            raise ValueError(f"override {sid}: seriesNo must be int or null")
+        if "age" in ov and not (isinstance(ov["age"], str) and re.fullmatch(r"\d+\+", ov["age"])):
+            raise ValueError(f"override {sid}: age must look like '5+'")
+        if "bricklinkCode" in ov and not (
+                isinstance(ov["bricklinkCode"], str)
+                and re.fullmatch(r"[a-z0-9]+", ov["bricklinkCode"])):
+            raise ValueError(f"override {sid}: bricklinkCode must be lowercase alphanumeric")
         extra = set(ov) - OVERRIDE_KEYS
         if extra:
             raise ValueError(f"override {sid} has unknown keys {sorted(extra)}")

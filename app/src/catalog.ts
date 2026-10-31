@@ -70,9 +70,13 @@ function parseFigure(v: unknown, seriesId: string, path: string): Figure {
   }
   const imgFallback = o.imgFallback
   if (typeof imgFallback !== 'boolean') fail(`${path}.imgFallback`, 'expected boolean')
+  const no = int(o, 'no', path)
+  if (no < 1 || String(no) !== id.split('-').pop()) {
+    fail(`${path}.no`, `no ${no} does not match id ${id}`)
+  }
   return {
     id,
-    no: int(o, 'no', path),
+    no,
     name: str(o, 'name', path),
     img: nullableStr(o, 'img', path),
     imgFallback,
@@ -90,6 +94,11 @@ function parseSeries(v: unknown, path: string): Series {
   const rawFigures = o.figures
   if (!Array.isArray(rawFigures)) fail(`${path}.figures`, 'expected array')
   const figures = rawFigures.map((f, i) => parseFigure(f, id, `${path}.figures[${i}]`))
+  const nos = new Set<number>()
+  for (const f of figures) {
+    if (nos.has(f.no)) fail(`${path}.figures`, `duplicate no ${f.no}`)
+    nos.add(f.no)
+  }
   const figureCount = int(o, 'figureCount', path)
   if (figureCount !== figures.length) {
     fail(`${path}.figureCount`, `${figureCount} != figures.length ${figures.length}`)

@@ -56,7 +56,7 @@ home grid (sort, search) and series page need. Built offline from the existing v
 | `bag` | string or null | Bag image path. |
 | `card` | string or null | Composed series card (V0-06); null until generated. |
 | `figures[].id` | string | Rebrickable set number `<id>-<n>`. Unique across the catalog; never equal to a series id. **Permanent key.** |
-| `figures[].no` | int | n from the set number; 1..figureCount with no gaps. Display order only, never a key. |
+| `figures[].no` | int | n from the set number: `no` equals the Rebrickable id suffix; gaps are allowed only when pinned in KNOWN_GAPS (tests/test_build_catalog.py). Display order only, never a key. For 71001, no=19 is greater than figureCount=17, so the UI must never use `no` as an array index or in an "x of N" label. |
 | `figures[].name` | string | Rebrickable name. |
 | `figures[].img` | string or null | Figure image path; file must exist. |
 | `figures[].imgFallback` | bool | true when v1 had no real minifig photo (v1 `src == "set"`, 19 figures today); feeds the V1-03 gap report. |
@@ -97,7 +97,7 @@ and BrickLink images are processed anyway. V1-02 carries the fields (nullable) a
 ## Validation
 - `tests/test_build_catalog.py`: fixture + real `site/data.json`:
   totals 52 series / 787 figures; every field rule above; unique ids; no figure id equals a series id;
-  `no` 1..n without gaps; every non-null image path exists under `site/`; file order; deterministic output
+  `no` equals the Rebrickable id suffix, unique per series, gaps only when pinned in KNOWN_GAPS; every non-null image path exists under `site/`; file order; deterministic output
   (two runs identical); line/seriesNo for `Series 25 Minifigures`, `Marvel Series 2`,
   `Harry Potter and Fantastic Beasts Series 2`, `The LEGO Batman Movie Series 1`, `The LEGO Movie II`,
   `Disney 100`, `DFB Minifigures`, `Team GB`, `Spider-Man - Across the Spider-Verse`, `Dungeons & Dragons`.

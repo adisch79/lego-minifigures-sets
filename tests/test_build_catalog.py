@@ -103,6 +103,14 @@ class Fixture(unittest.TestCase):
         with self.assertRaises(ValueError):
             build(self.data, self.ov, self.site)
 
+    def test_bad_override_fields_raise(self):
+        for key, bad in [("seriesNo", "1"), ("seriesNo", 1.5), ("age", "five"),
+                         ("bricklinkCode", "Col10"), ("bricklinkCode", 5)]:
+            with self.subTest(key=key, bad=bad):
+                self.ov["series"]["71001"][key] = bad
+                with self.assertRaises(ValueError):
+                    build(self.data, self.ov, self.site)
+
     def test_null_image_allowed(self):
         self.data[0]["figures"][1]["img"] = None
         c = build(self.data, self.ov, self.site)
