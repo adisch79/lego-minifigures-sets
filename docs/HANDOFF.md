@@ -24,7 +24,7 @@
 3. Swap the 6 cards into mockup D home (`mockups/d/index.html`), screenshot, owner sign-off, then MVP 1 V1-01 scaffold.
 
 ## Owner-needed later (MVP 2)
-- Free Supabase account (project for auth + database).
+- Supabase account: owner has it (2026-10-31). Needed in `.env` before MVP 2: SUPABASE_URL, SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY.
 - Telegram bot token + chat id: PC: repo-root `.env` (git-ignored; key names unverified, read blocked by deny rule); NAS copy too (owner, 2026-10-31); read from env, never commit.
 
 ## Open questions

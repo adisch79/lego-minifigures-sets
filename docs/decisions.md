@@ -40,3 +40,4 @@
 - 2026-10-31 — Owner approved card v4 (bag-front layout, bag-style seal, official theme logo) as the series card template.
 - 2026-10-31 — Figure images for all series come from BrickLink CMF catalog images (code per series, e.g. colshr, col25, coldis100, colmar, col01); numbering verified equal to Rebrickable figure numbers for 6 series.
 - 2026-10-31 — Owner: Telegram bot token and chat id already exist in the repo-root .env (git-ignored) on the PC and on the NAS (OWNER-SUPPLIED). MVP 2 reads them from env vars; never committed. Exact key names to confirm when MVP 2 starts.
+- 2026-10-31 — Owner has a Supabase account (OWNER-SUPPLIED). Keys go in the git-ignored repo-root .env as SUPABASE_URL, SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY.
