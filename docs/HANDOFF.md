@@ -1,6 +1,6 @@
 # HANDOFF
 
-## Current state (2026-10-31)
+## Current state (2026-11-01)
 - **v2 refactor started**: collector app (sort/search, owned/wanted for invited users, Telegram alerts, lowest prices). Plan: [backlog.md](backlog.md). v1 backlog archived: [archive/backlog-v1.md](archive/backlog-v1.md).
 - Owner answers (see decisions.md): invite-only users; Telegram alerts; prices later by moderate scraping (no API keys); English first, Hebrew later; prices in original currency + ILS.
 - **V0-01 done**: images will come from BrickLink catalog images (`img.bricklink.com/ItemImage/SN/0/coltlnm-<n>.png`). Border flood fill gives clean transparency on 20/20 figures + bag. Proof: `docs/spike/V0-01-bricklink-cutout-71019.webp`; script `docs/spike/V0-01-cutout.py`.
@@ -22,7 +22,7 @@
 
 ## Next step
 1. V1-01 merged into dev (PR #8, 2026-11-01); MVP 0 merged (PR #7). Vite/React/TS app in `app/`, CI `app-ci.yml`; Pages deploy of `app/dist` disabled until V1-05. TypeScript pinned ~6.0 (typescript-eslint needs <6.1). `.env` also in `.git/info/exclude`.
-2. V1-02 on `feature/V1-02-catalog-v2`: design `docs/design/V1-02-catalog-v2.md` REVISED after opus design review (all blocking/should-fix addressed). NEXT: launch `coder` (sonnet) with that doc to build `scripts/catalog_overrides.json`, `scripts/build_catalog.py` -> `app/public/catalog.json`, `app/scripts/copy-images.mjs` (site/img -> app/public/img, git-ignored), `app/src/catalog.ts` + tests; then code-reviewer, PR into dev.
+2. V1-02 DONE on `feature/V1-02-catalog-v2` (code-reviewed, should-fix applied; py 93 OK, app 19 tests, lint, build green): `scripts/build_catalog.py` + `catalog_overrides.json` -> `app/public/catalog.json` (52 series, 787 figures), `app/scripts/copy-images.mjs`, `app/src/catalog.ts`. PR into dev open; owner merges. NEXT: V1-03 images for all series (+ verify 71001 gap 17/18, ages, BrickLink codes). Deferred nits: copy-images re-copies 30 MB each dev start (fix with V1-05 deploy size).
 3. Merges into dev need the owner (auto mode blocks agent merges): `gh pr merge <n> --merge`.
 4. Later polish (not blocking): series page hero in mockup D still uses the bag image.
 
@@ -31,7 +31,7 @@
 - Telegram bot token + chat id: PC: repo-root `.env` (git-ignored; key names unverified, read blocked by deny rule); NAS copy too (owner, 2026-10-31); read from env, never commit.
 
 ## Open questions
-- BrickLink CMF codes for the other ~45 series still to map (6 done above); V1-02.
+- BrickLink CMF codes + ages for the other ~46 series still to map (6 done); V1-03.
 - "Flatten" bag: current bag image shows slight 3D bag shape; V0-02 shows options (as-is cut-out vs flat artwork crop).
 
 ## Docs
