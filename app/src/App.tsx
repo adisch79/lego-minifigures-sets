@@ -1,4 +1,12 @@
-import { useEffect, useMemo, useState } from 'react'
+import {
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+  type Dispatch,
+  type SetStateAction,
+} from 'react'
 import { parseCatalog, type Series } from './catalog'
 import {
   SORT_OPTIONS,
@@ -11,6 +19,8 @@ import {
   type HomeState,
   type SortMode,
 } from './home'
+import { findSeries, parseRoute, type Load } from './series'
+import SeriesPage, { Brand, LoadError } from './SeriesPage'
 
 // Vite base is './', so this stays correct under a Pages sub-path.
 const BASE = import.meta.env.BASE_URL
@@ -18,11 +28,6 @@ const BASE = import.meta.env.BASE_URL
 // Tile stagger is capped so a long grid does not keep animating for seconds.
 const STAGGER_MS = 70
 const STAGGER_MAX_TILES = 8
-
-type Load =
-  | { status: 'loading' }
-  | { status: 'error'; message: string }
-  | { status: 'ready'; series: Series[] }
 
 function Tile({ series, index, query }: { series: Series; index: number; query: string }) {
   const art = tileArt(series)
@@ -88,39 +93,17 @@ function Stats({ series }: { series: Series[] }) {
   )
 }
 
-export default function App() {
-  const [load, setLoad] = useState<Load>({ status: 'loading' })
-  const [attempt, setAttempt] = useState(0)
-  const [state, setState] = useState<HomeState>(() => readState(window.location.search))
-
-  useEffect(() => {
-    const abort = new AbortController()
-    fetch(`${BASE}catalog.json`, { signal: abort.signal })
-      .then((res) => {
-        if (!res.ok) throw new Error(`catalog.json returned HTTP ${res.status}`)
-        return res.json()
-      })
-      .then((json: unknown) => setLoad({ status: 'ready', series: parseCatalog(json).series }))
-      .catch((err: unknown) => {
-        if (abort.signal.aborted) return
-        setLoad({ status: 'error', message: err instanceof Error ? err.message : String(err) })
-      })
-    return () => abort.abort()
-  }, [attempt])
-
-  // Keep the URL in step with the controls without adding a history entry per keystroke.
-  useEffect(() => {
-    const { pathname, search, hash } = window.location
-    const next = writeState(state, search)
-    if (next !== search) window.history.replaceState(null, '', `${pathname}${next}${hash}`)
-  }, [state])
-
-  useEffect(() => {
-    const onPop = () => setState(readState(window.location.search))
-    window.addEventListener('popstate', onPop)
-    return () => window.removeEventListener('popstate', onPop)
-  }, [])
-
+function Home({
+  load,
+  state,
+  setState,
+  onRetry,
+}: {
+  load: Load
+  state: HomeState
+  setState: Dispatch<SetStateAction<HomeState>>
+  onRetry: () => void
+}) {
   const visible = useMemo(
     () =>
       load.status === 'ready'
@@ -136,15 +119,7 @@ export default function App() {
       <header className="band">
         <div className="wrap">
           <div className="band-top">
-            <a className="brand" href="./" aria-label="Minifig Vault home">
-              <span className="brand-mark" aria-hidden="true">
-                <i />
-              </span>
-              <span>
-                <b>Minifig Vault</b>
-                <small>Collectible Minifigures</small>
-              </span>
-            </a>
+            <Brand href="./" />
             <div className="controls">
               <label className="field">
                 <span className="sr">Search series</span>
@@ -216,22 +191,7 @@ export default function App() {
           </span>
         </div>
 
-        {load.status === 'error' && (
-          <div className="empty" role="alert">
-            <strong>The catalog could not be loaded</strong>
-            {load.message}
-            <button
-              type="button"
-              className="again"
-              onClick={() => {
-                setLoad({ status: 'loading' })
-                setAttempt((n) => n + 1)
-              }}
-            >
-              Try again
-            </button>
-          </div>
-        )}
+        {load.status === 'error' && <LoadError message={load.message} onRetry={onRetry} />}
 
         {load.status === 'loading' && (
           <ul className="grid" aria-hidden="true">
@@ -270,5 +230,94 @@ export default function App() {
         )}
       </main>
     </>
+  )
+}
+
+export default function App() {
+  const [load, setLoad] = useState<Load>({ status: 'loading' })
+  const [attempt, setAttempt] = useState(0)
+  const [state, setState] = useState<HomeState>(() => readState(window.location.search))
+  const [route, setRoute] = useState(() => parseRoute(window.location.hash))
+  const seriesId = route.page === 'series' ? route.id : null
+
+  // Last committed route, and how far down home was when it was left.
+  const shownId = useRef(seriesId)
+  const homeScroll = useRef(0)
+
+  useEffect(() => {
+    const abort = new AbortController()
+    fetch(`${BASE}catalog.json`, { signal: abort.signal })
+      .then((res) => {
+        if (!res.ok) throw new Error(`catalog.json returned HTTP ${res.status}`)
+        return res.json()
+      })
+      .then((json: unknown) => setLoad({ status: 'ready', series: parseCatalog(json).series }))
+      .catch((err: unknown) => {
+        if (abort.signal.aborted) return
+        setLoad({ status: 'error', message: err instanceof Error ? err.message : String(err) })
+      })
+    return () => abort.abort()
+  }, [attempt])
+
+  // Keep the URL in step with the controls without adding a history entry per keystroke.
+  useEffect(() => {
+    const { pathname, search, hash } = window.location
+    const next = writeState(state, search)
+    if (next !== search) window.history.replaceState(null, '', `${pathname}${next}${hash}`)
+  }, [state])
+
+  useEffect(() => {
+    const onPop = () => setState(readState(window.location.search))
+    window.addEventListener('popstate', onPop)
+    return () => window.removeEventListener('popstate', onPop)
+  }, [])
+
+  useEffect(() => {
+    const onHash = () => {
+      // Read before the render: leaving home shortens the page and would clamp the offset.
+      if (shownId.current === null) homeScroll.current = window.scrollY
+      setRoute(parseRoute(window.location.hash))
+    }
+    window.addEventListener('hashchange', onHash)
+    return () => window.removeEventListener('hashchange', onHash)
+  }, [])
+
+  // Moving between pages replaces the document content, so scroll and focus are set by hand.
+  useLayoutEffect(() => {
+    const previous = shownId.current
+    if (previous === seriesId) return
+    shownId.current = seriesId
+    if (seriesId !== null) {
+      window.scrollTo(0, 0)
+      document.querySelector<HTMLElement>('h1')?.focus({ preventScroll: true })
+    } else {
+      window.scrollTo(0, homeScroll.current)
+      const tile = [...document.querySelectorAll<HTMLElement>('a.tile-link')].find(
+        (a) => a.getAttribute('href') === `#series/${previous}`,
+      )
+      tile?.focus({ preventScroll: true })
+    }
+  }, [seriesId])
+
+  useEffect(() => {
+    if (seriesId === null) {
+      document.title = 'Minifig Vault'
+    } else if (load.status === 'ready') {
+      const found = findSeries(load.series, seriesId)
+      document.title = found
+        ? `${found.id} ${found.name} - Minifig Vault`
+        : 'Series not found - Minifig Vault'
+    }
+  }, [seriesId, load])
+
+  const retry = () => {
+    setLoad({ status: 'loading' })
+    setAttempt((n) => n + 1)
+  }
+
+  return seriesId !== null ? (
+    <SeriesPage id={seriesId} load={load} onRetry={retry} />
+  ) : (
+    <Home load={load} state={state} setState={setState} onRetry={retry} />
   )
 }
