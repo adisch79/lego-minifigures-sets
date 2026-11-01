@@ -1,1 +1,119 @@
-/* Intentionally empty: styling arrives with V1-04. */
+/* Home page, ported from approved mockup D "Vault Light" (mockups/d/vault.css). */
+:root {
+  /* SOURCE: colours sampled from the LEGO logo on the 71019 bag image (originals/71019/71019-0.jpg) */
+  --lego-red:#DF0012; --lego-yellow:#FDE01B;
+  --ink:#1A1A1A;
+  --white:#FFFFFF;
+  --grey-50:#F6F6F4;
+  --grey-100:#EDEDEA;
+  --grey-300:#C9C9C4;
+  --grey-500:#6E6E69;
+  --radius:16px;
+  --ease:cubic-bezier(.2,.8,.2,1);
+}
+* { box-sizing:border-box; }
+html,body { margin:0; }
+body {
+  font-family:"Segoe UI", system-ui, -apple-system, Roboto, "Helvetica Neue", Arial, sans-serif;
+  color:var(--ink); background:var(--white); -webkit-font-smoothing:antialiased;
+}
+:focus-visible { outline:3px solid var(--ink); outline-offset:3px; border-radius:8px; }
+.sr { position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; }
+.wrap { max-width:1200px; margin:0 auto; padding:0 32px; }
+
+/* Yellow header band */
+.band { background:var(--lego-yellow); }
+.band-top { display:flex; align-items:center; gap:24px; padding:20px 0; }
+.brand { display:flex; align-items:center; gap:12px; text-decoration:none; color:var(--ink); }
+.brand-mark { width:36px; height:36px; border-radius:9px; background:var(--lego-red); display:grid; place-items:center; }
+.brand-mark i { width:13px; height:13px; border-radius:50%; background:var(--lego-yellow); }
+.brand b { display:block; font-size:21px; font-weight:800; letter-spacing:-.02em; line-height:1; }
+.brand small { display:block; font-size:10.5px; font-weight:700; letter-spacing:.2em; text-transform:uppercase; margin-top:4px; opacity:.7; }
+
+/* Search and sort */
+.controls { margin-left:auto; display:flex; gap:10px; }
+.field { position:relative; }
+.field svg { position:absolute; left:15px; top:50%; transform:translateY(-50%); color:var(--grey-500); pointer-events:none; }
+input[type=search], select {
+  font:inherit; font-size:14px; color:var(--ink); height:44px; border-radius:999px;
+  border:2px solid transparent; background:var(--white); padding:0 16px;
+  box-shadow:0 1px 0 rgba(0,0,0,.06); transition:border-color .2s;
+}
+input[type=search] { width:280px; padding-left:42px; }
+input[type=search]:focus, select:focus { border-color:var(--ink); outline:none; }
+select { padding-right:36px; appearance:none; cursor:pointer; font-weight:600;
+  background-image:linear-gradient(45deg,transparent 50%,var(--ink) 50%),linear-gradient(135deg,var(--ink) 50%,transparent 50%);
+  background-position:calc(100% - 19px) 19px, calc(100% - 14px) 19px; background-size:5px 5px; background-repeat:no-repeat; }
+
+.band-hero { padding:36px 0 52px; display:grid; grid-template-columns:1.3fr 1fr; gap:40px; align-items:end; }
+.band h1.big { font-size:clamp(40px,6vw,76px); line-height:.94; letter-spacing:-.045em; font-weight:800; margin:0; }
+.band h1.big em { font-style:normal; color:var(--lego-red); }
+.lede { font-size:17px; line-height:1.5; margin:0 0 18px; max-width:40ch; font-weight:500; }
+.stats { display:flex; gap:28px; }
+.stats div { font-size:11.5px; font-weight:700; text-transform:uppercase; letter-spacing:.12em; animation:rise .6s var(--ease) both; }
+.stats strong { display:block; font-size:30px; letter-spacing:-.03em; text-transform:none; line-height:1.1; font-variant-numeric:tabular-nums; }
+.stats strong span { opacity:.4; }
+
+/* Section rule */
+.rule { display:flex; justify-content:space-between; align-items:baseline; min-height:72px; border-bottom:2px solid var(--ink); padding:40px 0 14px; margin-bottom:36px; font-size:13px; color:var(--grey-500); }
+.rule b { color:var(--ink); }
+
+/* Home grid: uniform flat artwork tiles */
+.grid { list-style:none; margin:0; padding:0 0 96px; display:grid; grid-template-columns:repeat(3,1fr); gap:48px 32px; }
+.tile { animation:rise .6s var(--ease) both; }
+.tile-link { display:block; text-decoration:none; color:inherit; border-radius:var(--radius); }
+/* series cards are 600x800 composed images (docs/spike/V0-06-cards.py): show them edge to edge */
+.art { aspect-ratio:3/4; background:var(--grey-50); border-radius:var(--radius); overflow:hidden; transition:background .3s; }
+.art img { width:100%; height:100%; object-fit:cover; display:block; transition:transform .45s var(--ease); }
+/* Bags and figures are not 3:4, so they are fitted rather than cropped */
+.art-photo img { object-fit:contain; padding:7%; }
+.art-none { height:100%; display:grid; place-items:center; font-weight:800; color:var(--grey-500); }
+.tile-link:hover .art, .tile-link:focus-visible .art { background:var(--grey-100); }
+.tile-link:hover .art img, .tile-link:focus-visible .art img { transform:translateY(-6px) scale(1.02); }
+.meta { padding:16px 2px 0; }
+.meta-row { display:flex; justify-content:space-between; align-items:center; gap:12px; }
+.num { font-size:12px; font-weight:700; letter-spacing:.12em; color:var(--grey-500); font-variant-numeric:tabular-nums; }
+.count-badge { font-size:12px; font-weight:700; background:var(--lego-yellow); color:var(--ink); border-radius:999px; padding:4px 10px; white-space:nowrap; }
+.meta h2 { font-size:22px; line-height:1.15; letter-spacing:-.025em; margin:8px 0 14px; font-weight:800; }
+.meta h2 a { color:inherit; text-decoration:none; }
+.hit { font-size:13px; line-height:1.4; font-weight:600; color:var(--grey-500); margin:-6px 0 0; }
+
+/* Empty and error states */
+.empty { grid-column:1/-1; text-align:center; padding:72px 20px; color:var(--grey-500); background:var(--grey-50); border-radius:var(--radius); }
+.empty strong { display:block; font-size:22px; color:var(--ink); margin-bottom:6px; overflow-wrap:anywhere; }
+.again {
+  display:block; margin:18px auto 0; font:inherit; font-size:14px; font-weight:700; height:42px; padding:0 18px;
+  border:0; border-radius:999px; background:var(--ink); color:var(--lego-yellow); cursor:pointer; transition:transform .15s;
+}
+.again:active { transform:scale(.97); }
+
+/* Loading skeleton, shaped like a real tile */
+.ghost .art { animation:breathe 1.4s ease-in-out infinite; }
+.ghost-line { height:14px; margin-top:14px; border-radius:6px; background:var(--grey-100); }
+.ghost-line.short { width:55%; }
+
+@keyframes rise { from { opacity:0; transform:translateY(20px); } }
+@keyframes breathe { 50% { background:var(--grey-100); } }
+
+@media (max-width:1000px) {
+  .grid { grid-template-columns:repeat(2,1fr); }
+  .band-hero { grid-template-columns:1fr; gap:20px; }
+}
+@media (max-width:640px) {
+  .wrap { padding:0 18px; }
+  .band-top { flex-wrap:wrap; gap:12px; padding:14px 0; }
+  .controls { margin-left:0; width:100%; }
+  .field { flex:1; min-width:0; }
+  /* 16px stops iOS zooming the page when a control takes focus */
+  input[type=search], select { font-size:16px; }
+  input[type=search] { width:100%; }
+  select { max-width:150px; }
+  .band-hero { padding:16px 0 32px; }
+  .stats { gap:20px; }
+  .stats strong { font-size:24px; }
+  .grid { grid-template-columns:1fr; gap:36px; padding-bottom:64px; }
+  .rule { min-height:0; padding-top:28px; margin-bottom:24px; }
+}
+@media (prefers-reduced-motion:reduce) {
+  *, *::before, *::after { animation:none !important; transition:none !important; }
+}
