@@ -5,7 +5,6 @@
 - Owner answers (see decisions.md): invite-only users; Telegram alerts; prices later by moderate scraping (no API keys); English first, Hebrew later; prices in original currency + ILS.
 - **V0-01 done**: images will come from BrickLink catalog images (`img.bricklink.com/ItemImage/SN/0/coltlnm-<n>.png`). Border flood fill gives clean transparency on 20/20 figures + bag. Proof: `docs/spike/V0-01-bricklink-cutout-71019.webp`; script `docs/spike/V0-01-cutout.py`.
 - Live v1 site (unchanged): https://adisch79.github.io/lego-minifigures-sets/
-- Branch: `feature/V0-00-refactor-plan` (from `dev`), plan + spike only, no app code yet.
 
 - Backlog approved. **V0-02 done**: 3 directions in `mockups/a` (Toy Shelf), `mockups/b` (Collector Leaflet), `mockups/c` (Unboxing); screenshots in `mockups/<x>/shots/`. Shared assets `mockups/assets` (6 bags + 20 BrickLink figure cut-outs of 71019).
 
@@ -26,7 +25,8 @@
 3. **V1-03 in progress** on `feature/V1-03-images` (pushed). Done: (a) BrickLink codes for 51/52 series, visually verified (docs/spike/V1-03-codes-sheet-1..3.png); 71049 F1 has no code and keeps v1 images; 71001-19 -> bricklinkNo 17. (b) `scripts/fetch_figures.py <ids>` (resumable, 1 req/2 s, cut-out via `scripts/cutout.py`) -> `site/img/<id>/<id>-<n>.webp`. Batches 1-6 committed (39 series; batch 6 = 71001 71000 8909 8833 8831, re-run: written 0, failures []).
    Done on branch: QA, re-sourced images, `imgFallback` fix (12 left, 71049), ages (43 added; 8909, 8805, 8684 unreadable), gap report `docs/spike/V1-03-gaps.md`. V1-03 merged (PR #10).
    **V1-04** on `feature/V1-04-home`: home grid built, screenshots `mockups/v1-04/`, awaiting review. Tile links `#series/<id>` do nothing until V1-05. Merged (PR #11).
-   **V1-06 cards** on `feature/V1-06-cards` (pushed, no PR yet): `scripts/build_cards.py` renders numbered series; 33 of 52 cards done, overview `docs/spike/V1-06-cards-all.png`. Front row is evenly spaced, not hand-picked. NEXT: 19 licensed series still show bag photos and need real-alpha logos (see feedback memory on asset search), then code-reviewer + qa agents on final code, PR into dev, merge. Then V1-05 series page. Note: merge is refused by the auto classifier unless review and qa agents passed on the final diff.
+   **V1-06** merged (PR #12, 2026-11-01): cards for all 52 series, overview `docs/spike/V1-06-cards-all.png`, logos in `mockups/assets/logos/SOURCES.md`. Re-render: `python scripts/build_cards.py <ids>` (no args builds only missing cards). Merge is refused by the auto classifier unless review and qa agents passed on the final diff.
+   **V1-05 series page** in progress on `feature/V1-05-series`.
 4. Agent merges feature PRs into dev after code-reviewer and qa pass (`gh pr merge <n> --merge`; owner OK 2026-11-01, decisions.md). `master` stays owner-only.
 5. Later polish (not blocking): series page hero in mockup D still uses the bag image.
 
@@ -35,7 +35,7 @@
 - Telegram bot token + chat id: PC: repo-root `.env` (git-ignored; key names unverified, read blocked by deny rule); NAS copy too (owner, 2026-10-31); read from env, never commit.
 
 ## Open questions
-- Ages for 46 series still to read from bag images; V1-03. BrickLink codes done (51/52).
+- Ages unreadable for 3 series (8909, 8805, 8684); no age is printed on their cards.
 - "Flatten" bag: current bag image shows slight 3D bag shape; V0-02 shows options (as-is cut-out vs flat artwork crop).
 
 ## Docs
