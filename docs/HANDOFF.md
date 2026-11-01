@@ -23,8 +23,8 @@
 ## Next step
 1. V1-01 merged into dev (PR #8, 2026-11-01); MVP 0 merged (PR #7). Vite/React/TS app in `app/`, CI `app-ci.yml`; Pages deploy of `app/dist` disabled until V1-05. TypeScript pinned ~6.0 (typescript-eslint needs <6.1). `.env` also in `.git/info/exclude`.
 2. V1-02 merged into dev (PR #9).
-3. **V1-03 in progress** on `feature/V1-03-images` (pushed). Done: (a) BrickLink codes for 51/52 series, visually verified (docs/spike/V1-03-codes-sheet-1..3.png); 71049 F1 has no code and keeps v1 images; 71001-19 -> bricklinkNo 17. (b) `scripts/fetch_figures.py <ids>` (resumable, 1 req/2 s, cut-out via `scripts/cutout.py`) -> `site/img/<id>/<id>-<n>.webp`. Batches 1-5 committed (34 series). Batch 6 (71001 71000 8909 8833 8831) was started at session end: re-run it (skips finished files) and commit.
-   NEXT: `python scripts/fetch_figures.py 71001 71000 8909 8833 8831` then `... 8827 8805 8804 8803 8684`; commit each. Then: QA sheet of all cut-outs; set imgFallback false where a cut-out exists (still read from site/data.json); ages for 46 series from bag images; gap report (haiku); code-reviewer; PR into dev.
+3. **V1-03 in progress** on `feature/V1-03-images` (pushed). Done: (a) BrickLink codes for 51/52 series, visually verified (docs/spike/V1-03-codes-sheet-1..3.png); 71049 F1 has no code and keeps v1 images; 71001-19 -> bricklinkNo 17. (b) `scripts/fetch_figures.py <ids>` (resumable, 1 req/2 s, cut-out via `scripts/cutout.py`) -> `site/img/<id>/<id>-<n>.webp`. Batches 1-6 committed (39 series; batch 6 = 71001 71000 8909 8833 8831, re-run: written 0, failures []).
+   NEXT: `python scripts/fetch_figures.py 8827 8805 8804 8803 8684`; commit. Then: QA sheet of all cut-outs; set imgFallback false where a cut-out exists (still read from site/data.json); ages for 46 series from bag images; gap report (haiku); code-reviewer; PR into dev.
 4. Agent merges feature PRs into dev after code-reviewer and qa pass (`gh pr merge <n> --merge`; owner OK 2026-11-01, decisions.md). `master` stays owner-only.
 5. Later polish (not blocking): series page hero in mockup D still uses the bag image.
 
@@ -33,7 +33,7 @@
 - Telegram bot token + chat id: PC: repo-root `.env` (git-ignored; key names unverified, read blocked by deny rule); NAS copy too (owner, 2026-10-31); read from env, never commit.
 
 ## Open questions
-- BrickLink CMF codes + ages for the other ~46 series still to map (6 done); V1-03.
+- Ages for 46 series still to read from bag images; V1-03. BrickLink codes done (51/52).
 - "Flatten" bag: current bag image shows slight 3D bag shape; V0-02 shows options (as-is cut-out vs flat artwork crop).
 
 ## Docs
