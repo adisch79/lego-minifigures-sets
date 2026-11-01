@@ -107,8 +107,8 @@ select { padding-right:36px; appearance:none; cursor:pointer; font-weight:600;
 .spill { position:absolute; left:330px; top:10px; width:300px; height:440px; pointer-events:none; z-index:2; }
 .spill img { position:absolute; width:140px; height:140px; object-fit:contain; animation:pop .9s var(--ease) both; }
 /* Opaque white renders cannot be cut out in CSS: a white sticker reads as intended on yellow */
-.spill img.spill-render { height:105px; padding:6px; background:var(--white); border-radius:14px; box-shadow:0 12px 22px -12px rgba(0,0,0,.5); }
-.hero-copy { position:relative; z-index:3; padding-left:232px; min-width:0; }
+.spill img.spill-render { width:120px; height:90px; padding:6px; background:var(--white); border-radius:14px; box-shadow:0 12px 22px -12px rgba(0,0,0,.5); }
+.hero-copy { position:relative; z-index:3; padding-left:268px; min-width:0; }
 .eyebrow { font-size:12px; font-weight:700; letter-spacing:.18em; text-transform:uppercase; margin:0 0 12px; opacity:.75; }
 .hero h1, .lost h1 { font-size:clamp(36px,5vw,64px); line-height:.95; letter-spacing:-.045em; font-weight:800; margin:0 0 20px; overflow-wrap:break-word; }
 h1[tabindex]:focus { outline:none; }
