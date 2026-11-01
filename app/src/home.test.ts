@@ -115,14 +115,14 @@ describe('tileArt', () => {
     expect(tileArt(make({ id: '8683' }))).toEqual({ src: 'cards/8683.png', kind: 'card' })
   })
   it('uses the bag by default', () => {
-    expect(tileArt(make({ id: '71000' }))?.src).toBe('img/71000/bag.webp')
+    expect(tileArt(make({ id: '71005' }))?.src).toBe('img/71005/bag.webp')
   })
-  it.each(['8805', '8684', '8909'])('uses the first figure for bad bag %s', (id) => {
+  it.each(['8909'])('uses the first figure for bad bag %s', (id) => {
     expect(tileArt(make({ id }))?.src).toBe(`img/${id}/1.webp`)
   })
   it('falls back to the first figure, then null, when art is missing', () => {
-    const noBag = make({ id: '71000', bag: null })
-    expect(tileArt(noBag)?.src).toBe('img/71000/1.webp')
+    const noBag = make({ id: '71005', bag: null })
+    expect(tileArt(noBag)?.src).toBe('img/71005/1.webp')
     expect(tileArt({ ...noBag, figures: [] })).toBeNull()
   })
 })

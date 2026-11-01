@@ -18,8 +18,42 @@ export interface HomeState {
 
 export const DEFAULT_SORT: SortMode = 'new'
 
-// SOURCE: OWNER-SUPPLIED, V1-04 story brief: series whose tile uses a composed card.
-const CARD_IDS = new Set(['71019', '71031', '71038', '71045', '71053', '8683'])
+// SOURCE: files in app/public/cards, rendered by scripts/build_cards.py: series whose tile uses a composed card.
+const CARD_IDS = new Set([
+  '71000',
+  '71001',
+  '71002',
+  '71007',
+  '71008',
+  '71010',
+  '71011',
+  '71013',
+  '71018',
+  '71019',
+  '71021',
+  '71025',
+  '71027',
+  '71029',
+  '71031',
+  '71032',
+  '71034',
+  '71037',
+  '71038',
+  '71045',
+  '71046',
+  '71048',
+  '71051',
+  '71052',
+  '71053',
+  '8683',
+  '8684',
+  '8803',
+  '8804',
+  '8805',
+  '8827',
+  '8831',
+  '8833',
+])
 // SOURCE: OWNER-SUPPLIED, V1-04 story brief: series whose bag image is unusable.
 const BAD_BAG_IDS = new Set(['8805', '8684', '8909'])
 
