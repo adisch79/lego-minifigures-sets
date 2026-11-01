@@ -38,6 +38,12 @@ const all = [a, b, c]
 const ids = (list: Series[]) => list.map((s) => s.id)
 
 describe('sortSeries', () => {
+  it('breaks year ties by set number', () => {
+    const same = [{ id: '71051', year: 2026 }, { id: '71053', year: 2026 }] as Series[]
+    expect(sortSeries(same, 'new').map((s) => s.id)).toEqual(['71053', '71051'])
+    expect(sortSeries(same, 'old').map((s) => s.id)).toEqual(['71051', '71053'])
+  })
+
   it('sorts newest first', () => {
     expect(ids(sortSeries(all, 'new'))).toEqual(['1002', '1003', '1001'])
   })

@@ -26,8 +26,8 @@ const BAD_BAG_IDS = new Set(['8805', '8684', '8909'])
 const byName = (a: Series, b: Series) => a.name.localeCompare(b.name, 'en')
 
 const COMPARATORS: Record<SortMode, (a: Series, b: Series) => number> = {
-  new: (a, b) => b.year - a.year || byName(a, b),
-  old: (a, b) => a.year - b.year || byName(a, b),
+  new: (a, b) => b.year - a.year || Number(b.id) - Number(a.id),
+  old: (a, b) => a.year - b.year || Number(a.id) - Number(b.id),
   az: byName,
   number: (a, b) => compareSeriesNo(a, b) || byName(a, b),
   count: (a, b) => b.figureCount - a.figureCount || b.year - a.year || byName(a, b),
