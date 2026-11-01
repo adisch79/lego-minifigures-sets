@@ -1203,5 +1203,900 @@
   "mn": "col301",
   "method": "flood",
   "needs_review": false
+ },
+ "71037-2": {
+  "sn": "col24-2.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "71034-6": {
+  "sn": "col23-6.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "71029-4": {
+  "sn": "col21-4.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "71029-6": {
+  "sn": "col21-6.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "71028-1": {
+  "sn": "colhp2-1.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "71028-2": {
+  "sn": "colhp2-2.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "71028-3": {
+  "sn": "colhp2-3.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "71028-4": {
+  "sn": "colhp2-4.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "71028-5": {
+  "sn": "colhp2-5.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "71028-6": {
+  "sn": "colhp2-6.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "71028-7": {
+  "sn": "colhp2-7.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "71028-8": {
+  "sn": "colhp2-8.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "71028-9": {
+  "sn": "colhp2-9.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "71028-10": {
+  "sn": "colhp2-10.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "71028-11": {
+  "sn": "colhp2-11.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "71028-13": {
+  "sn": "colhp2-13.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "71028-14": {
+  "sn": "colhp2-14.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "71028-15": {
+  "sn": "colhp2-15.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "71028-16": {
+  "sn": "colhp2-16.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "71027-1": {
+  "sn": "col20-1.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "71027-2": {
+  "sn": "col20-2.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "71027-3": {
+  "sn": "col20-3.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "71027-4": {
+  "sn": "col20-4.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "71027-5": {
+  "sn": "col20-5.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "71027-6": {
+  "sn": "col20-6.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "71027-7": {
+  "sn": "col20-7.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "71027-8": {
+  "sn": "col20-8.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "71027-9": {
+  "sn": "col20-9.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "71027-10": {
+  "sn": "col20-10.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "71027-11": {
+  "sn": "col20-11.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "71027-12": {
+  "sn": "col20-12.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "71027-13": {
+  "sn": "col20-13.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "71027-14": {
+  "sn": "col20-14.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "71027-15": {
+  "sn": "col20-15.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "71027-16": {
+  "sn": "col20-16.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "71026-1": {
+  "sn": "colsh-1.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "71026-2": {
+  "sn": "colsh-2.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "71026-3": {
+  "sn": "colsh-3.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "71026-4": {
+  "sn": "colsh-4.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "71026-5": {
+  "sn": "colsh-5.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "71026-6": {
+  "sn": "colsh-6.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "71026-7": {
+  "sn": "colsh-7.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "71026-8": {
+  "sn": "colsh-8.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "71026-9": {
+  "sn": "colsh-9.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "71026-11": {
+  "sn": "colsh-11.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "71026-12": {
+  "sn": "colsh-12.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "71026-13": {
+  "sn": "colsh-13.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "71026-15": {
+  "sn": "colsh-15.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "71026-16": {
+  "sn": "colsh-16.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "71025-1": {
+  "sn": "col19-1.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "71025-2": {
+  "sn": "col19-2.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "71025-3": {
+  "sn": "col19-3.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "71025-4": {
+  "sn": "col19-4.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "71025-5": {
+  "sn": "col19-5.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "71025-6": {
+  "sn": "col19-6.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "71025-7": {
+  "sn": "col19-7.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "71025-8": {
+  "sn": "col19-8.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "71025-9": {
+  "sn": "col19-9.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "71025-10": {
+  "sn": "col19-10.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "71025-11": {
+  "sn": "col19-11.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "71025-12": {
+  "sn": "col19-12.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "71025-13": {
+  "sn": "col19-13.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "71025-14": {
+  "sn": "col19-14.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "71025-15": {
+  "sn": "col19-15.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "71024-1": {
+  "sn": "coldis2-1.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "71024-2": {
+  "sn": "coldis2-2.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "71024-3": {
+  "sn": "coldis2-3.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "71024-4": {
+  "sn": "coldis2-4.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "71024-5": {
+  "sn": "coldis2-5.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "71024-6": {
+  "sn": "coldis2-6.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "71024-7": {
+  "sn": "coldis2-7.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "71024-8": {
+  "sn": "coldis2-8.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "71024-9": {
+  "sn": "coldis2-9.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "71024-10": {
+  "sn": "coldis2-10.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "71024-11": {
+  "sn": "coldis2-11.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "71024-12": {
+  "sn": "coldis2-12.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "71024-13": {
+  "sn": "coldis2-13.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "71024-14": {
+  "sn": "coldis2-14.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "71024-15": {
+  "sn": "coldis2-15.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "71024-16": {
+  "sn": "coldis2-16.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "71024-17": {
+  "sn": "coldis2-17.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "71024-18": {
+  "sn": "coldis2-18.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "71023-1": {
+  "sn": "coltlm2-1.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "71023-2": {
+  "sn": "coltlm2-2.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "71023-3": {
+  "sn": "coltlm2-3.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "71023-4": {
+  "sn": "coltlm2-4.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "71023-5": {
+  "sn": "coltlm2-5.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "71023-6": {
+  "sn": "coltlm2-6.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "71023-7": {
+  "sn": "coltlm2-7.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "71023-8": {
+  "sn": "coltlm2-8.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "71023-9": {
+  "sn": "coltlm2-9.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "71023-10": {
+  "sn": "coltlm2-10.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "71023-11": {
+  "sn": "coltlm2-11.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "71023-12": {
+  "sn": "coltlm2-12.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "71023-13": {
+  "sn": "coltlm2-13.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "71023-14": {
+  "sn": "coltlm2-14.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "71023-15": {
+  "sn": "coltlm2-15.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "71023-16": {
+  "sn": "coltlm2-16.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "71023-17": {
+  "sn": "coltlm2-17.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "71023-18": {
+  "sn": "coltlm2-18.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "71023-20": {
+  "sn": "coltlm2-20.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "71022-2": {
+  "sn": "colhp-2.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "71022-3": {
+  "sn": "colhp-3.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "71022-4": {
+  "sn": "colhp-4.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "71022-5": {
+  "sn": "colhp-5.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "71022-7": {
+  "sn": "colhp-7.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "71022-8": {
+  "sn": "colhp-8.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "71022-9": {
+  "sn": "colhp-9.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "71022-10": {
+  "sn": "colhp-10.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "71022-11": {
+  "sn": "colhp-11.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "71022-12": {
+  "sn": "colhp-12.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "71022-13": {
+  "sn": "colhp-13.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "71022-14": {
+  "sn": "colhp-14.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "71022-15": {
+  "sn": "colhp-15.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "71022-16": {
+  "sn": "colhp-16.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "71022-17": {
+  "sn": "colhp-17.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "71022-18": {
+  "sn": "colhp-18.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "71022-19": {
+  "sn": "colhp-19.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "71022-20": {
+  "sn": "colhp-20.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "71022-21": {
+  "sn": "colhp-21.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "71022-22": {
+  "sn": "colhp-22.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "71021-2": {
+  "sn": "col18-2.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "71021-3": {
+  "sn": "col18-3.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "71021-5": {
+  "sn": "col18-5.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "71021-8": {
+  "sn": "col18-8.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "71021-10": {
+  "sn": "col18-10.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "71017-8": {
+  "sn": "coltlbm-8.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "71017-12": {
+  "sn": "coltlbm-12.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "71017-15": {
+  "sn": "coltlbm-15.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "71017-17": {
+  "sn": "coltlbm-17.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "71017-18": {
+  "sn": "coltlbm-18.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "71017-19": {
+  "sn": "coltlbm-19.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "71017-20": {
+  "sn": "coltlbm-20.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "71014-1": {
+  "sn": "coldfb-1.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "71014-2": {
+  "sn": "coldfb-2.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "71014-4": {
+  "sn": "coldfb-4.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "71014-5": {
+  "sn": "coldfb-5.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "71014-14": {
+  "sn": "coldfb-14.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "71012-1": {
+  "sn": "coldis-1.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "71012-2": {
+  "sn": "coldis-2.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "71012-3": {
+  "sn": "coldis-3.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "71012-4": {
+  "sn": "coldis-4.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "71012-5": {
+  "sn": "coldis-5.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "71012-6": {
+  "sn": "coldis-6.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "71012-8": {
+  "sn": "coldis-8.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "71012-9": {
+  "sn": "coldis-9.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "71012-10": {
+  "sn": "coldis-10.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "71012-11": {
+  "sn": "coldis-11.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "71012-12": {
+  "sn": "coldis-12.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "71012-13": {
+  "sn": "coldis-13.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "71012-14": {
+  "sn": "coldis-14.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "71012-16": {
+  "sn": "coldis-16.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "71012-17": {
+  "sn": "coldis-17.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "71012-18": {
+  "sn": "coldis-18.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "71004-1": {
+  "sn": "coltlm-1.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "71004-2": {
+  "sn": "coltlm-2.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "71004-3": {
+  "sn": "coltlm-3.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "71004-4": {
+  "sn": "coltlm-4.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "71004-5": {
+  "sn": "coltlm-5.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "71004-6": {
+  "sn": "coltlm-6.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "71004-7": {
+  "sn": "coltlm-7.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "71004-8": {
+  "sn": "coltlm-8.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "71004-9": {
+  "sn": "coltlm-9.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "71004-10": {
+  "sn": "coltlm-10.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "71004-11": {
+  "sn": "coltlm-11.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "71004-12": {
+  "sn": "coltlm-12.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "71004-13": {
+  "sn": "coltlm-13.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "71004-14": {
+  "sn": "coltlm-14.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "71004-15": {
+  "sn": "coltlm-15.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "71004-16": {
+  "sn": "coltlm-16.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "8909-1": {
+  "sn": "coltgb-1.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "8909-2": {
+  "sn": "coltgb-2.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "8909-3": {
+  "sn": "coltgb-3.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "8909-4": {
+  "sn": "coltgb-4.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "8909-5": {
+  "sn": "coltgb-5.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "8909-6": {
+  "sn": "coltgb-6.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "8909-7": {
+  "sn": "coltgb-7.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "8909-8": {
+  "sn": "coltgb-8.png",
+  "method": "grabcut",
+  "needs_review": true
+ },
+ "8909-9": {
+  "sn": "coltgb-9.png",
+  "method": "grabcut",
+  "needs_review": true
  }
 }
