@@ -24,10 +24,11 @@ const CARD_IDS = new Set(['71019', '71031', '71038', '71045', '71053', '8683'])
 const BAD_BAG_IDS = new Set(['8805', '8684', '8909'])
 
 const byName = (a: Series, b: Series) => a.name.localeCompare(b.name, 'en')
+const byId = (a: Series, b: Series) => a.id.localeCompare(b.id, 'en', { numeric: true })
 
 const COMPARATORS: Record<SortMode, (a: Series, b: Series) => number> = {
-  new: (a, b) => b.year - a.year || Number(b.id) - Number(a.id),
-  old: (a, b) => a.year - b.year || Number(a.id) - Number(b.id),
+  new: (a, b) => b.year - a.year || byId(b, a),
+  old: (a, b) => a.year - b.year || byId(a, b),
   az: byName,
   number: (a, b) => compareSeriesNo(a, b) || byName(a, b),
   count: (a, b) => b.figureCount - a.figureCount || b.year - a.year || byName(a, b),

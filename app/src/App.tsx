@@ -26,16 +26,21 @@ type Load =
 
 function Tile({ series, index, query }: { series: Series; index: number; query: string }) {
   const art = tileArt(series)
+  // A failed image falls back to the first figure, then to the text placeholder.
+  const sources = [art?.src, series.figures[0]?.img].filter((s, i, all): s is string => !!s && all.indexOf(s) === i)
+  const [failed, setFailed] = useState(0)
+  const src = sources[failed]
   const hits = matchedFigures(series, query)
   const href = `#series/${series.id}`
   const delay = `${Math.min(index, STAGGER_MAX_TILES) * STAGGER_MS}ms`
-  const label = `${series.name}, set ${series.id}, ${series.year}`
+  const figures = `${series.figureCount} ${series.figureCount === 1 ? 'figure' : 'figures'}`
+  const label = `${series.name}, set ${series.id}, ${series.year}, ${figures}${hits.length ? `, includes ${hits.join(', ')}` : ''}`
   return (
     <li className="tile" style={{ animationDelay: delay }}>
       <a className="tile-link" href={href} aria-label={label}>
         <div className={art?.kind === 'photo' ? 'art art-photo' : 'art'}>
-          {art ? (
-            <img src={`${BASE}${art.src}`} alt={`${series.name} series`} loading="lazy" />
+          {src ? (
+            <img src={`${BASE}${src}`} alt="" loading="lazy" onError={() => setFailed((n) => n + 1)} />
           ) : (
             <span className="art-none">No. {series.id}</span>
           )}
@@ -47,7 +52,7 @@ function Tile({ series, index, query }: { series: Series; index: number; query: 
             No. {series.id} &middot; {series.year}
           </span>
           <span className="count-badge">
-            {series.figureCount} {series.figureCount === 1 ? 'figure' : 'figures'}
+            {figures}
           </span>
         </div>
         <h2>
@@ -242,7 +247,11 @@ export default function App() {
 
         {load.status === 'ready' && (
           <ul className="grid">
-            {visible.length === 0 ? (
+            {visible.length === 0 && !query.trim() ? (
+              <li className="empty">
+                <strong>No series in the catalog</strong>
+              </li>
+            ) : visible.length === 0 ? (
               <li className="empty">
                 <strong>No series match "{query}"</strong>
                 Try a series name, a set number like 71019, a year, or a figure.
