@@ -60,6 +60,7 @@ home grid (sort, search) and series page need. Built offline from the existing v
 | `figures[].name` | string | Rebrickable name. |
 | `figures[].img` | string or null | Figure image path; file must exist. |
 | `figures[].imgFallback` | bool | true when v1 had no real minifig photo (v1 `src == "set"`, 19 figures today); feeds the V1-03 gap report. |
+| `figures[].bricklinkNo` | int, optional | BrickLink figure number, present only where it differs from `no` (today: 71001-19 -> 17). Image URL uses `bricklinkNo ?? no`. Set via overrides `series.<id>.figures.<figId>.bricklinkNo`. |
 
 No display label in the data: the UI builds "Series 25" / "Marvel Series 2" from `line` + `seriesNo` through
 i18n strings (Hebrew in MVP 4). `name` is the fallback.

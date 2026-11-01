@@ -10,6 +10,8 @@ export interface Figure {
   img: string | null
   /** true when v1 had no real minifig photo (set render used instead). */
   imgFallback: boolean
+  /** BrickLink figure number, only present where it differs from `no`. */
+  bricklinkNo?: number
 }
 
 export interface Series {
@@ -74,13 +76,19 @@ function parseFigure(v: unknown, seriesId: string, path: string): Figure {
   if (no < 1 || String(no) !== id.split('-').pop()) {
     fail(`${path}.no`, `no ${no} does not match id ${id}`)
   }
-  return {
+  const fig: Figure = {
     id,
     no,
     name: str(o, 'name', path),
     img: nullableStr(o, 'img', path),
     imgFallback,
   }
+  if (o.bricklinkNo !== undefined) {
+    const b = int(o, 'bricklinkNo', path)
+    if (b < 1 || b === no) fail(`${path}.bricklinkNo`, 'must be >= 1 and differ from no')
+    fig.bricklinkNo = b
+  }
+  return fig
 }
 
 function parseSeries(v: unknown, path: string): Series {

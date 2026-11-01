@@ -73,7 +73,7 @@ class Fixture(unittest.TestCase):
         self.assertEqual(s["71001"]["figureCount"], 2)
         self.assertEqual(s["71001"]["bag"], "img/71001/71001-0.webp")
         self.assertIsNone(s["71001"]["card"])
-        self.assertTrue(s["71001"]["figures"][0]["imgFallback"])
+        self.assertFalse(s["71001"]["figures"][0]["imgFallback"])  # series has a code
         self.assertFalse(s["71001"]["figures"][1]["imgFallback"])
         self.assertEqual(s["71001"]["figures"][1]["no"], 2)
         self.assertNotIn("group", s["71001"])
@@ -132,7 +132,7 @@ class RealData(unittest.TestCase):
     def test_totals(self):
         self.assertEqual(len(self.cat["series"]), 52)
         self.assertEqual(sum(len(s["figures"]) for s in self.cat["series"]), 787)
-        self.assertEqual(sum(f["imgFallback"] for s in self.cat["series"] for f in s["figures"]), 19)
+        self.assertEqual(sum(f["imgFallback"] for s in self.cat["series"] for f in s["figures"]), 12)
 
     def test_field_rules(self):
         fig_ids = set()
@@ -185,7 +185,21 @@ class RealData(unittest.TestCase):
     def test_overrides_applied(self):
         self.assertEqual(self.by["71045"]["bricklinkCode"], "col25")
         self.assertEqual(self.by["71053"]["age"], "6+")
-        self.assertEqual(sum(s["bricklinkCode"] is not None for s in self.cat["series"]), 6)
+        self.assertEqual(sum(s["bricklinkCode"] is not None for s in self.cat["series"]), 51)  # 71049 F1 cars: BrickLink 71049-1 is the blind box, keep v1 images
+
+    def test_bricklink_no_override(self):
+        figs = {f["id"]: f for f in self.by["71001"]["figures"]}
+        self.assertEqual(figs["71001-19"]["bricklinkNo"], 17)
+        self.assertEqual(sum("bricklinkNo" in f for s in self.cat["series"] for f in s["figures"]), 1)
+
+    def test_bricklink_no_override_validation(self):
+        d = [{"id": "71001", "name": "Series 10 Minifigures", "year": "2013", "bag": None,
+              "figures": [{"set_num": "71001-5", "name": "A", "img": None}]}]
+        out = build(d, {"series": {"71001": {"source": "t", "figures": {"71001-5": {"bricklinkNo": 5}}}}}, ROOT / "site")
+        self.assertNotIn("bricklinkNo", out["series"][0]["figures"][0])
+        for bad in ({"71001-9": {"bricklinkNo": 2}}, {"71001-5": {"bricklinkNo": "x"}}):
+            with self.assertRaises(ValueError):
+                build(d, {"series": {"71001": {"source": "t", "figures": bad}}}, ROOT / "site")
 
     def test_deterministic(self):
         with tempfile.TemporaryDirectory() as t:

@@ -6,3 +6,4 @@ app/dist
 .env
 .env.*
 !.env.example
+docs/spike/V1-03-check/

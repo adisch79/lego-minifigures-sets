@@ -19,7 +19,7 @@ DEFAULT_OUT = ROOT / "app" / "public" / "catalog.json"
 SOURCE = "site/data.json (Rebrickable CSV dumps) + scripts/catalog_overrides.json"
 MAIN_RE = re.compile(r"^Series (\d+) Minifigures$")
 NUMBERED_RE = re.compile(r"^(.*) Series (\d+)$")
-OVERRIDE_KEYS = {"line", "seriesNo", "age", "bricklinkCode", "source"}
+OVERRIDE_KEYS = {"line", "seriesNo", "age", "bricklinkCode", "figures", "source"}
 
 
 def derive_line(name):
@@ -57,6 +57,12 @@ def build(data, overrides, site=SITE):
                 isinstance(ov["bricklinkCode"], str)
                 and re.fullmatch(r"[a-z0-9]+", ov["bricklinkCode"])):
             raise ValueError(f"override {sid}: bricklinkCode must be lowercase alphanumeric")
+        for fid, fo in ov.get("figures", {}).items():
+            if not (isinstance(fo, dict) and set(fo) == {"bricklinkNo"}
+                    and type(fo["bricklinkNo"]) is int and fo["bricklinkNo"] >= 1):
+                raise ValueError(f"override {sid} figure {fid}: expected {{bricklinkNo: int>=1}}")
+            if not any(f["set_num"] == fid for s2 in data if s2["id"] == sid for f in s2["figures"]):
+                raise ValueError(f"override {sid}: unknown figure {fid}")
         extra = set(ov) - OVERRIDE_KEYS
         if extra:
             raise ValueError(f"override {sid} has unknown keys {sorted(extra)}")
@@ -85,13 +91,18 @@ def build(data, overrides, site=SITE):
                 raise ValueError(f"figure {fid} does not belong to series {sid}")
             img = f.get("img")
             _check_image(site, img, f"figure {fid}")
-            figures.append({
+            fig = {
                 "id": fid,
                 "no": int(fid.rsplit("-", 1)[1]),
                 "name": f["name"],
                 "img": img,
-                "imgFallback": f.get("src") == "set",
-            })
+                # A series with a BrickLink code has a cut-out for every figure (V1-03).
+                "imgFallback": f.get("src") == "set" and not ov.get("bricklinkCode"),
+            }
+            bl_no = ov.get("figures", {}).get(fid, {}).get("bricklinkNo")
+            if bl_no is not None and bl_no != fig["no"]:
+                fig["bricklinkNo"] = bl_no
+            figures.append(fig)
         series_out.append({
             "id": sid,
             "name": s["name"],

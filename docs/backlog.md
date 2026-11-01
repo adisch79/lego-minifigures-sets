@@ -44,7 +44,7 @@ Legend: **UI** = needs approved direction first. **Owner** = needs something onl
 |---|---|---|---|---|---|---|
 | V1-01 | Scaffold app + CI | Vite/React/TS app in `app/`; lint, unit tests (Vitest), build in CI; Pages deploys `app/dist` | S | sonnet | | Done (PR #8) |
 | V1-02 | Catalog contract v2 | `catalog.json` per `docs/design/V1-02-catalog-v2.md`: series {id, name, line, seriesNo, year, age, bricklinkCode, figureCount, bag, card}, figure {id, no, name, img, imgFallback}; overrides table; image copy step; schema tests (py + TS guard) | M | sonnet (design review opus) | | Done (PR into dev) |
-| V1-03 | Images for all series | Approved V0-01 method on all ~52 bags and ~790 figures; gap report (haiku review list) | M | sonnet + haiku | | Ready |
+| V1-03 | Images for all series | Approved V0-01 method on all ~52 bags and ~790 figures; gap report (haiku review list) | M | sonnet + haiku | | Done |
 | V1-04 | Home: grid, sort, search | Sort: newest, oldest, A–Z, series number, figure count. Search: series name/number/year and figure name. State in URL | M | senior-frontend-dev | UI | Ready |
 | V1-05 | Series page | All figures with name + number; works on desktop and 375 px; keyboard accessible | M | senior-frontend-dev | UI | Ready |
 
