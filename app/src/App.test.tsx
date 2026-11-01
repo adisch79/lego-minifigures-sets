@@ -58,7 +58,11 @@ describe('App', () => {
     render(<App />)
     await screen.findByText('Shrek')
     expect(headings()).toEqual(['Shrek', 'Ninjago Movie', 'Series 5'])
-    const src = (name: string) => screen.getByAltText(`${name} series`).getAttribute('src')
+    const src = (name: string) =>
+      screen
+        .getAllByRole('link', { name: new RegExp(`^${name},`) })[0]
+        .querySelector('img')
+        ?.getAttribute('src')
     expect(src('Ninjago Movie')).toContain('cards/71019.png')
     expect(src('Series 5')).toContain('img/8805/8805-1.webp')
   })
