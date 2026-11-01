@@ -114,16 +114,24 @@ describe('tileArt', () => {
     expect(tileArt(make({ id: '71019' }))).toEqual({ src: 'cards/71019.png', kind: 'card' })
     expect(tileArt(make({ id: '8683' }))).toEqual({ src: 'cards/8683.png', kind: 'card' })
   })
-  it('uses the bag by default', () => {
-    expect(tileArt(make({ id: '71000' }))?.src).toBe('img/71000/bag.webp')
-  })
-  it.each(['8805', '8684', '8909'])('uses the first figure for bad bag %s', (id) => {
-    expect(tileArt(make({ id }))?.src).toBe(`img/${id}/1.webp`)
+  it('uses the bag for a series without a card', () => {
+    expect(tileArt(make({ id: '99999' }))?.src).toBe('img/99999/bag.webp')
   })
   it('falls back to the first figure, then null, when art is missing', () => {
-    const noBag = make({ id: '71000', bag: null })
-    expect(tileArt(noBag)?.src).toBe('img/71000/1.webp')
+    const noBag = make({ id: '99999', bag: null })
+    expect(tileArt(noBag)?.src).toBe('img/99999/1.webp')
     expect(tileArt({ ...noBag, figures: [] })).toBeNull()
+  })
+  it('has a card file for every series in the catalog', () => {
+    const cards = Object.keys(import.meta.glob('../public/cards/*.png'))
+    const [catalog] = Object.values(
+      import.meta.glob<{ series: { id: string }[] }>('../public/catalog.json', { eager: true, import: 'default' }),
+    )
+    expect(catalog.series).toHaveLength(52)
+    for (const { id } of catalog.series) {
+      expect(tileArt(make({ id }))?.kind, id).toBe('card')
+      expect(cards, id).toContain(`../public/cards/${id}.png`)
+    }
   })
 })
 

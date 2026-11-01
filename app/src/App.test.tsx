@@ -64,7 +64,7 @@ describe('App', () => {
         .querySelector('img')
         ?.getAttribute('src')
     expect(src('Ninjago Movie')).toContain('cards/71019.png')
-    expect(src('Series 5')).toContain('img/8805/8805-1.webp')
+    expect(src('Series 5')).toContain('cards/8805.png')
   })
 
   it('restores sort and search from the URL', async () => {
