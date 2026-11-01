@@ -157,7 +157,7 @@ export default function App() {
                 </svg>
                 <input
                   type="search"
-                  placeholder="Search name, number, year, figure"
+                  placeholder="Search series, year, figure"
                   autoComplete="off"
                   value={state.q}
                   onChange={(e) => setState((s) => ({ ...s, q: e.target.value }))}
