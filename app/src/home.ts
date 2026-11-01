@@ -23,25 +23,43 @@ const CARD_IDS = new Set([
   '71000',
   '71001',
   '71002',
+  '71004',
+  '71005',
   '71007',
   '71008',
+  '71009',
   '71010',
   '71011',
+  '71012',
   '71013',
+  '71014',
+  '71017',
   '71018',
   '71019',
+  '71020',
   '71021',
+  '71022',
+  '71023',
+  '71024',
   '71025',
+  '71026',
   '71027',
+  '71028',
   '71029',
+  '71030',
   '71031',
   '71032',
+  '71033',
   '71034',
   '71037',
   '71038',
+  '71039',
   '71045',
   '71046',
+  '71047',
   '71048',
+  '71049',
+  '71050',
   '71051',
   '71052',
   '71053',
@@ -53,10 +71,8 @@ const CARD_IDS = new Set([
   '8827',
   '8831',
   '8833',
+  '8909',
 ])
-// SOURCE: OWNER-SUPPLIED, V1-04 story brief: series whose bag image is unusable.
-const BAD_BAG_IDS = new Set(['8805', '8684', '8909'])
-
 const byName = (a: Series, b: Series) => a.name.localeCompare(b.name, 'en')
 const byId = (a: Series, b: Series) => a.id.localeCompare(b.id, 'en', { numeric: true })
 
@@ -122,7 +138,7 @@ export interface TileArt {
 export function tileArt(s: Series): TileArt | null {
   if (CARD_IDS.has(s.id)) return { src: `cards/${s.id}.png`, kind: 'card' }
   const figure = s.figures[0]?.img ?? null
-  const src = BAD_BAG_IDS.has(s.id) ? (figure ?? s.bag) : (s.bag ?? figure)
+  const src = s.bag ?? figure
   return src ? { src, kind: 'photo' } : null
 }
 
