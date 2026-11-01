@@ -39,11 +39,14 @@ const headings = () => screen.getAllByRole('heading', { level: 2 }).map((h) => h
 beforeEach(() => {
   window.history.replaceState(null, '', '/')
   stubFetch({ ok: true, json: () => Promise.resolve(catalog) })
+  // jsdom has no layout, so scrolling is a spy.
+  vi.spyOn(window, 'scrollTo').mockImplementation(() => {})
 })
 
 afterEach(() => {
   cleanup()
   vi.unstubAllGlobals()
+  vi.restoreAllMocks()
 })
 
 describe('App', () => {
@@ -103,5 +106,94 @@ describe('App', () => {
     stubFetch({ ok: true, json: () => Promise.resolve(catalog) })
     fireEvent.click(within(alert).getByRole('button', { name: 'Try again' }))
     await screen.findByText('Shrek')
+  })
+})
+
+describe('series page', () => {
+  const go = (hash: string) => {
+    window.location.hash = hash
+    fireEvent(window, new HashChangeEvent('hashchange'))
+  }
+
+  it('opens from the hash with the card, facts and figure', async () => {
+    window.history.replaceState(null, '', '/#series/71019')
+    render(<App />)
+    const title = await screen.findByRole('heading', { level: 1, name: 'Ninjago Movie' })
+    expect(title).toBeTruthy()
+    expect(document.title).toContain('Ninjago Movie')
+    const hero = title.closest('section')!
+    expect(hero.textContent).toContain('No. 71019')
+    expect(hero.textContent).toContain('2017')
+    expect(hero.textContent).toContain('1 to collect')
+    const card = screen.getByAltText('Ninjago Movie series card')
+    expect(card.getAttribute('src')).toContain('cards/71019.png')
+    expect(document.querySelector('img[src*="71019-0"]')).toBeNull()
+    const pic = screen.getByAltText('Kai Kendo minifigure')
+    expect(pic.getAttribute('src')).toContain('img/71019/71019-1.webp')
+    expect(pic.getAttribute('loading')).toBe('lazy')
+    expect(screen.getByRole('heading', { level: 3 }).textContent).toContain('Kai Kendo')
+  })
+
+  it('shows no sign-in features', async () => {
+    window.history.replaceState(null, '', '/#series/71019')
+    render(<App />)
+    await screen.findByRole('heading', { level: 1, name: 'Ninjago Movie' })
+    expect(screen.queryAllByRole('button')).toHaveLength(0)
+    expect(document.body.textContent).not.toMatch(/owned|wanted/i)
+  })
+
+  it('shows a text placeholder when a figure image fails', async () => {
+    window.history.replaceState(null, '', '/#series/71019')
+    render(<App />)
+    const pic = await screen.findByAltText('Kai Kendo minifigure')
+    fireEvent.error(pic)
+    expect(screen.queryByAltText('Kai Kendo minifigure')).toBeNull()
+    expect(screen.getByText('No picture yet')).toBeTruthy()
+  })
+
+  it('shows a not-found state with a link home for an unknown id', async () => {
+    window.history.replaceState(null, '', '/?sort=az#series/99999')
+    render(<App />)
+    const title = await screen.findByRole('heading', { level: 1, name: 'Series not found' })
+    expect(title.parentElement!.textContent).toContain('99999')
+    const home = screen.getByRole('link', { name: 'Back to all series' })
+    expect(home.getAttribute('href')).toBe('#')
+  })
+
+  it('does not call an id missing while the catalog is still loading', () => {
+    window.history.replaceState(null, '', '/#series/71019')
+    render(<App />)
+    expect(screen.queryByRole('heading', { name: 'Series not found' })).toBeNull()
+    expect(screen.getByRole('link', { name: /All series/ })).toBeTruthy()
+  })
+
+  it('reports a catalog failure rather than not-found', async () => {
+    stubFetch({ ok: false, status: 500 })
+    window.history.replaceState(null, '', '/#series/71019')
+    render(<App />)
+    const alert = await screen.findByRole('alert')
+    expect(alert.textContent).toContain('HTTP 500')
+    expect(screen.queryByRole('heading', { name: 'Series not found' })).toBeNull()
+  })
+
+  it('goes back home keeping the sort and search, and scrolls to top on entry', async () => {
+    window.history.replaceState(null, '', '/?sort=az&q=ninjago')
+    render(<App />)
+    await screen.findByText('Ninjago Movie')
+    const scroll = vi.mocked(window.scrollTo)
+    scroll.mockClear()
+
+    go('#series/71019')
+    await screen.findByRole('heading', { level: 1, name: 'Ninjago Movie' })
+    expect(scroll).toHaveBeenCalledWith(0, 0)
+    expect(window.location.search).toBe('?sort=az&q=ninjago')
+    expect(screen.getByRole('link', { name: /All series/ }).getAttribute('href')).toBe('#')
+
+    go('')
+    await screen.findByLabelText('Search series')
+    expect(window.location.search).toBe('?sort=az&q=ninjago')
+    expect((screen.getByLabelText('Search series') as HTMLInputElement).value).toBe('ninjago')
+    expect((screen.getByLabelText('Sort series') as HTMLSelectElement).value).toBe('az')
+    expect(headings()).toEqual(['Ninjago Movie'])
   })
 })
