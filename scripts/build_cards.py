@@ -1,6 +1,6 @@
 """Render composed series cards with the owner-approved v4 template (docs/spike/V0-06-cards.py).
 
-Usage: python scripts/build_cards.py [<seriesId> ...]   (default: every series without a card)
+Usage: python scripts/build_cards.py [<seriesId> ...]   (default: only series without a card, so name ids to re-render)
 Output: app/public/cards/<id>.png. Figures come from site/img, colours from the series bag image.
 Front row: five figures evenly spaced through the series.
 """
@@ -76,24 +76,34 @@ def spec_for(s):
     return spec
 
 
+def patch(html, old, new):
+    """Template edit that fails loudly when the V0-06 template no longer holds the expected text."""
+    if old not in html:
+        raise ValueError(f"card template changed, not found: {old}")
+    return html.replace(old, new)
+
+
 def main():
     series = json.loads((ROOT / "app/public/catalog.json").read_text(encoding="utf-8"))["series"]
     v4.__dict__["_real_wide"] = v4.wide
     v4.wide = fig_size
     v4.bag_palette = palette
     ids = sys.argv[1:] or [s["id"] for s in series if not (OUT / f"{s['id']}.png").exists()]
+    unknown = set(ids) - {s["id"] for s in series}
+    if unknown:
+        sys.exit(f"unknown series id: {sorted(unknown)}")
     TMP.mkdir(parents=True, exist_ok=True)
     img, logos = (ROOT / "site/img").as_uri(), (ROOT / "mockups/assets/logos").as_uri()
     for s in (x for x in series if x["id"] in ids):
         html = v4.card(spec_for(s))[0].replace(f"../assets/figs/{s['id']}-", f"{img}/{s['id']}/{s['id']}-")
         html = html.replace("../assets/logos/", logos + "/")
         if not s.get("age"):  # bag image unreadable: no age is printed rather than a guess
-            html = html.replace('<div class="lab">Ages</div><div class="age">None</div><div class="rule"></div>', "")
+            html = patch(html, '<div class="lab">Ages</div><div class="age">None</div><div class="rule"></div>', "")
         if s["id"] in LICENSED:
             _, _, top, halo = LICENSED[s["id"]]
-            html = html.replace("--logo-top:206px", f"--logo-top:{top}px")
+            html = patch(html, "--logo-top:206px", f"--logo-top:{top}px")
             if halo:
-                html = html.replace(f'alt="{s["name"]}" style="', f'alt="{s["name"]}" style="filter:{halo};')
+                html = patch(html, f'alt="{s["name"]}" style="', f'alt="{s["name"]}" style="filter:{halo};')
         if s["id"] in OPAQUE_FIGURES:
             cut = TMP / s["id"]
             cut.mkdir(exist_ok=True)
