@@ -73,7 +73,7 @@ class Fixture(unittest.TestCase):
         self.assertEqual(s["71001"]["figureCount"], 2)
         self.assertEqual(s["71001"]["bag"], "img/71001/71001-0.webp")
         self.assertIsNone(s["71001"]["card"])
-        self.assertTrue(s["71001"]["figures"][0]["imgFallback"])
+        self.assertFalse(s["71001"]["figures"][0]["imgFallback"])  # series has a code
         self.assertFalse(s["71001"]["figures"][1]["imgFallback"])
         self.assertEqual(s["71001"]["figures"][1]["no"], 2)
         self.assertNotIn("group", s["71001"])
@@ -132,7 +132,7 @@ class RealData(unittest.TestCase):
     def test_totals(self):
         self.assertEqual(len(self.cat["series"]), 52)
         self.assertEqual(sum(len(s["figures"]) for s in self.cat["series"]), 787)
-        self.assertEqual(sum(f["imgFallback"] for s in self.cat["series"] for f in s["figures"]), 19)
+        self.assertEqual(sum(f["imgFallback"] for s in self.cat["series"] for f in s["figures"]), 12)
 
     def test_field_rules(self):
         fig_ids = set()

@@ -96,7 +96,8 @@ def build(data, overrides, site=SITE):
                 "no": int(fid.rsplit("-", 1)[1]),
                 "name": f["name"],
                 "img": img,
-                "imgFallback": f.get("src") == "set",
+                # A series with a BrickLink code has a cut-out for every figure (V1-03).
+                "imgFallback": f.get("src") == "set" and not ov.get("bricklinkCode"),
             }
             bl_no = ov.get("figures", {}).get(fid, {}).get("bricklinkNo")
             if bl_no is not None and bl_no != fig["no"]:
