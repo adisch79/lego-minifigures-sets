@@ -23,19 +23,29 @@ def white_border(path):
     return float((b.min(axis=1) >= 238).mean())
 
 
-cat = json.loads((ROOT / "app/public/catalog.json").read_text(encoding="utf-8"))
-counts = {s["id"]: len(s["figures"]) for s in cat["series"]}
-smap = json.loads((ROOT / "scripts/mn_map.json").read_text())
-log = json.loads(LOG.read_text()) if LOG.exists() else {}
-for sid in sys.argv[1:] or smap:
-    v = smap[sid]
-    cols = v.get("list") or [v["first"] + i for i in range(counts[sid])]
-    assert len(cols) == counts[sid], sid
-    for no, c in enumerate(cols, 1):
-        src = MN / f"col{c:03d}.png"
-        photo = white_border(src) < 0.9
-        im = cutout_photo(src) if photo else cutout(src)
-        im.save(ROOT / "site/img" / sid / f"{sid}-{no}.webp", "WEBP", quality=90, method=6)
-        log[f"{sid}-{no}"] = {"mn": f"col{c:03d}", "method": "grabcut" if photo else "flood", "needs_review": photo}
-LOG.write_text(json.dumps(log, indent=1))
-print("written", len(log), "needs_review", sorted(k for k, r in log.items() if r["needs_review"]))
+def main():
+    cat = json.loads((ROOT / "app/public/catalog.json").read_text(encoding="utf-8"))
+    counts = {s["id"]: len(s["figures"]) for s in cat["series"]}
+    smap = json.loads((ROOT / "scripts/mn_map.json").read_text())
+    log = json.loads(LOG.read_text()) if LOG.exists() else {}
+    for sid in sys.argv[1:] or smap:
+        if sid not in smap:
+            raise ValueError(f"{sid} not in scripts/mn_map.json")
+        v = smap[sid]
+        cols = v.get("list") or [v["first"] + i for i in range(counts[sid])]
+        if len(cols) != counts[sid]:
+            raise ValueError(f"{sid}: {len(cols)} columns for {counts[sid]} figures")
+        for no, c in enumerate(cols, 1):
+            src = MN / f"col{c:03d}.png"
+            photo = white_border(src) < 0.9
+            im = cutout_photo(src) if photo else cutout(src)
+            out = ROOT / "site/img" / sid / f"{sid}-{no}.webp"
+            out.parent.mkdir(parents=True, exist_ok=True)
+            im.save(out, "WEBP", quality=90, method=6)
+            log[f"{sid}-{no}"] = {"mn": f"col{c:03d}", "method": "grabcut" if photo else "flood", "needs_review": photo}
+    LOG.write_text(json.dumps(log, indent=1))
+    print("written", len(log), "needs_review", sorted(k for k, r in log.items() if r["needs_review"]))
+
+
+if __name__ == "__main__":
+    main()

@@ -2,6 +2,7 @@
 
 Uses OpenCV GrabCut seeded from a thin border (certain background), then keeps
 components above 0.2% of the image and crops to the figure.
+Needs OpenCV: pip install -r requirements-images.txt (only for re-cutting images, not for the build).
 """
 import cv2
 import numpy as np

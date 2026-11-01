@@ -24,7 +24,7 @@
 1. V1-01 merged into dev (PR #8, 2026-11-01); MVP 0 merged (PR #7). Vite/React/TS app in `app/`, CI `app-ci.yml`; Pages deploy of `app/dist` disabled until V1-05. TypeScript pinned ~6.0 (typescript-eslint needs <6.1). `.env` also in `.git/info/exclude`.
 2. V1-02 merged into dev (PR #9).
 3. **V1-03 in progress** on `feature/V1-03-images` (pushed). Done: (a) BrickLink codes for 51/52 series, visually verified (docs/spike/V1-03-codes-sheet-1..3.png); 71049 F1 has no code and keeps v1 images; 71001-19 -> bricklinkNo 17. (b) `scripts/fetch_figures.py <ids>` (resumable, 1 req/2 s, cut-out via `scripts/cutout.py`) -> `site/img/<id>/<id>-<n>.webp`. Batches 1-6 committed (39 series; batch 6 = 71001 71000 8909 8833 8831, re-run: written 0, failures []).
-   Done on branch: QA, re-sourced images, `imgFallback` fix (12 left, 71049), ages (43 added; 8909, 8805, 8684 unreadable), gap report `docs/spike/V1-03-gaps.md`. NEXT: code-reviewer + qa, PR into dev, merge; then V1-04 (3 mockups exist as mockup D; build home).
+   Done on branch: QA, re-sourced images, `imgFallback` fix (12 left, 71049), ages (43 added; 8909, 8805, 8684 unreadable), gap report `docs/spike/V1-03-gaps.md`. Review and QA passed, no blockers. Next: V1-04 home grid.
 4. Agent merges feature PRs into dev after code-reviewer and qa pass (`gh pr merge <n> --merge`; owner OK 2026-11-01, decisions.md). `master` stays owner-only.
 5. Later polish (not blocking): series page hero in mockup D still uses the bag image.
 

@@ -49,3 +49,4 @@
 - 2026-11-01 — Owner: agent may merge feature PRs into `dev` (`gh pr merge <n> --merge`) after code-reviewer and qa pass. Standing rule in `autoMode.allow` (~/.claude/settings.json). `master` stays owner-only.
 - 2026-11-01 — V1-03 QA: SN flood fill fails on older series (311/775 flagged, 158 untouched). Default: use BrickLink MN minifig images for failed series. Trade-off: no stand, accessories may differ from SN images; to be checked on a full series.
 - 2026-11-01 — V1-03 images: series 2-11, 13-17 use BrickLink minifig images; other flagged figures use GrabCut on set images (no col map needed for licensed series). Look is mixed (stand / no stand); gaps in docs/spike/V1-03-gaps.md.
+- 2026-11-01 — V1-03 closed with bags left opaque (no background to remove) and a partial review list; gaps listed in docs/spike/V1-03-gaps.md, owner can reopen.

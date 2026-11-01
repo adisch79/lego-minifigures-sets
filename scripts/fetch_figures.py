@@ -35,7 +35,9 @@ def fetch(code, n):
     requests[0] += 1
     req = urllib.request.Request(URL.format(c=code, n=n), headers={"User-Agent": UA})
     with urllib.request.urlopen(req, timeout=20) as r:
-        dest.write_bytes(r.read())
+        tmp = dest.with_suffix(".tmp")
+        tmp.write_bytes(r.read())
+        tmp.replace(dest)
     return dest
 
 
@@ -102,6 +104,8 @@ def main(argv):
     if out_sheet and outs:
         sheet(outs, out_sheet)
     print("written", written, "failures", failures, "requests", requests[0])
+    if failures:
+        sys.exit(1)
 
 
 if __name__ == "__main__":
