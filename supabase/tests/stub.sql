@@ -11,6 +11,7 @@ create schema auth;
 create table auth.users (
   id uuid primary key default gen_random_uuid(),
   email text,
+  email_change text default '',
   raw_user_meta_data jsonb not null default '{}'::jsonb
 );
 
@@ -22,10 +23,12 @@ as $$ select nullif(current_setting('request.jwt.claim.sub', true), '')::uuid $$
 grant usage on schema auth to anon, authenticated, service_role, supabase_auth_admin;
 grant execute on function auth.uid() to anon, authenticated, service_role;
 grant usage on schema public to anon, authenticated, service_role;
+-- Auth writes users as this role on a real project.
+grant select, insert, update, delete on auth.users to supabase_auth_admin;
 
--- Worst case on purpose: older Supabase projects granted everything by default,
--- so the migration must revoke explicitly.
-alter default privileges in schema public grant all on tables to anon, authenticated, service_role;
+-- Worst case on purpose, both ways: client roles get everything by default, so the
+-- migration must revoke; service_role gets nothing, so the migration must grant.
+alter default privileges in schema public grant all on tables to anon, authenticated;
 
 -- Empty realtime publication so the test can assert our tables never join it.
 create publication supabase_realtime;

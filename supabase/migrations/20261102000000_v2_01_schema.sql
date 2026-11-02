@@ -4,7 +4,7 @@
 create schema if not exists private;
 revoke all on schema private from public, anon, authenticated;
 
--- allowlist: record of invited addresses. No client access.
+-- allowlist: gate for account creation, enforced by a trigger on auth.users. No client access.
 create table public.allowlist (
   email text primary key check (email = lower(email)),
   added_at timestamptz not null default now()
@@ -29,8 +29,8 @@ create table public.marks (
   updated_at timestamptz not null default now(),
   primary key (user_id, kind, target_id),
   check (
-    (kind = 'series' and target_id ~ '^\d{4,6}$')
-    or (kind = 'figure' and target_id ~ '^\d{4,6}-\d+$')
+    (kind = 'series' and target_id ~ '^[0-9]{4,6}$')
+    or (kind = 'figure' and target_id ~ '^[0-9]{4,6}-[0-9]{1,4}$')
   )
 );
 
@@ -40,6 +40,26 @@ alter table public.profiles enable row level security;
 alter table public.marks enable row level security;
 
 -- Functions: private schema, empty search_path, no execute for client roles.
+-- Backstop if the signup flag is ever switched on: a null email also fails.
+create function private.enforce_allowlist() returns trigger
+language plpgsql security definer set search_path = ''
+as $$
+begin
+  if not exists (select 1 from public.allowlist a where a.email = lower(new.email)) then
+    raise exception 'address is not on the allowlist' using errcode = '42501';
+  end if;
+  return new;
+end;
+$$;
+
+create function private.block_email_change() returns trigger
+language plpgsql set search_path = ''
+as $$
+begin
+  raise exception 'email change is disabled' using errcode = '42501';
+end;
+$$;
+
 create function private.handle_new_user() returns trigger
 language plpgsql security definer set search_path = ''
 as $$
@@ -77,15 +97,30 @@ begin
 end;
 $$;
 
-revoke execute on function private.handle_new_user(), private.set_updated_at(),
+revoke execute on function private.enforce_allowlist(), private.block_email_change(),
+  private.handle_new_user(), private.set_updated_at(),
   private.enforce_marks_cap() from public, anon, authenticated;
+
+create trigger enforce_allowlist_on_insert
+  before insert on auth.users
+  for each row execute function private.enforce_allowlist();
+
+create trigger enforce_allowlist_on_email_update
+  before update of email on auth.users
+  for each row when (new.email is distinct from old.email)
+  execute function private.enforce_allowlist();
+
+create trigger block_email_change
+  before update of email_change on auth.users
+  for each row when (coalesce(new.email_change, '') <> '' and new.email_change is distinct from old.email_change)
+  execute function private.block_email_change();
 
 create trigger on_auth_user_created
   after insert on auth.users
   for each row execute function private.handle_new_user();
 
 create trigger marks_set_updated_at
-  before update on public.marks
+  before insert or update on public.marks
   for each row execute function private.set_updated_at();
 
 create trigger marks_enforce_cap
@@ -99,6 +134,7 @@ grant select on public.profiles to authenticated;
 grant update (display_name) on public.profiles to authenticated;
 grant select, insert, delete on public.marks to authenticated;
 grant update (state) on public.marks to authenticated;
+grant select, insert, update, delete on public.allowlist, public.admins, public.profiles, public.marks to service_role;
 
 -- Policies. allowlist and admins: RLS on, no policies.
 create policy profiles_select_own on public.profiles

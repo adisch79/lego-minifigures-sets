@@ -4,6 +4,7 @@ Database layer for V2-01 (see `docs/design/V2-01-schema.md`): tables `allowlist`
 
 ## Contents
 - `migrations/20261102000000_v2_01_schema.sql` - the migration. Contains no emails, admin ids or secrets.
+- `config.toml` - records the intended auth settings (signups off, email only). Live settings are not changed by this file; the live smoke test in the design doc checks them.
 - `tests/stub.sql` - TEST FIXTURE ONLY. Fakes the parts Supabase provides (`auth` schema, `auth.users`, `auth.uid()`, roles). Never apply it to a real project.
 - `tests/schema.test.js` - runs stub + migration in PGlite (in-process Postgres, no Docker) and checks the access rules.
 

@@ -26,6 +26,7 @@ before(async () => {
 
 beforeEach(async () => {
   await db.exec('reset role; delete from auth.users; delete from public.allowlist;');
+  await db.exec("insert into public.allowlist (email) values ('a@example.invalid'),('b@example.invalid')");
   await db.exec(`insert into auth.users (id, email) values ('${A}','a@example.invalid'),('${B}','b@example.invalid')`);
 });
 
@@ -112,6 +113,7 @@ test('marks: own rows work; state update bumps updated_at; other columns not wri
 });
 
 test('profiles: row created on user insert, takes nothing from metadata', async () => {
+  await q("insert into public.allowlist (email) values ('c@example.invalid')");
   await q(`insert into auth.users (id, email, raw_user_meta_data)
            values (gen_random_uuid(), 'c@example.invalid', '{"display_name":"evil","is_admin":true}')`);
   const r = await q("select display_name from public.profiles where user_id = (select id from auth.users where email='c@example.invalid')");
@@ -152,6 +154,7 @@ test('constraints refuse bad kind, state, id shape and kind/id mismatch', async 
     ['figure', '71053', 'owned'], // series id on figure kind
     ['figure', '71053-', 'owned'],
     ['figure', '71053-x', 'owned'],
+    ['figure', '71053-12345', 'owned'],
   ];
   for (const [k, id, s] of bad) {
     await assert.rejects(insMark(A, k, id, s), denied('23514'), `${k} ${id} ${s}`);
@@ -202,7 +205,7 @@ test('cascade: deleting a user removes profile, marks and admin row', async () =
 test('private functions are not callable by client roles', async () => {
   for (const role of ['anon', 'authenticated']) {
     assert.equal((await q(`select has_schema_privilege('${role}','private','usage') u`)).rows[0].u, false);
-    for (const fn of ['handle_new_user', 'set_updated_at', 'enforce_marks_cap']) {
+    for (const fn of ['enforce_allowlist', 'block_email_change', 'handle_new_user', 'set_updated_at', 'enforce_marks_cap']) {
       assert.equal((await q(`select has_function_privilege('${role}','private.${fn}()','execute') x`)).rows[0].x, false, `${role} ${fn}`);
     }
   }
@@ -216,10 +219,68 @@ test('private functions are not callable by client roles', async () => {
   }
 });
 
-test('definer functions pin an empty search_path', async () => {
-  const r = await q("select proname, proconfig from pg_proc where pronamespace='private'::regnamespace");
-  assert.equal(r.rows.length, 3);
-  for (const f of r.rows) assert.ok(f.proconfig.includes('search_path=""'), f.proname);
+test('auth.users insert: unlisted and null email refused, mixed-case listed accepted', async () => {
+  const add = (email) => q('insert into auth.users (email) values ($1)', [email]);
+  await assert.rejects(add('nobody@example.invalid'), denied('42501'));
+  await assert.rejects(add(null), denied('42501'));
+  await q("insert into public.allowlist (email) values ('mixed@example.invalid')");
+  await add('Mixed@Example.invalid');
+  assert.equal((await q("select count(*)::int n from public.profiles p join auth.users u on u.id = p.user_id where u.email = 'Mixed@Example.invalid'")).rows[0].n, 1);
+});
+
+test('the gate works as the role Auth uses', async () => {
+  await q("insert into public.allowlist (email) values ('c@example.invalid')");
+  await as('supabase_auth_admin', null, async () => {
+    await q("insert into auth.users (email) values ('c@example.invalid')");
+    await assert.rejects(q("insert into auth.users (email) values ('d@example.invalid')"), denied('42501'));
+  });
+  assert.equal((await q("select count(*)::int n from public.profiles p join auth.users u on u.id = p.user_id where u.email = 'c@example.invalid'")).rows[0].n, 1);
+});
+
+test('email cannot move off the allowlist; existing users survive allowlist removal', async () => {
+  await assert.rejects(q("update auth.users set email_change='x@example.invalid' where id=$1", [A]), denied('42501'));
+  await assert.rejects(q("update auth.users set email='x@example.invalid' where id=$1", [A]), denied('42501'));
+  // Auth rewrites whole rows: the same values must keep working.
+  await q("update auth.users set email=email, email_change=email_change where id=$1", [A]);
+  await q("update auth.users set email_change='' where id=$1", [A]);
+  await q("delete from public.allowlist where email='a@example.invalid'");
+  await q("update auth.users set raw_user_meta_data='{}' where id=$1", [A]);
+});
+
+test('service_role reaches all four tables', async () => {
+  await as('service_role', null, async () => {
+    for (const t of TABLES) {
+      await q(`select * from public.${t}`);
+      await q(`delete from public.${t} where false`);
+    }
+    await q("insert into public.allowlist (email) values ('s@example.invalid')");
+    await q("delete from public.allowlist where email='s@example.invalid'");
+    await insMark(A, 'series', '71053');
+    await q("update public.marks set state='wanted'");
+  });
+});
+
+test('client cannot choose updated_at on insert', async () => {
+  await asA(() => q("insert into public.marks (user_id, kind, target_id, state, updated_at) values ($1,'series','71053','owned','2000-01-01')", [A]));
+  const r = await q('select updated_at from public.marks');
+  assert.ok(r.rows[0].updated_at.getFullYear() > 2000);
+});
+
+test('audit: definer functions pin search_path, RLS everywhere, nothing executable by clients', async () => {
+  const fns = await q(`select p.proname, p.proconfig, p.prosecdef from pg_proc p
+    where p.pronamespace in ('private'::regnamespace, 'public'::regnamespace)`);
+  assert.ok(fns.rows.length >= 5);
+  for (const f of fns.rows) {
+    if (f.prosecdef) assert.ok((f.proconfig ?? []).includes('search_path=""'), f.proname);
+  }
+  const rls = await q("select relname from pg_class where relnamespace='public'::regnamespace and relkind='r' and not relrowsecurity");
+  assert.deepEqual(rls.rows, []);
+  for (const role of ['anon', 'authenticated']) {
+    const ex = await q(`select p.proname from pg_proc p
+      where p.pronamespace in ('private'::regnamespace, 'public'::regnamespace)
+      and has_function_privilege('${role}', p.oid, 'execute')`);
+    assert.deepEqual(ex.rows, [], role);
+  }
 });
 
 test('none of the tables is in the realtime publication', async () => {
