@@ -51,3 +51,6 @@
 - 2026-11-01 — V1-03 images: series 2-11, 13-17 use BrickLink minifig images; other flagged figures use GrabCut on set images (no col map needed for licensed series). Look is mixed (stand / no stand); gaps in docs/spike/V1-03-gaps.md.
 - 2026-11-01 — V1-03 closed with bags left opaque (no background to remove) and a partial review list; gaps listed in docs/spike/V1-03-gaps.md, owner can reopen.
 - 2026-11-02 — Live switch: app-ci.yml `deploy` job replaces pages.yml, so one workflow deploys. A push to master publishes app/dist; v1 stays live until the owner merges into master. Reason: master is owner-only and the switch replaces the live site.
+- 2026-11-02 — V2-01 access model: public signups off, accounts only by admin invite; `allowlist` is a record, not a gate. Reason: design and security review found hook-based gating has more bypass routes. Admin status in its own `admins` table.
+- 2026-11-02 — Series marks stored separately from figure marks; progress counts figure marks only. One Telegram alert per user and target, ever. Defaults from review, changeable by the owner.
+- 2026-11-02 — Custom SMTP needed before anyone but the owner can sign in (built-in mail: team members only, 2 per hour). Owner demo works without it.

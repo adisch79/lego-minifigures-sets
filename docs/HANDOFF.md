@@ -28,13 +28,13 @@
    **V1-06** merged (PR #12, 2026-11-01): cards for all 52 series, overview `docs/spike/V1-06-cards-all.png`, logos in `mockups/assets/logos/SOURCES.md`. Re-render: `python scripts/build_cards.py <ids>` (no args builds only missing cards). Merge is refused by the auto classifier unless review and qa agents passed on the final diff.
    **V1-05** merged (PR #13). Review findings were all non-blocking; deep-link focus finding checked and is not a defect.
    **Live switch** released: `deploy` job in `app-ci.yml` publishes `app/dist` on master pushes touching `app/**`, `site/img/**` or the workflow.
-   **NEXT: V2-01** on `feature/V2-01-supabase-schema`.
+   **V2-01 in progress** on `feature/V2-01-supabase-schema`: design rev 2 `docs/design/V2-01-schema.md` after design and security review. NEXT: re-review rev 2, write migrations and RLS tests. Tool-call count no longer ends sessions (hooks edited, 2026-11-02).
    Later, optional (review of PR #14): add `workflow_dispatch` for manual redeploy (deploy `if` must allow it); deploy-job concurrency `{group: pages, cancel-in-progress: false}`.
 4. Agent merges feature PRs into dev after code-reviewer and qa pass (`gh pr merge <n> --merge`; owner OK 2026-11-01, decisions.md). `master` stays owner-only.
 5. Later polish (not blocking): series page hero in mockup D still uses the bag image.
 
 ## Owner-needed later (MVP 2)
-- Supabase: owner added keys to `.env` (2026-10-31, file 191 -> 377 bytes; contents unread, deny rule). Nothing owner-needed left for MVP 2.
+- Supabase: owner added keys to `.env` (2026-10-31, file 191 -> 377 bytes; contents unread, deny rule). Applying migrations likely needs a database password or access token (not in the documented key list). Custom SMTP account needed before anyone but the owner can sign in.
 - Telegram bot token + chat id: PC: repo-root `.env` (git-ignored; key names unverified, read blocked by deny rule); NAS copy too (owner, 2026-10-31); read from env, never commit.
 
 ## Open questions
