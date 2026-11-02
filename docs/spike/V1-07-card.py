@@ -38,23 +38,31 @@ def uri(path):
     return f"data:image/png;base64,{base64.b64encode(path.read_bytes()).decode()}"
 
 
+def label(x, y, size, value, squeeze, fill, stroke=0, skew=0, spacing=0):
+    """Arial Black, squeezed: closest installed match to the bag lettering (docs/spike/V1-07-badge-fonts.png)."""
+    style = f"font-size:{size}px;fill:{fill};stroke:{fill};stroke-width:{stroke}px;paint-order:stroke;letter-spacing:{spacing}px"
+    move = f"translate({x} {y}) skewX({skew}) scale({squeeze} 1)"
+    return f'<text transform="{move}" text-anchor="middle" style="{style}">{value}</text>'
+
+
 def badge(s):
     """Bag badge per the owner's example: SERIES and number in a round frame, count in a tilted head."""
     frame = ""
     if s["series"]:
         frame = f"""<circle cx="58" cy="60" r="53" fill="{FRAME}" stroke="#fff" stroke-width="6"/>
-<text x="58" y="50" text-anchor="middle" class="sl">SERIES</text>
-<text x="58" y="93" text-anchor="middle" class="sn">{s['series']}</text>"""
+{label(58, 49, 23, "SERIES", 0.66, NAVY, 0.5)}
+{label(58, 95, 52, s["series"], 0.72, NAVY, 2)}"""
     # Geometry measured from the owner's screenshot, 2026-11-02.
     return f"""<svg class="badge" width="240" height="218" viewBox="0 0 270 245">{frame}
 <g transform="rotate(12 172 130)">
-<rect x="137" y="28" width="70" height="36" rx="4" fill="{HEAD_DARK}"/>
-<rect x="132" y="196" width="80" height="30" rx="4" fill="{HEAD_DARK}"/>
-<rect x="94" y="55" width="156" height="150" rx="34" fill="{HEAD}"/>
-<rect x="105" y="112" width="24" height="24" rx="7" fill="#fff" stroke="{RED}" stroke-width="4"/>
-<path d="M110 124 l6 7 l20 -19" fill="none" stroke="#111" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
-<text x="183" y="152" text-anchor="middle" class="cnt">{s['count']}</text>
-<text x="172" y="186" text-anchor="middle" class="tc">TO COLLECT</text></g></svg>"""
+<rect x="132" y="26" width="80" height="38" rx="4" fill="{HEAD_DARK}"/>
+<rect x="116" y="196" width="112" height="32" rx="4" fill="{HEAD_DARK}"/>
+<rect x="92" y="55" width="160" height="150" rx="34" fill="{HEAD}"/>
+<rect x="99" y="112" width="24" height="24" rx="7" fill="#fff" stroke="{RED}" stroke-width="4"/>
+<path d="M104 124 l6 7 l20 -19" fill="none" stroke="#111" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+{label(183, 158, 112, s["count"], 0.66, RED, 5, -8, -7)}
+{label(172, 190, 27, "TO COLLECT", 0.62, RED, 1, -6)}
+</g></svg>"""
 
 
 def page(s):
@@ -66,7 +74,7 @@ def page(s):
         theme = f'<img src="{uri(LOGOS / s["logo"])}" style="width:{s["logo_w"]}px">'
         band = f'<img class="lockup" src="{lockup}">'
     else:
-        theme = f'<img src="{lockup}" style="width:400px">'
+        theme = f'<img src="{lockup}" style="width:490px">'
         band = '<div class="word">COLLECTIBLE MINIFIGURES</div>'
     return f"""<!DOCTYPE html><meta charset="utf-8"><style>
 *{{margin:0;box-sizing:border-box}} html,body{{width:600px;height:800px;overflow:hidden}}
@@ -75,12 +83,11 @@ body{{font-family:"Segoe UI",Arial,sans-serif}}
 .meta{{position:absolute;left:34px;top:30px;line-height:1;font-weight:800}}
 .age{{font-size:50px}} .rule{{width:90px;height:3px;background:currentColor;margin:8px 0}} .num{{font-size:26px}}
 .badge{{position:absolute;right:12px;top:14px}}
-.badge text{{font-family:Impact,"Arial Narrow",sans-serif;font-weight:400}}
-.sl{{font-size:24px;fill:{NAVY}}} .sn{{font-size:46px;fill:{NAVY};letter-spacing:1px}} .cnt{{font-size:98px;font-style:italic;fill:{RED};stroke:{RED};stroke-width:2px}} .tc{{font-size:27px;font-style:italic;fill:{RED}}}
-.theme{{position:absolute;left:0;right:0;top:215px;text-align:center}}
-.group{{position:absolute;left:18px;right:18px;bottom:100px;height:360px;object-fit:contain;object-position:bottom;width:564px}}
+.badge text{{font-family:'Arial Black',Arial,sans-serif;font-weight:900}}
+.theme{{position:absolute;left:0;right:0;top:232px;text-align:center}}
+.group{{position:absolute;left:18px;right:18px;bottom:96px;height:335px;object-fit:contain;object-position:bottom;width:564px}}
 .band{{position:absolute;left:0;right:0;bottom:0;height:88px;background:#0b0b0b;display:flex;align-items:center;padding:0 30px}}
-.lockup{{width:250px}} .word{{color:#fff;font-family:"Arial Black",Arial,sans-serif;font-size:20px;letter-spacing:.1em}}
+.lockup{{width:340px}} .word{{color:#fff;font-family:"Arial Black",Arial,sans-serif;font-size:20px;letter-spacing:.1em}}
 </style><div class="card">
 <div class="meta"><div class="age">{s['age']}</div><div class="rule"></div><div class="num">{s['id']}</div></div>
 {badge(s)}
