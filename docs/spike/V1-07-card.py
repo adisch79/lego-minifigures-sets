@@ -13,14 +13,15 @@ LOGOS = ROOT / "mockups/assets/logos"
 GROUP = ROOT / "mockups/assets/group"
 # SOURCE: same Chrome path as docs/spike/V0-06-cards.py
 CHROME = r"C:/Program Files/Google/Chrome/Application/chrome.exe"
-# SOURCE: colours sampled from the LEGO logo on the 71019 bag image, as in docs/spike/V0-06-cards.py
-RED, YELLOW = "#DF0012", "#FDE01B"
+# SOURCE: OWNER-SUPPLIED badge screenshot, 2026-11-02 (sampled pixels).
+RED = "#D80008"
+# SOURCE: OWNER-SUPPLIED badge screenshot, 2026-11-02 (sampled pixels).
+HEAD, HEAD_DARK, FRAME, NAVY = "#F8C800", "#F0B800", "#38B8E8", "#002050"
 
 # box: plain background area of the bag image (left, top, right, bottom) in bag pixels.
-# ring: series-number frame colour. SOURCE: read from the bag image of each series.
 SERIES = [
     dict(id="71053", age="6+", count=12, logo="shrek.png", logo_w=430, series=None, box=(0, 250, 25, 450)),
-    dict(id="71051", age="5+", count=12, logo=None, series=28, ring="#1F6FB2", box=(270, 58, 345, 72)),
+    dict(id="71051", age="5+", count=12, logo=None, series=28, box=(270, 58, 345, 72)),
 ]
 
 
@@ -37,18 +38,21 @@ def uri(path):
 
 
 def badge(s):
-    """Bag badge: count in a yellow minifigure head, series number in a round frame behind it."""
+    """Bag badge per the owner's example: SERIES and number in a round frame, count in a tilted head."""
     frame = ""
     if s["series"]:
-        frame = f"""<circle cx="38" cy="44" r="35" fill="{s['ring']}" stroke="#fff" stroke-width="6"/>
-<text x="36" y="57" text-anchor="middle" class="sn">{s['series']}</text>"""
-    return f"""<svg class="badge" width="230" height="190" viewBox="0 0 230 190">{frame}
-<path d="M72 34 Q72 18 88 18 H100 V8 H172 V18 H186 Q202 18 202 34 V122 Q202 138 186 138 H178 V154 H96 V138 H88 Q72 138 72 122 Z"
- fill="{YELLOW}" stroke="#111" stroke-width="5" stroke-linejoin="round"/>
-<rect x="82" y="58" width="24" height="24" rx="12" fill="#fff" stroke="{RED}" stroke-width="4"/>
-<path d="M87 69 l6 7 l14 -19" fill="none" stroke="#111" stroke-width="5" stroke-linecap="round"/>
-<text x="150" y="94" text-anchor="middle" class="cnt">{s['count']}</text>
-<text x="137" y="124" text-anchor="middle" class="tc">TO COLLECT</text></svg>"""
+        frame = f"""<circle cx="46" cy="50" r="42" fill="{FRAME}" stroke="#fff" stroke-width="7"/>
+<text x="46" y="38" text-anchor="middle" class="sl">SERIES</text>
+<text x="46" y="72" text-anchor="middle" class="sn">{s['series']}</text>"""
+    return f"""<svg class="badge" width="270" height="200" viewBox="0 0 270 200">{frame}
+<g transform="rotate(5 170 90)">
+<rect x="124" y="4" width="84" height="26" rx="5" fill="{HEAD_DARK}"/>
+<rect x="128" y="128" width="78" height="30" rx="5" fill="{HEAD_DARK}"/>
+<rect x="90" y="20" width="156" height="118" rx="26" fill="{HEAD}"/>
+<circle cx="115" cy="76" r="14" fill="#fff" stroke="{RED}" stroke-width="4"/>
+<path d="M107 75 l7 9 l20 -28" fill="none" stroke="#111" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="186" y="100" text-anchor="middle" class="cnt">{s['count']}</text>
+<text x="168" y="127" text-anchor="middle" class="tc">TO COLLECT</text></g></svg>"""
 
 
 def page(s):
@@ -70,7 +74,7 @@ body{{font-family:"Segoe UI",Arial,sans-serif}}
 .age{{font-size:50px}} .rule{{width:90px;height:3px;background:currentColor;margin:8px 0}} .num{{font-size:26px}}
 .badge{{position:absolute;right:12px;top:14px}}
 .badge text{{font-family:"Arial Black",Arial,sans-serif;font-weight:900}}
-.sn{{font-size:34px;fill:#fff}} .cnt{{font-size:62px;font-style:italic;fill:{RED};letter-spacing:-4px}} .tc{{font-size:16px;font-style:italic;fill:{RED}}}
+.sl{{font-size:12px;fill:{NAVY}}} .sn{{font-size:36px;fill:{NAVY}}} .cnt{{font-size:68px;font-style:italic;fill:{RED};letter-spacing:-4px}} .tc{{font-size:16px;font-style:italic;fill:{RED}}}
 .theme{{position:absolute;left:0;right:0;top:190px;text-align:center}}
 .group{{position:absolute;left:18px;right:18px;bottom:100px;height:375px;object-fit:contain;object-position:bottom;width:564px}}
 .band{{position:absolute;left:0;right:0;bottom:0;height:88px;background:#0b0b0b;display:flex;align-items:center;padding:0 30px}}
