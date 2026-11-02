@@ -92,12 +92,67 @@ select { padding-right:36px; appearance:none; cursor:pointer; font-weight:600;
 .ghost-line { height:14px; margin-top:14px; border-radius:6px; background:var(--grey-100); }
 .ghost-line.short { width:55%; }
 
+/* Series page: yellow hero with the composed card and figures spilling out beside it */
+.band { overflow-x:clip; }
+.back { margin-left:auto; flex:none; font-size:14px; font-weight:700; color:var(--ink); text-decoration:none; display:inline-flex; gap:8px; align-items:center; height:42px; padding:0 18px; border-radius:999px; background:var(--white); transition:background .2s, color .2s; }
+.back:hover { background:var(--ink); color:var(--lego-yellow); }
+.hero { position:relative; display:grid; grid-template-columns:320px 1fr; gap:48px; align-items:center; padding:24px 0 56px; }
+.art-stage { position:relative; height:440px; display:flex; align-items:center; }
+.flat { display:block; width:100%; max-height:100%; object-fit:contain; border-radius:12px; box-shadow:0 26px 44px -26px rgba(0,0,0,.55); animation:rise .8s var(--ease) both; }
+/* Without a card the stage still holds a 3:4 plate, so the hero keeps its shape */
+.flat-none, .flat-ghost { aspect-ratio:3/4; }
+.flat-none { display:grid; place-items:center; background:var(--white); font-size:22px; font-weight:800; }
+.flat-figure { aspect-ratio:3/4; background:var(--white); padding:8%; }
+.flat-ghost { background:rgba(255,255,255,.45); box-shadow:none; animation:none; }
+.spill { position:absolute; left:330px; top:10px; width:300px; height:440px; pointer-events:none; z-index:2; }
+.spill img { position:absolute; width:140px; height:140px; object-fit:contain; animation:pop .9s var(--ease) both; }
+/* Opaque white renders cannot be cut out in CSS: a white sticker reads as intended on yellow */
+.spill img.spill-render { width:120px; height:90px; padding:6px; background:var(--white); border-radius:14px; box-shadow:0 12px 22px -12px rgba(0,0,0,.5); }
+.hero-copy { position:relative; z-index:3; padding-left:268px; min-width:0; }
+.eyebrow { font-size:12px; font-weight:700; letter-spacing:.18em; text-transform:uppercase; margin:0 0 12px; opacity:.75; }
+.hero h1, .lost h1 { font-size:clamp(36px,5vw,64px); line-height:.95; letter-spacing:-.045em; font-weight:800; margin:0 0 20px; overflow-wrap:break-word; }
+h1[tabindex]:focus { outline:none; }
+.facts { display:flex; flex-wrap:wrap; gap:8px; }
+.fact { font-size:13px; font-weight:700; padding:7px 13px; border-radius:999px; background:var(--white); font-variant-numeric:tabular-nums; }
+.fact.dark { background:var(--ink); color:var(--lego-yellow); }
+
+.rule-series { min-height:0; }
+.rule-series h2 { font-size:15px; margin:0; color:var(--ink); }
+.wrap-pad { padding-top:40px; padding-bottom:96px; }
+
+/* Figure tiles */
+.figs { list-style:none; margin:0; padding:0 0 96px; display:grid; grid-template-columns:repeat(4,1fr); gap:22px; }
+.fig { position:relative; min-width:0; background:var(--white); border:1px solid var(--grey-100); border-radius:var(--radius); padding:12px; display:flex; flex-direction:column; animation:rise .6s var(--ease) both; transition:transform .3s var(--ease), box-shadow .3s, border-color .3s; }
+.fig:hover { transform:translateY(-3px); border-color:var(--grey-300); box-shadow:0 16px 32px -20px rgba(0,0,0,.3); }
+.fig-no { position:absolute; top:12px; left:12px; z-index:1; min-width:50px; height:50px; padding:0 8px; border-radius:10px 0 12px 0; background:var(--lego-yellow); font-size:26px; font-weight:800; letter-spacing:-.03em; display:grid; place-items:center; font-variant-numeric:tabular-nums; }
+.pic { position:relative; aspect-ratio:1; background:var(--grey-50); border-radius:10px; isolation:isolate; }
+.pic img { position:absolute; inset:8%; width:84%; height:84%; object-fit:contain; transition:transform .4s var(--ease); }
+.fig:hover .pic img { transform:scale(1.05); }
+/* Multiply drops the render's white background into the tile colour, so no white box shows */
+.pic-render img { mix-blend-mode:multiply; }
+.pic-none { position:absolute; inset:0; display:grid; place-items:center; padding:12%; text-align:center; font-size:13px; font-weight:700; color:var(--grey-500); }
+.fig h3 { font-size:15px; line-height:1.25; font-weight:800; margin:12px 2px 4px; min-height:2.5em; letter-spacing:-.01em; overflow-wrap:break-word; }
+.ghost .pic { animation:breathe 1.4s ease-in-out infinite; }
+
+/* Not-found state */
+.band-full { min-height:100vh; }
+.lost { padding:clamp(32px,10vh,110px) 0 72px; max-width:720px; }
+.lost .lede { max-width:46ch; overflow-wrap:anywhere; margin-bottom:28px; }
+.back-home { display:inline-flex; align-items:center; height:48px; padding:0 22px; border-radius:999px; background:var(--ink); color:var(--lego-yellow); font-size:15px; font-weight:700; text-decoration:none; transition:transform .15s; }
+.back-home:active { transform:scale(.97); }
+
 @keyframes rise { from { opacity:0; transform:translateY(20px); } }
 @keyframes breathe { 50% { background:var(--grey-100); } }
+@keyframes pop { from { opacity:0; transform:translate(-100px,40px) rotate(-30deg) scale(.4); } }
 
 @media (max-width:1000px) {
   .grid { grid-template-columns:repeat(2,1fr); }
   .band-hero { grid-template-columns:1fr; gap:20px; }
+  .figs { grid-template-columns:repeat(3,1fr); }
+  .hero { grid-template-columns:240px 1fr; gap:24px; }
+  .art-stage { height:340px; }
+  .spill { left:180px; transform:scale(.8); transform-origin:top left; }
+  .hero-copy { padding-left:116px; }
 }
 @media (max-width:640px) {
   .wrap { padding:0 18px; }
@@ -113,6 +168,15 @@ select { padding-right:36px; appearance:none; cursor:pointer; font-weight:600;
   .stats strong { font-size:24px; }
   .grid { grid-template-columns:1fr; gap:36px; padding-bottom:64px; }
   .rule { min-height:0; padding-top:28px; margin-bottom:24px; }
+  .hero { grid-template-columns:1fr; padding:12px 0 32px; gap:16px; }
+  .art-stage { height:250px; width:170px; }
+  .spill { left:150px; top:0; transform:scale(.62); }
+  .hero-copy { padding-left:0; }
+  .figs { grid-template-columns:repeat(2,1fr); gap:10px; padding-bottom:64px; }
+  .fig { padding:8px; }
+  .fig-no { top:8px; left:8px; min-width:36px; height:36px; font-size:19px; }
+  .fig h3 { font-size:13.5px; margin:10px 2px 2px; }
+  .wrap-pad { padding-top:28px; padding-bottom:64px; }
 }
 @media (prefers-reduced-motion:reduce) {
   *, *::before, *::after { animation:none !important; transition:none !important; }
