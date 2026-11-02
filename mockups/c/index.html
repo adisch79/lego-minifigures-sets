@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Minifig Vault - Collectible Minifigures</title>
+<style>
+  :root {
+    /* SOURCE: colours sampled from the LEGO logo on the 71019 bag image (originals/71019/71019-0.jpg) */
+    --lego-red:#DF0012; --lego-yellow:#FDE01B;
+    --ink:#1A1A1A;
+    --white:#FFFFFF;
+    --paper:#FFFFFF;
+    --grey-50:#F6F6F4;
+    --grey-100:#EDEDEA;
+    --grey-300:#C9C9C4;
+    --grey-500:#6E6E69;
+    --radius:18px;
+    --ease: cubic-bezier(.2,.8,.2,1);
+  }
+  * { box-sizing:border-box; }
+  html,body { margin:0; }
+  body {
+    font-family: "Segoe UI", system-ui, -apple-system, Roboto, "Helvetica Neue", Arial, sans-serif;
+    color:var(--ink); background:var(--paper);
+    -webkit-font-smoothing:antialiased;
+  }
+  :focus-visible { outline:3px solid var(--lego-red); outline-offset:3px; border-radius:8px; }
+
+  /* Header */
+  .top {
+    position:sticky; top:0; z-index:10;
+    background:rgba(255,255,255,.88); backdrop-filter:blur(12px);
+    border-bottom:1px solid var(--grey-100);
+  }
+  .top-inner {
+    max-width:1200px; margin:0 auto; padding:16px 32px;
+    display:flex; align-items:center; gap:24px;
+  }
+  .brand { display:flex; align-items:center; gap:12px; text-decoration:none; color:var(--ink); }
+  .brand-mark {
+    width:34px; height:34px; border-radius:8px; background:var(--lego-red);
+    display:grid; place-items:center; box-shadow:inset 0 -3px 0 rgba(0,0,0,.18);
+  }
+  .brand-mark i { width:12px; height:12px; border-radius:50%; background:var(--lego-yellow); box-shadow:0 2px 0 rgba(0,0,0,.2); }
+  .brand b { font-size:19px; font-weight:800; letter-spacing:-.02em; }
+  .controls { margin-left:auto; display:flex; gap:10px; }
+  .field { position:relative; }
+  .field svg { position:absolute; left:14px; top:50%; transform:translateY(-50%); color:var(--grey-500); pointer-events:none; }
+  input[type=search], select {
+    font:inherit; font-size:14px; color:var(--ink);
+    height:42px; border-radius:999px; border:1.5px solid var(--grey-100);
+    background:var(--grey-50); padding:0 16px;
+    transition:border-color .2s, background .2s;
+  }
+  input[type=search] { width:260px; padding-left:40px; }
+  input[type=search]:focus, select:focus { border-color:var(--ink); background:var(--white); outline:none; }
+  select { padding-right:34px; appearance:none; cursor:pointer;
+    background-image:linear-gradient(45deg,transparent 50%,var(--ink) 50%),linear-gradient(135deg,var(--ink) 50%,transparent 50%);
+    background-position:calc(100% - 18px) 18px, calc(100% - 13px) 18px; background-size:5px 5px; background-repeat:no-repeat; }
+
+  /* Editorial intro */
+  main { max-width:1200px; margin:0 auto; padding:0 32px 96px; }
+  .intro { padding:72px 0 48px; display:grid; grid-template-columns:1.4fr 1fr; gap:40px; align-items:end; }
+  .eyebrow { font-size:12px; font-weight:700; letter-spacing:.18em; text-transform:uppercase; color:var(--lego-red); margin:0 0 14px; }
+  h1 { font-size:clamp(40px,6vw,76px); line-height:.95; letter-spacing:-.045em; font-weight:800; margin:0; }
+  h1 em { font-style:normal; color:var(--lego-red); }
+  .intro p.lede { color:var(--grey-500); font-size:17px; line-height:1.55; margin:0; max-width:38ch; }
+  .stats { display:flex; gap:28px; margin-top:22px; }
+  .stats div { font-size:12px; color:var(--grey-500); text-transform:uppercase; letter-spacing:.1em; }
+  .stats strong { display:block; font-size:28px; color:var(--ink); letter-spacing:-.03em; text-transform:none; }
+
+  .result-line { display:flex; justify-content:space-between; align-items:baseline; border-top:2px solid var(--ink); padding-top:14px; margin-bottom:36px; font-size:13px; color:var(--grey-500); }
+  .result-line b { color:var(--ink); }
+
+  /* Grid of series tiles */
+  .grid { display:grid; grid-template-columns:repeat(3,1fr); gap:56px 36px; list-style:none; margin:0; padding:0; }
+  .tile { position:relative; animation:rise .6s var(--ease) both; }
+  .tile-link { display:block; text-decoration:none; color:inherit; border-radius:var(--radius); }
+  .stage { position:relative; aspect-ratio:1/1.08; display:grid; place-items:center; isolation:isolate; }
+  .stage .glow {
+    position:absolute; inset:14% 18%; width:64%; height:72%; object-fit:cover;
+    filter:blur(42px) saturate(1.6); opacity:.55; z-index:-1; transform:scale(1.05);
+    transition:opacity .5s var(--ease), transform .5s var(--ease);
+  }
+  .stage .floor {
+    position:absolute; bottom:6%; left:28%; right:28%; height:18px; border-radius:50%;
+    background:radial-gradient(closest-side, rgba(0,0,0,.22), transparent); z-index:-1;
+    transition:transform .5s var(--ease), opacity .5s var(--ease);
+  }
+  .stage .bag {
+    position:absolute; left:10%; top:6%; width:80%; height:84%; object-fit:contain;
+    filter:drop-shadow(0 14px 18px rgba(0,0,0,.14));
+    transform:rotate(-2deg); transition:transform .5s var(--ease), filter .5s var(--ease);
+  }
+  .tile-link:hover .bag, .tile-link:focus-visible .bag { transform:translateY(-14px) rotate(-6deg) scale(1.03); filter:drop-shadow(0 30px 26px rgba(0,0,0,.2)); }
+  .tile-link:hover .glow, .tile-link:focus-visible .glow { opacity:.85; transform:scale(1.18); }
+  .tile-link:hover .floor, .tile-link:focus-visible .floor { transform:scaleX(.75); opacity:.6; }
+  .tile:nth-child(even) .bag { transform:rotate(2deg); }
+  .tile:nth-child(even) .tile-link:hover .bag { transform:translateY(-14px) rotate(5deg) scale(1.03); }
+
+  .meta { padding:18px 4px 0; }
+  .meta-row { display:flex; justify-content:space-between; align-items:center; gap:12px; }
+  .num { font-size:12px; font-weight:700; letter-spacing:.12em; color:var(--grey-500); font-variant-numeric:tabular-nums; }
+  .num span { color:var(--lego-red); }
+  .count-badge { font-size:12px; font-weight:700; background:var(--lego-red); color:var(--white); border-radius:999px; padding:4px 10px; }
+  .meta h2 { font-size:22px; line-height:1.15; letter-spacing:-.025em; margin:8px 0 14px; font-weight:800; }
+  .progress { display:flex; align-items:center; gap:12px; font-size:13px; color:var(--grey-500); }
+  .bar { flex:1; height:6px; background:var(--grey-100); border-radius:999px; overflow:hidden; }
+  .bar i { display:block; height:100%; background:var(--ink); border-radius:inherit; transform-origin:left; animation:fill 1s .3s var(--ease) both; }
+  .bar i.done { background:var(--lego-red); }
+  .progress b { color:var(--ink); font-variant-numeric:tabular-nums; }
+
+  .want {
+    margin-top:14px; font:inherit; font-size:13px; font-weight:700; cursor:pointer;
+    display:inline-flex; align-items:center; gap:8px; height:36px; padding:0 14px 0 10px;
+    border-radius:999px; border:1.5px solid var(--grey-300); background:var(--white); color:var(--ink);
+    transition:background .2s, border-color .2s, color .2s, transform .15s;
+  }
+  .want .heart { width:18px; height:18px; display:grid; place-items:center; border-radius:50%; background:var(--grey-100); transition:background .2s; }
+  .want .heart svg { width:11px; height:11px; }
+  .want:hover { border-color:var(--ink); }
+  .want:active { transform:scale(.97); }
+  .want[aria-pressed="true"] { background:var(--lego-red); border-color:var(--lego-red); color:var(--white); }
+  .want[aria-pressed="true"] .heart { background:var(--white); color:var(--lego-red); }
+
+  .empty { grid-column:1/-1; text-align:center; padding:80px 20px; color:var(--grey-500); }
+  .empty strong { display:block; font-size:24px; color:var(--ink); letter-spacing:-.02em; margin-bottom:6px; }
+
+  @keyframes rise { from { opacity:0; transform:translateY(24px); } to { opacity:1; transform:none; } }
+  @keyframes fill { from { transform:scaleX(0); } }
+
+  @media (max-width:980px) {
+    .grid { grid-template-columns:repeat(2,1fr); }
+    .intro { grid-template-columns:1fr; padding-top:48px; }
+  }
+  @media (max-width:640px) {
+    .top-inner { flex-wrap:wrap; padding:12px 18px; gap:12px; }
+    .controls { margin-left:0; width:100%; }
+    .field { flex:1; }
+    input[type=search] { width:100%; }
+    main { padding:0 18px 64px; }
+    .intro { padding:36px 0 32px; gap:20px; }
+    .grid { grid-template-columns:1fr; gap:40px; }
+    .stage { aspect-ratio:1/0.9; }
+  }
+  @media (prefers-reduced-motion:reduce) {
+    *, *::before, *::after { animation:none !important; transition:none !important; }
+  }
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="top-inner">
+    <a class="brand" href="index.html" aria-label="Minifig Vault home"><span class="brand-mark" aria-hidden="true"><i></i></span><b>Minifig Vault</b></a>
+    <div class="controls">
+      <label class="field">
+        <span class="visually-hidden" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)">Search series</span>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        <input id="q" type="search" placeholder="Search name, number, year" autocomplete="off">
+      </label>
+      <label>
+        <span style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)">Sort series</span>
+        <select id="sort">
+          <option value="new">Newest</option>
+          <option value="old">Oldest</option>
+          <option value="az">A-Z</option>
+          <option value="count">Figure count</option>
+        </select>
+      </label>
+    </div>
+  </div>
+</header>
+
+<main>
+  <section class="intro">
+    <div>
+      <p class="eyebrow">Collectible Minifigures</p>
+      <h1>Every bag.<br>Every <em>figure.</em></h1>
+    </div>
+    <div>
+      <p class="lede">Track the blind bags you have opened, the figures still missing, and the series you want complete.</p>
+      <div class="stats" id="stats"></div>
+    </div>
+  </section>
+
+  <div class="result-line" aria-live="polite"><span id="resultCount"></span><span>Owned counts are mock data</span></div>
+  <ul class="grid" id="grid"></ul>
+</main>
+
+<script src="../assets/data.js"></script>
+<script>
+  // Mock ownership per series id (visual only, not persisted).
+  var OWNED = { "71053": 4, "71045": 12, "71038": 7, "71031": 2, "71019": 9, "8683": 13 };
+  var wanted = { "71031": true };
+
+  var grid = document.getElementById('grid');
+  var q = document.getElementById('q');
+  var sortSel = document.getElementById('sort');
+
+  function heartSvg() {
+    return '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 21s-8-5.3-8-11a4.5 4.5 0 0 1 8-2.8A4.5 4.5 0 0 1 20 10c0 5.7-8 11-8 11z"/></svg>';
+  }
+
+  function renderStats() {
+    var total = 0, owned = 0;
+    MOCK.series.forEach(function (s) { total += s.figureCount; owned += OWNED[s.id] || 0; });
+    document.getElementById('stats').innerHTML =
+      '<div><strong>' + MOCK.series.length + '</strong>Series</div>' +
+      '<div><strong>' + owned + '<span style="color:var(--grey-300)">/' + total + '</span></strong>Figures owned</div>' +
+      '<div><strong>' + Math.round(owned / total * 100) + '%</strong>Complete</div>';
+  }
+
+  function render() {
+    var term = q.value.trim().toLowerCase();
+    var list = MOCK.series.filter(function (s) {
+      return !term || (s.name + ' ' + s.id + ' ' + s.year).toLowerCase().indexOf(term) !== -1;
+    });
+    var mode = sortSel.value;
+    list.sort(function (a, b) {
+      if (mode === 'new') return b.year - a.year;
+      if (mode === 'old') return a.year - b.year;
+      if (mode === 'az') return a.name.localeCompare(b.name);
+      return b.figureCount - a.figureCount || b.year - a.year;
+    });
+
+    document.getElementById('resultCount').innerHTML = '<b>' + list.length + '</b> of ' + MOCK.series.length + ' series';
+
+    if (!list.length) {
+      grid.innerHTML = '<li class="empty"><strong>No bags match "' + term.replace(/[<>&"]/g, '') + '"</strong>Try a series name, a set number like 71019, or a year.</li>';
+      return;
+    }
+
+    grid.innerHTML = list.map(function (s, i) {
+      var owned = OWNED[s.id] || 0;
+      var pct = Math.round(owned / s.figureCount * 100);
+      var img = '../' + s.bag;
+      var on = !!wanted[s.id];
+      return '<li class="tile" style="animation-delay:' + (i * 70) + 'ms">' +
+        '<a class="tile-link" href="series.html" aria-label="' + s.name + ', set ' + s.id + ', ' + s.year + '">' +
+          '<div class="stage">' +
+            '<img class="glow" src="' + img + '" alt="" aria-hidden="true">' +
+            '<span class="floor" aria-hidden="true"></span>' +
+            '<img class="bag" src="' + img + '" alt="' + s.name + ' blind bag" loading="lazy">' +
+          '</div>' +
+        '</a>' +
+        '<div class="meta">' +
+          '<div class="meta-row"><span class="num"><span>No.</span> ' + s.id + ' &middot; ' + s.year + '</span>' +
+          '<span class="count-badge">' + s.figureCount + ' to collect</span></div>' +
+          '<h2>' + s.name + '</h2>' +
+          '<div class="progress"><div class="bar" role="progressbar" aria-label="Owned" aria-valuemin="0" aria-valuemax="' + s.figureCount + '" aria-valuenow="' + owned + '"><i class="' + (pct === 100 ? 'done' : '') + '" style="width:' + pct + '%"></i></div>' +
+          '<span>Owned <b>' + owned + '/' + s.figureCount + '</b></span></div>' +
+          '<button type="button" class="want" data-id="' + s.id + '" aria-pressed="' + on + '"><span class="heart">' + heartSvg() + '</span>' +
+          '<span class="lbl">' + (on ? 'Wanted: whole series' : 'Want whole series') + '</span></button>' +
+        '</div>' +
+      '</li>';
+    }).join('');
+  }
+
+  grid.addEventListener('click', function (e) {
+    var btn = e.target.closest('.want');
+    if (!btn) return;
+    var id = btn.getAttribute('data-id');
+    wanted[id] = !wanted[id];
+    btn.setAttribute('aria-pressed', String(wanted[id]));
+    btn.querySelector('.lbl').textContent = wanted[id] ? 'Wanted: whole series' : 'Want whole series';
+  });
+  q.addEventListener('input', render);
+  sortSel.addEventListener('change', render);
+
+  renderStats();
+  render();
+</script>
+</body>
+</html>

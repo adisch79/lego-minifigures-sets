@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Series - Minifig Vault</title>
+<link rel="stylesheet" href="vault.css">
+</head>
+<body>
+<header class="band">
+  <div class="wrap">
+    <div class="band-top">
+      <a class="brand" href="index.html" aria-label="Minifig Vault home"><span class="brand-mark" aria-hidden="true"><i></i></span><span><b>Minifig Vault</b><small>Collectible Minifigures</small></span></a>
+      <a class="back" href="index.html"><span aria-hidden="true">&larr;</span> All series</a>
+    </div>
+    <section class="hero" aria-labelledby="title">
+      <div class="art-stage"><img class="flat" id="art" src="" alt=""></div>
+      <div class="spill" id="spill" aria-hidden="true"></div>
+      <div class="hero-copy">
+        <p class="eyebrow">Collectible Minifigures</p>
+        <h1 id="title"></h1>
+        <div class="facts" id="facts"></div>
+        <div class="progress">
+          <div class="progress-head"><span>Owned</span><b id="ownedTxt"></b></div>
+          <div id="pips"></div>
+        </div>
+        <button type="button" class="want lg" id="wantAll" aria-pressed="false">
+          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 21s-8-5.3-8-11a4.5 4.5 0 0 1 8-2.8A4.5 4.5 0 0 1 20 10c0 5.7-8 11-8 11z"/></svg>
+          <span class="lbl">Want whole series</span>
+        </button>
+      </div>
+    </section>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="rule"><h2>Inside the series</h2><span id="ruleTxt" aria-live="polite"></span></div>
+  <ul class="figs" id="figs"></ul>
+</main>
+
+<script src="../assets/data.js"></script>
+<script>
+  var D = MOCK.detail;
+  var series = MOCK.series.filter(function (s) { return s.id === D.id; })[0];
+  var total = D.figures.length;
+
+  // Mock initial state (visual only, not persisted).
+  var owned = {}, wanted = {};
+  [1, 3, 4, 8, 10, 12, 15, 18, 20].forEach(function (n) { owned[n] = true; });
+  [2, 6, 14].forEach(function (n) { wanted[n] = true; });
+
+  var check = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5 9.5 18 20 6"/></svg>';
+  var heart = '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 21s-8-5.3-8-11a4.5 4.5 0 0 1 8-2.8A4.5 4.5 0 0 1 20 10c0 5.7-8 11-8 11z"/></svg>';
+
+  document.title = D.id + ' ' + D.name + ' - Minifig Vault';
+  document.getElementById('title').textContent = D.name;
+  var art = document.getElementById('art');
+  art.src = '../' + series.art;
+  art.alt = D.name + ' series artwork';
+  document.getElementById('facts').innerHTML =
+    '<span class="fact dark">No. ' + D.id + '</span><span class="fact">' + D.year + '</span><span class="fact">' + total + ' to collect</span>';
+
+  // Figures spilling out beside the artwork (positions hand-placed for the composition).
+  var spillPos = [
+    { n: 1, x: 20, y: 0, r: -16, d: 200 },
+    { n: 10, x: 120, y: 70, r: 12, d: 320 },
+    { n: 14, x: 30, y: 160, r: -8, d: 440 },
+    { n: 4, x: 140, y: 220, r: 18, d: 560 },
+    { n: 19, x: 50, y: 290, r: -20, d: 680 }
+  ];
+  document.getElementById('spill').innerHTML = spillPos.map(function (p) {
+    var f = D.figures[p.n - 1];
+    return '<img src="../' + f.img + '" alt="" style="left:' + p.x + 'px;top:' + p.y + 'px;transform:rotate(' + p.r + 'deg);animation-delay:' + p.d + 'ms">';
+  }).join('');
+
+  function count(map) { return Object.keys(map).filter(function (k) { return map[k]; }).length; }
+
+  function updateProgress() {
+    var c = count(owned), w = count(wanted);
+    document.getElementById('ownedTxt').textContent = c + ' / ' + total;
+    var html = '';
+    D.figures.forEach(function (f, i) {
+      html += '<i class="' + (owned[f.no] ? 'on' : '') + '" style="animation-delay:' + (200 + i * 25) + 'ms"></i>';
+    });
+    var p = document.getElementById('pips');
+    p.innerHTML = '<div class="pips' + (c === total ? ' done' : '') + '" role="img" aria-label="Owned ' + c + ' of ' + total + '">' + html + '</div>';
+    document.getElementById('ruleTxt').textContent = c + ' owned, ' + w + ' wanted, ' + (total - c) + ' missing';
+  }
+
+  var figs = document.getElementById('figs');
+  figs.innerHTML = D.figures.map(function (f, i) {
+    var o = !!owned[f.no], w = !!wanted[f.no];
+    return '<li class="fig' + (o ? ' is-owned' : '') + (w ? ' is-wanted' : '') + '" data-no="' + f.no + '" style="animation-delay:' + (200 + i * 35) + 'ms">' +
+      '<span class="fig-no" aria-hidden="true">' + f.no + '</span>' +
+      '<div class="pic"><img src="../' + f.img + '" alt="' + f.name + ' minifigure" loading="lazy"><span class="tag" aria-hidden="true">WANTED</span></div>' +
+      '<h3><span class="sr">Figure ' + f.no + ': </span>' + f.name + '</h3>' +
+      '<div class="btns" role="group" aria-label="Status for ' + f.name + '">' +
+        '<button type="button" class="own" data-act="own" aria-pressed="' + o + '">' + check + 'Owned</button>' +
+        '<button type="button" class="wnt" data-act="want" aria-pressed="' + w + '">' + heart + 'Wanted</button>' +
+      '</div></li>';
+  }).join('');
+
+  figs.addEventListener('click', function (e) {
+    var btn = e.target.closest('button[data-act]');
+    if (!btn) return;
+    var card = btn.closest('.fig');
+    var no = Number(card.getAttribute('data-no'));
+    var on = btn.getAttribute('aria-pressed') !== 'true';
+    btn.setAttribute('aria-pressed', String(on));
+    var isOwn = btn.getAttribute('data-act') === 'own';
+    (isOwn ? owned : wanted)[no] = on;
+    card.classList.toggle(isOwn ? 'is-owned' : 'is-wanted', on);
+    updateProgress();
+  });
+
+  document.getElementById('wantAll').addEventListener('click', function (e) {
+    var b = e.currentTarget;
+    var on = b.getAttribute('aria-pressed') !== 'true';
+    b.setAttribute('aria-pressed', String(on));
+    b.querySelector('.lbl').textContent = on ? 'Wanted: whole series' : 'Want whole series';
+  });
+
+  updateProgress();
+</script>
+</body>
+</html>

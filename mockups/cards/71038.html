@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><title>71038 Disney 100 card</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:600px;height:800px;overflow:hidden;background:#000}
+body{font-family:"Segoe UI","Helvetica Neue",Arial,system-ui,sans-serif}
+/* SOURCE: colours sampled from the LEGO logo on the 71019 bag image (originals/71019/71019-0.jpg) */
+:root{--lego-red:#DF0012;--lego-yellow:#FDE01B}
+.card{position:relative;width:600px;height:800px;overflow:hidden;
+  background:radial-gradient(120% 60% at 70% 18%, var(--c1) 0%, var(--c2) 30%, var(--c3) 62%, var(--c4) 100%)}
+.fig{position:absolute;width:auto;user-select:none}
+.sky{position:absolute;inset:0;background:
+  repeating-linear-gradient(90deg, rgba(255,255,255,.05) 0 2px, transparent 2px 46px),
+  linear-gradient(180deg, transparent 0 40%, rgba(0,0,0,.25) 100%)}
+.meta{position:absolute;left:34px;top:30px;color:var(--ink);line-height:1;z-index:5}
+.meta .lab{font-size:13px;font-weight:600;letter-spacing:.04em;opacity:.85}
+.meta .age{font-size:52px;font-weight:900;letter-spacing:-.02em;margin-top:2px}
+.meta .rule{width:118px;height:2px;background:var(--ink);margin:6px 0 6px}
+.meta .num{font-size:26px;font-weight:800;letter-spacing:.02em}
+.seal{position:absolute;right:30px;top:26px;z-index:6;transform:rotate(-14deg);filter:drop-shadow(0 6px 10px rgba(0,0,0,.35))}
+.seal .arc{font-family:"Arial Black","Segoe UI Black",Arial,sans-serif;font-weight:900;font-size:17px;fill:#111;letter-spacing:.5px}
+.seal .num{font-family:"Arial Black","Segoe UI Black",Arial,sans-serif;font-weight:900;font-style:italic;font-size:74px;
+  fill:var(--lego-red);letter-spacing:-4px}
+.theme{position:absolute;left:0;right:0;top:var(--logo-top);text-align:center;z-index:5}
+.theme img{height:auto;filter:drop-shadow(0 5px 8px rgba(0,0,0,.4))}
+.theme .sn{display:inline-block;margin-top:8px;padding:6px 18px 7px;border-radius:8px;background:var(--lego-red);color:#fff;
+  font-family:"Arial Black","Segoe UI Black",Arial,sans-serif;font-size:30px;font-style:italic;letter-spacing:.06em;
+  box-shadow:0 0 0 3px #fff,0 6px 14px rgba(0,0,0,.35)}
+.stage{position:absolute;left:0;right:0;top:0;bottom:96px;overflow:hidden;z-index:4}
+.band{position:absolute;left:0;right:0;bottom:0;height:96px;background:linear-gradient(180deg,#151515,#050505);
+  border-top:3px solid var(--lego-yellow);display:flex;align-items:center;justify-content:space-between;padding:0 30px;z-index:50}
+.band .lockup{display:block;width:250px;height:auto}
+.band .word{color:#fff;font-family:"Arial Black","Segoe UI Black",Arial,sans-serif;font-size:20px;letter-spacing:.12em;line-height:1.1}
+.band .tag{color:#fff;font-size:13px;font-weight:700;letter-spacing:.16em;text-align:right;line-height:1.5}
+.band .tag span{color:var(--lego-yellow)}
+</style></head>
+<body><div class="card" style="--c1:#d5c795;--c2:#aa9073;--c3:#832d32;--c4:#270d0f;--ink:#111;--logo-top:206px">
+<div class="sky"></div>
+<div class="meta"><div class="lab">Ages</div><div class="age">5+</div><div class="rule"></div><div class="num">71038</div></div>
+<svg class="seal" width="150" height="150" viewBox="0 0 160 160" aria-label="18 to collect">
+<defs><path id="sealTop" d="M 22,80 A 58,58 0 0 1 138,80"/><path id="sealBot" d="M 14,80 A 66,66 0 0 0 146,80"/></defs>
+<circle cx="80" cy="80" r="77" fill="#fff"/>
+<text class="arc" style="font-size:17px"><textPath href="#sealTop" startOffset="50%" text-anchor="middle">MINIFIGURES</textPath></text>
+<text class="arc"><textPath href="#sealBot" startOffset="50%" text-anchor="middle">TO COLLECT</textPath></text>
+<circle cx="15" cy="101" r="4" fill="var(--lego-red)"/><circle cx="145" cy="101" r="4" fill="var(--lego-red)"/>
+<text class="num" x="72" y="107" text-anchor="middle">18</text>
+</svg>
+<div class="theme"><img src="../assets/logos/disney-100.png" alt="Disney 100" style="width:400px"></div>
+<div class="stage">
+<img class="fig" src="../assets/figs/71038-3.webp" alt="" style="left:70px;bottom:232px;height:160px;z-index:2;filter:brightness(0.7) drop-shadow(0 6px 8px rgba(0,0,0,.35))">
+<img class="fig" src="../assets/figs/71038-7.webp" alt="" style="left:145px;bottom:238px;height:160px;z-index:4;filter:brightness(0.7) drop-shadow(0 6px 8px rgba(0,0,0,.35))">
+<img class="fig" src="../assets/figs/71038-9.webp" alt="" style="left:211px;bottom:228px;height:160px;z-index:6;filter:brightness(0.7) drop-shadow(0 6px 8px rgba(0,0,0,.35))">
+<img class="fig" src="../assets/figs/71038-11.webp" alt="" style="left:262px;bottom:240px;height:160px;z-index:6;filter:brightness(0.7) drop-shadow(0 6px 8px rgba(0,0,0,.35))">
+<img class="fig" src="../assets/figs/71038-13.webp" alt="" style="left:344px;bottom:230px;height:160px;z-index:4;filter:brightness(0.7) drop-shadow(0 6px 8px rgba(0,0,0,.35))">
+<img class="fig" src="../assets/figs/71038-15.webp" alt="" style="left:426px;bottom:237px;height:160px;z-index:2;filter:brightness(0.7) drop-shadow(0 6px 8px rgba(0,0,0,.35))">
+<img class="fig" src="../assets/figs/71038-1.webp" alt="" style="left:28px;bottom:128px;height:200px;z-index:14;filter:brightness(0.86) drop-shadow(0 6px 8px rgba(0,0,0,.35))">
+<img class="fig" src="../assets/figs/71038-6.webp" alt="" style="left:89px;bottom:134px;height:200px;z-index:16;filter:brightness(0.86) drop-shadow(0 6px 8px rgba(0,0,0,.35))">
+<img class="fig" src="../assets/figs/71038-8.webp" alt="" style="left:156px;bottom:124px;height:200px;z-index:18;filter:brightness(0.86) drop-shadow(0 6px 8px rgba(0,0,0,.35))">
+<img class="fig" src="../assets/figs/71038-10.webp" alt="" style="left:235px;bottom:136px;height:200px;z-index:20;filter:brightness(0.86) drop-shadow(0 6px 8px rgba(0,0,0,.35))">
+<img class="fig" src="../assets/figs/71038-12.webp" alt="" style="left:280px;bottom:126px;height:200px;z-index:18;filter:brightness(0.86) drop-shadow(0 6px 8px rgba(0,0,0,.35))">
+<img class="fig" src="../assets/figs/71038-14.webp" alt="" style="left:389px;bottom:133px;height:200px;z-index:16;filter:brightness(0.86) drop-shadow(0 6px 8px rgba(0,0,0,.35))">
+<img class="fig" src="../assets/figs/71038-18.webp" alt="" style="left:430px;bottom:122px;height:200px;z-index:14;filter:brightness(0.86) drop-shadow(0 6px 8px rgba(0,0,0,.35))">
+<img class="fig" src="../assets/figs/71038-16.webp" alt="" style="left:4px;bottom:-10px;height:250px;z-index:28;filter:brightness(1.0) drop-shadow(0 6px 8px rgba(0,0,0,.35))">
+<img class="fig" src="../assets/figs/71038-5.webp" alt="" style="left:104px;bottom:-4px;height:250px;z-index:30;filter:brightness(1.0) drop-shadow(0 6px 8px rgba(0,0,0,.35))">
+<img class="fig" src="../assets/figs/71038-4.webp" alt="" style="left:228px;bottom:-14px;height:250px;z-index:32;filter:brightness(1.0) drop-shadow(0 6px 8px rgba(0,0,0,.35))">
+<img class="fig" src="../assets/figs/71038-2.webp" alt="" style="left:317px;bottom:-2px;height:250px;z-index:30;filter:brightness(1.0) drop-shadow(0 6px 8px rgba(0,0,0,.35))">
+<img class="fig" src="../assets/figs/71038-17.webp" alt="" style="left:424px;bottom:-12px;height:250px;z-index:28;filter:brightness(1.0) drop-shadow(0 6px 8px rgba(0,0,0,.35))">
+</div>
+<div class="band"><img class="lockup" src="../assets/logos/lego-minifigures-lockup.png" alt="LEGO Minifigures">
+<div class="tag">SERIES <span>71038</span><br>1 MINIFIGURE PER BAG</div></div>
+</div></body></html>

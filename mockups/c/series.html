@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>71019 The LEGO Ninjago Movie - Minifig Vault</title>
+<style>
+  :root {
+    /* SOURCE: colours sampled from the LEGO logo on the 71019 bag image (originals/71019/71019-0.jpg) */
+    --lego-red:#DF0012; --lego-yellow:#FDE01B;
+    --ink:#1A1A1A;
+    --white:#FFFFFF;
+    --grey-50:#F6F6F4;
+    --grey-100:#EDEDEA;
+    --grey-300:#C9C9C4;
+    --grey-500:#6E6E69;
+    --radius:18px;
+    --ease: cubic-bezier(.2,.8,.2,1);
+  }
+  * { box-sizing:border-box; }
+  html,body { margin:0; }
+  body {
+    font-family: "Segoe UI", system-ui, -apple-system, Roboto, "Helvetica Neue", Arial, sans-serif;
+    color:var(--ink); background:var(--white); -webkit-font-smoothing:antialiased;
+  }
+  :focus-visible { outline:3px solid var(--lego-red); outline-offset:3px; border-radius:8px; }
+  .sr { position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); }
+
+  /* Header bar */
+  .top { position:sticky; top:0; z-index:10; background:rgba(255,255,255,.88); backdrop-filter:blur(12px); border-bottom:1px solid var(--grey-100); }
+  .top-inner { max-width:1200px; margin:0 auto; padding:16px 32px; display:flex; align-items:center; gap:24px; }
+  .brand { display:flex; align-items:center; gap:12px; text-decoration:none; color:var(--ink); }
+  .brand-mark { width:34px; height:34px; border-radius:8px; background:var(--lego-red); display:grid; place-items:center; box-shadow:inset 0 -3px 0 rgba(0,0,0,.18); }
+  .brand-mark i { width:12px; height:12px; border-radius:50%; background:var(--lego-yellow); box-shadow:0 2px 0 rgba(0,0,0,.2); }
+  .brand b { font-size:19px; font-weight:800; letter-spacing:-.02em; }
+  .back { margin-left:auto; font-size:14px; font-weight:700; color:var(--ink); text-decoration:none; display:inline-flex; gap:8px; align-items:center; padding:8px 14px; border-radius:999px; border:1.5px solid var(--grey-100); }
+  .back:hover { border-color:var(--ink); }
+
+  main { max-width:1200px; margin:0 auto; padding:0 32px 96px; }
+
+  /* Hero: tilted bag at left, figures spill out to the right */
+  .hero { position:relative; display:grid; grid-template-columns:400px 1fr; gap:48px; align-items:center; padding:56px 0 40px; }
+  .bag-stage { position:relative; height:500px; display:grid; place-items:center; isolation:isolate; }
+  .bag-stage .glow { position:absolute; inset:15% 15%; width:70%; height:70%; object-fit:cover; filter:blur(50px) saturate(1.7); opacity:.6; z-index:-1; }
+  .bag-stage .bag { position:absolute; inset:0; width:100%; height:100%; object-fit:contain; transform:rotate(-12deg) translateX(-10px); filter:drop-shadow(0 30px 30px rgba(0,0,0,.2)); animation:tilt 1s var(--ease) both; }
+  .spill { position:absolute; left:300px; top:40px; width:420px; height:460px; pointer-events:none; z-index:2; }
+  .spill img { position:absolute; width:150px; height:150px; object-fit:contain; filter:drop-shadow(0 12px 12px rgba(0,0,0,.18)); animation:pop .9s var(--ease) both; }
+
+  .hero-copy { position:relative; z-index:3; padding-left:160px; }
+  .eyebrow { font-size:12px; font-weight:700; letter-spacing:.18em; text-transform:uppercase; color:var(--lego-red); margin:0 0 14px; }
+  h1 { font-size:clamp(38px,5.4vw,68px); line-height:.95; letter-spacing:-.045em; font-weight:800; margin:0 0 22px; }
+  .facts { display:flex; flex-wrap:wrap; gap:10px; margin-bottom:26px; }
+  .fact { font-size:13px; font-weight:700; padding:7px 13px; border-radius:999px; background:var(--grey-50); border:1px solid var(--grey-100); }
+  .fact.red { background:var(--lego-red); color:var(--white); border-color:var(--lego-red); }
+  .progress { max-width:420px; }
+  .progress-head { display:flex; justify-content:space-between; font-size:13px; color:var(--grey-500); margin-bottom:8px; }
+  .progress-head b { color:var(--ink); font-size:22px; letter-spacing:-.02em; }
+  .bar { height:8px; background:var(--grey-100); border-radius:999px; overflow:hidden; }
+  .bar i { display:block; height:100%; background:var(--lego-red); border-radius:inherit; transition:width .5s var(--ease); }
+  .want-all {
+    margin-top:24px; font:inherit; font-size:15px; font-weight:700; cursor:pointer;
+    height:48px; padding:0 22px; border-radius:999px; border:2px solid var(--ink); background:var(--ink); color:var(--white);
+    display:inline-flex; align-items:center; gap:10px; transition:background .2s, border-color .2s, transform .15s;
+  }
+  .want-all:hover { background:var(--lego-red); border-color:var(--lego-red); }
+  .want-all:active { transform:scale(.97); }
+  .want-all[aria-pressed="true"] { background:var(--white); color:var(--lego-red); border-color:var(--lego-red); }
+
+  /* Section rule */
+  .rule { display:flex; justify-content:space-between; align-items:baseline; border-top:2px solid var(--ink); padding-top:14px; margin:24px 0 32px; font-size:13px; color:var(--grey-500); }
+  .rule h2 { font-size:15px; margin:0; color:var(--ink); letter-spacing:-.01em; }
+
+  /* Figure grid */
+  .figs { list-style:none; margin:0; padding:0; display:grid; grid-template-columns:repeat(4,1fr); gap:22px; }
+  .card { position:relative; background:var(--grey-50); border-radius:var(--radius); padding:14px 14px 16px; display:flex; flex-direction:column; animation:drop .7s var(--ease) both; transition:box-shadow .3s, transform .3s var(--ease), background .3s; }
+  .card:hover { transform:translateY(-4px); box-shadow:0 18px 36px -18px rgba(0,0,0,.25); background:var(--white); }
+  .card.is-owned { background:var(--white); box-shadow:inset 0 0 0 2px var(--ink); }
+  .badge { position:absolute; top:12px; left:12px; width:34px; height:34px; border-radius:50%; background:var(--lego-red); color:var(--white); font-weight:800; font-size:15px; display:grid; place-items:center; font-variant-numeric:tabular-nums; box-shadow:0 3px 0 rgba(0,0,0,.15); z-index:1; }
+  .card .pic { position:relative; aspect-ratio:1; }
+  .card img { position:absolute; inset:4%; width:92%; height:92%; object-fit:contain; transition:transform .4s var(--ease); }
+  .card:hover img { transform:scale(1.05) rotate(-2deg); }
+  .card h3 { font-size:15px; line-height:1.25; font-weight:800; margin:8px 2px 12px; min-height:2.5em; letter-spacing:-.01em; }
+
+  .seg { display:flex; background:var(--white); border:1.5px solid var(--grey-100); border-radius:999px; padding:3px; gap:3px; margin-top:auto; }
+  .seg button { flex:1; font:inherit; font-size:12.5px; font-weight:700; height:30px; border:0; border-radius:999px; background:transparent; color:var(--grey-500); cursor:pointer; display:inline-flex; align-items:center; justify-content:center; gap:6px; transition:background .2s, color .2s; }
+  .seg button:hover { color:var(--ink); background:var(--grey-50); }
+  .seg button .dot { width:8px; height:8px; border-radius:50%; border:1.5px solid currentColor; }
+  .seg button[aria-pressed="true"].own { background:var(--ink); color:var(--white); }
+  .seg button[aria-pressed="true"].wnt { background:var(--lego-red); color:var(--white); }
+  .seg button[aria-pressed="true"] .dot { background:currentColor; }
+
+  @keyframes tilt { from { transform:rotate(0) translateY(30px); opacity:0; } }
+  @keyframes pop { from { opacity:0; transform:translate(-120px,40px) rotate(-30deg) scale(.4); } }
+  @keyframes drop { from { opacity:0; transform:translateY(-20px); } }
+
+  @media (max-width:1080px) {
+    .hero { grid-template-columns:300px 1fr; gap:24px; }
+    .bag-stage { height:400px; }
+    .spill { left:220px; transform:scale(.8); transform-origin:top left; }
+    .hero-copy { padding-left:110px; }
+    .figs { grid-template-columns:repeat(3,1fr); }
+  }
+  @media (max-width:720px) {
+    .top-inner { padding:12px 18px; }
+    main { padding:0 18px 64px; }
+    .hero { grid-template-columns:1fr; padding:28px 0 16px; gap:8px; }
+    .bag-stage { height:300px; width:220px; }
+    .spill { left:150px; top:20px; transform:scale(.6); transform-origin:top left; }
+    .hero-copy { padding-left:0; }
+    .figs { grid-template-columns:repeat(2,1fr); gap:12px; }
+    .card { padding:10px 10px 12px; }
+    .badge { width:28px; height:28px; font-size:13px; top:8px; left:8px; }
+    .card h3 { font-size:13.5px; }
+    .seg button { font-size:11.5px; gap:4px; }
+    .seg button .dot { display:none; }
+  }
+  @media (prefers-reduced-motion:reduce) {
+    *, *::before, *::after { animation:none !important; transition:none !important; }
+  }
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="top-inner">
+    <a class="brand" href="index.html" aria-label="Minifig Vault home"><span class="brand-mark" aria-hidden="true"><i></i></span><b>Minifig Vault</b></a>
+    <a class="back" href="index.html"><span aria-hidden="true">&larr;</span> All series</a>
+  </div>
+</header>
+
+<main>
+  <section class="hero" aria-labelledby="title">
+    <div class="bag-stage">
+      <img class="glow" id="glow" src="" alt="" aria-hidden="true">
+      <img class="bag" id="bag" src="" alt="">
+    </div>
+    <div class="spill" id="spill" aria-hidden="true"></div>
+    <div class="hero-copy">
+      <p class="eyebrow">Collectible Minifigures</p>
+      <h1 id="title"></h1>
+      <div class="facts" id="facts"></div>
+      <div class="progress">
+        <div class="progress-head"><span>Owned</span><b id="ownedTxt"></b></div>
+        <div class="bar" role="progressbar" id="bar" aria-label="Figures owned" aria-valuemin="0"><i id="barFill"></i></div>
+      </div>
+      <button type="button" class="want-all" id="wantAll" aria-pressed="false">Want whole series</button>
+    </div>
+  </section>
+
+  <div class="rule"><h2>Inside the bag</h2><span id="ruleTxt"></span></div>
+  <ul class="figs" id="figs"></ul>
+</main>
+
+<script src="../assets/data.js"></script>
+<script>
+  var D = MOCK.detail;
+  var series = MOCK.series.filter(function (s) { return s.id === D.id; })[0];
+  var total = D.figures.length;
+
+  // Mock initial state (visual only, not persisted).
+  var owned = {}, wanted = {};
+  [1, 3, 4, 8, 10, 12, 15, 18, 20].forEach(function (n) { owned[n] = true; });
+  [2, 6, 14].forEach(function (n) { wanted[n] = true; });
+
+  document.title = D.id + ' ' + D.name + ' - Minifig Vault';
+  document.getElementById('title').textContent = D.name;
+  var bagSrc = '../' + series.bag;
+  document.getElementById('bag').src = bagSrc;
+  document.getElementById('bag').alt = D.name + ' blind bag';
+  document.getElementById('glow').src = bagSrc;
+  document.getElementById('facts').innerHTML =
+    '<span class="fact">No. ' + D.id + '</span><span class="fact">' + D.year + '</span><span class="fact red">' + total + ' to collect</span>';
+
+  // Figures spilling out of the bag opening (positions are hand-placed for the composition).
+  var spillPos = [
+    { n: 1, x: 10, y: 0, r: -18, d: 200 },
+    { n: 10, x: 110, y: 70, r: 14, d: 320 },
+    { n: 14, x: 30, y: 170, r: -8, d: 440 },
+    { n: 4, x: 150, y: 220, r: 22, d: 560 },
+    { n: 19, x: 60, y: 300, r: -24, d: 680 }
+  ];
+  document.getElementById('spill').innerHTML = spillPos.map(function (p) {
+    var f = D.figures[p.n - 1];
+    return '<img src="../' + f.img + '" alt="" style="left:' + p.x + 'px;top:' + p.y + 'px;transform:rotate(' + p.r + 'deg);animation-delay:' + p.d + 'ms">';
+  }).join('');
+
+  function updateProgress() {
+    var c = Object.keys(owned).filter(function (k) { return owned[k]; }).length;
+    var w = Object.keys(wanted).filter(function (k) { return wanted[k]; }).length;
+    document.getElementById('ownedTxt').textContent = c + ' / ' + total;
+    document.getElementById('barFill').style.width = (c / total * 100) + '%';
+    var bar = document.getElementById('bar');
+    bar.setAttribute('aria-valuemax', total);
+    bar.setAttribute('aria-valuenow', c);
+    document.getElementById('ruleTxt').textContent = c + ' owned, ' + w + ' wanted, ' + (total - c) + ' missing';
+  }
+
+  var figs = document.getElementById('figs');
+  figs.innerHTML = D.figures.map(function (f, i) {
+    var o = !!owned[f.no], w = !!wanted[f.no];
+    return '<li class="card' + (o ? ' is-owned' : '') + '" data-no="' + f.no + '" style="animation-delay:' + (300 + i * 35) + 'ms">' +
+      '<span class="badge" aria-hidden="true">' + f.no + '</span>' +
+      '<div class="pic"><img src="../' + f.img + '" alt="' + f.name + ' minifigure" loading="lazy"></div>' +
+      '<h3><span class="sr">Figure ' + f.no + ': </span>' + f.name + '</h3>' +
+      '<div class="seg" role="group" aria-label="Status for ' + f.name + '">' +
+        '<button type="button" class="own" aria-pressed="' + o + '"><span class="dot" aria-hidden="true"></span>Owned</button>' +
+        '<button type="button" class="wnt" aria-pressed="' + w + '"><span class="dot" aria-hidden="true"></span>Wanted</button>' +
+      '</div></li>';
+  }).join('');
+
+  figs.addEventListener('click', function (e) {
+    var btn = e.target.closest('.seg button');
+    if (!btn) return;
+    var card = btn.closest('.card');
+    var no = Number(card.getAttribute('data-no'));
+    var map = btn.classList.contains('own') ? owned : wanted;
+    map[no] = !map[no];
+    btn.setAttribute('aria-pressed', String(map[no]));
+    card.classList.toggle('is-owned', !!owned[no]);
+    updateProgress();
+  });
+
+  var wantAll = document.getElementById('wantAll');
+  wantAll.addEventListener('click', function () {
+    var on = wantAll.getAttribute('aria-pressed') !== 'true';
+    wantAll.setAttribute('aria-pressed', String(on));
+    wantAll.textContent = on ? 'Wanted: whole series' : 'Want whole series';
+  });
+
+  updateProgress();
+</script>
+</body>
+</html>

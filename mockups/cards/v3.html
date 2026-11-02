@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><title>71019 card v3</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:600px;height:800px;overflow:hidden;background:#000}
+body{font-family:"Segoe UI","Helvetica Neue",Arial,system-ui,sans-serif}
+.card{position:relative;width:600px;height:800px;overflow:hidden}
+.fig{position:absolute;width:auto;user-select:none}
+.lockup{display:block;width:300px;height:auto}
+/* SOURCE: colours sampled from the LEGO logo on the 71019 bag image (originals/71019/71019-0.jpg) */
+:root{--lego-red:#DF0012;--lego-yellow:#FDE01B}
+
+.card{background:#f4f1ea;color:#141414}
+.card::before{content:"";position:absolute;inset:18px;border:1px solid rgba(20,20,20,.12);border-radius:14px;pointer-events:none}
+.head{position:absolute;left:34px;right:34px;top:40px;display:flex;justify-content:space-between;align-items:flex-start}
+.kicker{font-size:11px;font-weight:700;letter-spacing:.3em;color:#8a8478}
+.title{position:absolute;left:34px;top:118px;right:34px}
+.title .the{font-size:15px;font-weight:600;letter-spacing:.24em;color:var(--lego-red)}
+.title .name{font-family:Georgia,"Times New Roman",serif;font-size:56px;line-height:1;font-weight:400;letter-spacing:-.02em;margin-top:6px}
+.title .rule{margin-top:18px;height:3px;width:64px;background:var(--lego-red)}
+.cell{position:absolute;width:54px;height:150px}
+.cell img{position:absolute;bottom:22px;left:50%;transform:translateX(-50%);height:118px;width:auto;
+  filter:drop-shadow(0 6px 6px rgba(0,0,0,.18))}
+.cell span{position:absolute;bottom:0;left:0;right:0;text-align:center;font-size:10px;font-weight:700;letter-spacing:.1em;color:#a39d90}
+.shelf{position:absolute;left:34px;right:34px;height:1px;background:rgba(20,20,20,.14)}
+.foot{position:absolute;left:34px;right:34px;bottom:44px;display:flex;align-items:flex-end;justify-content:space-between}
+.cluster{display:flex;gap:10px;align-items:center}
+.pill{height:54px;min-width:54px;padding:0 14px;border-radius:12px;display:flex;align-items:center;justify-content:center;
+  font-weight:900;font-size:22px;line-height:1}
+.pill.age{background:#141414;color:#fff}
+.pill.num{background:#fff;color:#141414;border:1.5px solid #141414;font-size:20px;letter-spacing:.04em}
+.count{width:84px;height:84px;border-radius:50%;background:var(--lego-red);color:#fff;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;box-shadow:0 0 0 4px #f4f1ea,0 0 0 6px var(--lego-yellow)}
+.count b{font-size:36px;font-weight:900;line-height:.9}
+.count small{font-size:9px;font-weight:800;letter-spacing:.14em}
+.legal{font-size:10px;letter-spacing:.2em;color:#8a8478;margin-top:8px}
+</style></head>
+<body><div class="card">
+<div class="head"><img class="lockup" src="../assets/logos/lego-minifigures-lockup.png" alt="LEGO Minifigures" style="width:236px">
+<div class="kicker">COLLECTOR CARD</div></div>
+<div class="title"><div class="the">THE LEGO</div><div class="name"><em>Ninjago</em> Movie</div><div class="rule"></div></div>
+<div class="cell" style="left:34px;top:312px"><img src="../assets/figs/71019-1.webp" alt=""><span>01</span></div>
+<div class="cell" style="left:87px;top:312px"><img src="../assets/figs/71019-2.webp" alt=""><span>02</span></div>
+<div class="cell" style="left:140px;top:312px"><img src="../assets/figs/71019-3.webp" alt=""><span>03</span></div>
+<div class="cell" style="left:194px;top:312px"><img src="../assets/figs/71019-4.webp" alt=""><span>04</span></div>
+<div class="cell" style="left:247px;top:312px"><img src="../assets/figs/71019-5.webp" alt=""><span>05</span></div>
+<div class="cell" style="left:300px;top:312px"><img src="../assets/figs/71019-6.webp" alt=""><span>06</span></div>
+<div class="cell" style="left:353px;top:312px"><img src="../assets/figs/71019-7.webp" alt=""><span>07</span></div>
+<div class="cell" style="left:406px;top:312px"><img src="../assets/figs/71019-8.webp" alt=""><span>08</span></div>
+<div class="cell" style="left:460px;top:312px"><img src="../assets/figs/71019-9.webp" alt=""><span>09</span></div>
+<div class="cell" style="left:513px;top:312px"><img src="../assets/figs/71019-10.webp" alt=""><span>10</span></div>
+<div class="cell" style="left:34px;top:462px"><img src="../assets/figs/71019-11.webp" alt=""><span>11</span></div>
+<div class="cell" style="left:87px;top:462px"><img src="../assets/figs/71019-12.webp" alt=""><span>12</span></div>
+<div class="cell" style="left:140px;top:462px"><img src="../assets/figs/71019-13.webp" alt=""><span>13</span></div>
+<div class="cell" style="left:194px;top:462px"><img src="../assets/figs/71019-14.webp" alt=""><span>14</span></div>
+<div class="cell" style="left:247px;top:462px"><img src="../assets/figs/71019-15.webp" alt=""><span>15</span></div>
+<div class="cell" style="left:300px;top:462px"><img src="../assets/figs/71019-16.webp" alt=""><span>16</span></div>
+<div class="cell" style="left:353px;top:462px"><img src="../assets/figs/71019-17.webp" alt=""><span>17</span></div>
+<div class="cell" style="left:406px;top:462px"><img src="../assets/figs/71019-18.webp" alt=""><span>18</span></div>
+<div class="cell" style="left:460px;top:462px"><img src="../assets/figs/71019-19.webp" alt=""><span>19</span></div>
+<div class="cell" style="left:513px;top:462px"><img src="../assets/figs/71019-20.webp" alt=""><span>20</span></div>
+<div class="shelf" style="top:462px"></div>
+<div class="shelf" style="top:612px"></div>
+<div class="foot"><div><div class="cluster"><span class="pill age">5+</span><span class="pill num">71019</span></div>
+<div class="legal">AGES &middot; SET NUMBER</div></div>
+<div class="count"><b>20</b><small>TO COLLECT</small></div></div>
+</div></body></html>

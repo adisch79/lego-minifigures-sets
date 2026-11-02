@@ -1,0 +1,393 @@
+/* Direction B "Collector Leaflet": shared styles for index.html and series.html. */
+:root {
+  /* SOURCE: colours sampled from the LEGO logo on the 71019 bag image (originals/71019/71019-0.jpg) */
+  --lego-red: #DF0012;
+  --lego-yellow: #FDE01B;
+  --ink: #1A1A1A;
+  --paper: #FFFFFF;
+  --grey-100: #F4F1E6;
+  --grey-300: #CFCABA;
+  --grey-600: #5E5B52;
+  --page: var(--lego-yellow);
+  --card: var(--paper);
+  --card-ink: var(--ink);
+  --font-display: "Arial Black", "Segoe UI Black", "Helvetica Neue", Arial, sans-serif;
+  --font-body: "Segoe UI", system-ui, -apple-system, Roboto, Arial, sans-serif;
+  --font-mono: Consolas, "SF Mono", Menlo, monospace;
+  --radius: 16px;
+  --shadow: 6px 6px 0 var(--ink);
+  --stud: 36px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --page: #141414;
+    --card: #232323;
+    --card-ink: #F4F1E6;
+    --grey-100: #2D2D2D;
+    --grey-300: #4A4A4A;
+    --grey-600: #B8B3A3;
+    --shadow: 6px 6px 0 var(--lego-yellow);
+  }
+}
+
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  background: var(--page);
+  color: var(--card-ink);
+  font-family: var(--font-body);
+  /* Subtle print halftone, like the leaflet paper */
+  background-image: radial-gradient(rgba(26, 26, 26, .07) 1px, transparent 1.4px);
+  background-size: 14px 14px;
+  min-height: 100vh;
+}
+img { display: block; max-width: 100%; }
+a { color: inherit; }
+
+:focus-visible {
+  outline: 4px solid var(--lego-red);
+  outline-offset: 3px;
+  border-radius: 8px;
+}
+
+/* ---------- Header ---------- */
+.masthead {
+  background: var(--ink);
+  color: var(--lego-yellow);
+  border-bottom: 6px solid var(--lego-red);
+}
+.masthead__inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 18px 24px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-decoration: none;
+  font-family: var(--font-display);
+  font-size: 28px;
+  letter-spacing: -.02em;
+  line-height: 1;
+  text-transform: uppercase;
+}
+.logo__mark {
+  width: 42px; height: 42px;
+  background: var(--lego-red);
+  border: 3px solid var(--lego-yellow);
+  border-radius: 10px;
+  display: grid; place-items: center;
+  position: relative;
+}
+.logo__mark::before {
+  content: "";
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  background: var(--lego-yellow);
+  box-shadow: inset -3px -3px 0 rgba(0,0,0,.25);
+}
+.logo small {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: .18em;
+  color: var(--paper);
+  opacity: .7;
+  margin-top: 4px;
+}
+.tools { margin-left: auto; display: flex; gap: 12px; flex-wrap: wrap; }
+.field {
+  display: flex; align-items: center; gap: 8px;
+  background: var(--lego-yellow);
+  color: var(--ink);
+  border-radius: 12px;
+  padding: 0 12px;
+  height: 46px;
+  border: 3px solid var(--lego-yellow);
+}
+.field:focus-within { outline: 4px solid var(--lego-red); outline-offset: 2px; }
+.field svg { flex: none; }
+.field input, .field select {
+  border: 0; background: transparent; color: var(--ink);
+  font: 700 15px var(--font-body);
+  height: 100%;
+  outline: none;
+}
+.field input { width: 240px; }
+.field input::placeholder { color: rgba(26,26,26,.6); }
+.field select { cursor: pointer; padding-right: 4px; }
+.field label { font: 800 11px var(--font-mono); letter-spacing: .12em; text-transform: uppercase; }
+
+/* ---------- Layout ---------- */
+.wrap { max-width: 1200px; margin: 0 auto; padding: 40px 24px 80px; }
+.kicker {
+  font: 800 12px var(--font-mono);
+  letter-spacing: .22em;
+  text-transform: uppercase;
+}
+.page-title {
+  font-family: var(--font-display);
+  font-size: clamp(40px, 7vw, 88px);
+  line-height: .9;
+  letter-spacing: -.035em;
+  margin: 8px 0 0;
+  text-transform: uppercase;
+  color: var(--ink);
+}
+@media (prefers-color-scheme: dark) { .page-title { color: var(--lego-yellow); } }
+.intro { display: flex; align-items: end; justify-content: space-between; gap: 24px; flex-wrap: wrap; margin-bottom: 110px; }
+.intro__stat {
+  font-family: var(--font-display);
+  font-size: 15px;
+  background: var(--ink); color: var(--lego-yellow);
+  padding: 10px 16px; border-radius: 999px;
+}
+
+/* ---------- Brick card (shared) ---------- */
+.brick {
+  position: relative;
+  background: var(--card);
+  border: 3px solid var(--ink);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+/* Row of studs along the top edge: half-circles clipped from a repeating radial gradient */
+.brick::before {
+  content: "";
+  position: absolute;
+  left: 14px; right: 14px;
+  top: -14px;
+  height: 14px;
+  background-image: radial-gradient(circle at 50% 100%, var(--card) 0 10px, var(--ink) 10px 13px, transparent 13.5px);
+  background-size: var(--stud) 14px;
+  background-repeat: repeat-x;
+  background-position: center 0;
+  pointer-events: none;
+}
+
+/* ---------- Home grid ---------- */
+.grid-series {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(330px, 1fr));
+  gap: 120px 32px;
+}
+.tile {
+  display: flex;
+  flex-direction: column;
+  padding: 0 22px 22px;
+  transition: transform .18s cubic-bezier(.3,1.6,.6,1), box-shadow .18s;
+}
+.tile:hover, .tile:focus-within { transform: translate(-3px, -3px); box-shadow: 9px 9px 0 var(--ink); }
+.tile__bagzone {
+  height: 240px;
+  margin: -78px -6px 6px;
+  position: relative;
+  display: flex; justify-content: center; align-items: flex-end;
+  pointer-events: none;
+}
+.tile__bag {
+  height: 100%; width: auto; max-width: 78%;
+  object-fit: contain;
+  transform: rotate(-6deg);
+  filter: drop-shadow(8px 10px 0 rgba(26,26,26,.85));
+  transition: transform .3s cubic-bezier(.3,1.6,.6,1);
+}
+.tile:nth-child(even) .tile__bag { transform: rotate(5deg); }
+.tile:hover .tile__bag { transform: rotate(-2deg) translateY(-10px) scale(1.03); }
+.tile__id {
+  position: absolute; top: 18px; left: -10px;
+  background: var(--lego-red); color: var(--paper);
+  font: 900 15px var(--font-mono);
+  padding: 6px 12px;
+  border: 3px solid var(--ink);
+  border-radius: 10px;
+  transform: rotate(-4deg);
+  z-index: 2;
+}
+.tile__name {
+  font-family: var(--font-display);
+  font-size: 24px; line-height: 1.02; letter-spacing: -.02em;
+  margin: 6px 0 10px;
+  text-transform: uppercase;
+}
+.tile__name a { text-decoration: none; }
+/* Stretched link makes the whole tile clickable while keeping nested buttons valid */
+.tile__name a::after { content: ""; position: absolute; inset: 0; border-radius: var(--radius); z-index: 1; }
+.tile__name a:focus-visible { outline: none; }
+.tile__name a:focus-visible::after { outline: 4px solid var(--lego-red); outline-offset: 6px; }
+.meta { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+.chip {
+  font: 800 12px var(--font-mono); letter-spacing: .06em; text-transform: uppercase;
+  border: 2px solid currentColor; border-radius: 999px; padding: 4px 10px;
+}
+.chip--solid { background: var(--ink); color: var(--lego-yellow); border-color: var(--ink); }
+
+/* Progress as a row of 1x1 bricks, one per figure */
+.progress { margin-top: auto; }
+.progress__label { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px; }
+.progress__label b { font-family: var(--font-display); font-size: 22px; }
+.progress__label span { font: 800 11px var(--font-mono); letter-spacing: .14em; text-transform: uppercase; color: var(--grey-600); }
+.pips { display: flex; gap: 3px; }
+.pips i {
+  flex: 1; height: 14px; border-radius: 3px;
+  background: var(--grey-100); border: 2px solid var(--grey-300);
+}
+.pips i.on { background: var(--ink); border-color: var(--ink); }
+@media (prefers-color-scheme: dark) { .pips i.on { background: var(--lego-yellow); border-color: var(--lego-yellow); } }
+
+.tile__foot { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 18px; }
+.tile__open { font: 800 12px var(--font-mono); letter-spacing: .14em; text-transform: uppercase; }
+
+/* ---------- Toggles ---------- */
+.btn {
+  position: relative; z-index: 2;
+  display: inline-flex; align-items: center; gap: 8px;
+  font: 900 13px var(--font-body); letter-spacing: .04em; text-transform: uppercase;
+  border: 3px solid var(--ink);
+  background: var(--card); color: var(--card-ink);
+  border-radius: 12px;
+  padding: 8px 14px;
+  cursor: pointer;
+  box-shadow: 3px 3px 0 var(--ink);
+  transition: transform .12s, box-shadow .12s, background .15s, color .15s;
+}
+.btn:hover { transform: translate(-1px,-1px); box-shadow: 4px 4px 0 var(--ink); }
+.btn:active { transform: translate(2px,2px); box-shadow: 1px 1px 0 var(--ink); }
+.btn svg { width: 16px; height: 16px; flex: none; }
+.btn--want[aria-pressed="true"] { background: var(--lego-red); color: var(--paper); }
+.btn--own[aria-pressed="true"] { background: var(--ink); color: var(--lego-yellow); }
+@media (prefers-color-scheme: dark) {
+  .btn, .brick { border-color: #000; }
+}
+
+/* ---------- Empty state ---------- */
+.empty {
+  display: none;
+  text-align: center;
+  padding: 48px 24px;
+  margin-top: -40px;
+}
+.empty.show { display: block; }
+.empty h2 { font-family: var(--font-display); text-transform: uppercase; font-size: 32px; margin: 0 0 8px; }
+
+/* ---------- Series hero ---------- */
+.crumb { display: inline-flex; gap: 8px; align-items: center; font: 800 12px var(--font-mono); letter-spacing: .16em; text-transform: uppercase; text-decoration: none; margin-bottom: 28px; color: var(--ink); }
+@media (prefers-color-scheme: dark) { .crumb { color: var(--lego-yellow); } }
+.hero {
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  gap: 36px;
+  align-items: center;
+  padding: 30px 36px 30px 24px;
+  margin-bottom: 72px;
+}
+.hero__bag { position: relative; height: 300px; }
+.hero__bag img {
+  position: absolute; left: 50%; top: 50%;
+  height: 380px; width: auto; max-width: none;
+  transform: translate(-50%, -54%) rotate(-7deg);
+  filter: drop-shadow(10px 12px 0 rgba(26,26,26,.85));
+}
+.hero__title { font-family: var(--font-display); font-size: clamp(34px, 5vw, 64px); line-height: .92; letter-spacing: -.03em; text-transform: uppercase; margin: 10px 0 16px; }
+.hero__row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-bottom: 22px; }
+
+.progress__label .hero__big { font: 900 64px/1 var(--font-display); color: inherit; letter-spacing: -.03em; text-transform: none; }
+.hero__big { font-family: var(--font-display); font-size: 64px; line-height: 1; }
+.hero__big small { font-size: 26px; color: var(--grey-600); }
+.hero .progress { max-width: 560px; }
+.hero__actions { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 22px; }
+.btn--lg { font-size: 15px; padding: 12px 20px; }
+
+/* ---------- Figure grid ---------- */
+.grid-figs {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+  gap: 56px 24px;
+}
+.fig { padding: 14px 14px 14px; display: flex; flex-direction: column; }
+.fig__no {
+  position: absolute; top: -18px; left: -14px; z-index: 3;
+  width: 58px; height: 58px;
+  border-radius: 50%;
+  background: var(--ink); color: var(--lego-yellow);
+  display: grid; place-items: center;
+  font-family: var(--font-display); font-size: 28px; letter-spacing: -.04em;
+  border: 3px solid var(--lego-yellow);
+  box-shadow: 0 0 0 3px var(--ink);
+}
+.fig__art {
+  position: relative;
+  aspect-ratio: 1 / 1;
+  background: var(--grey-100);
+  border-radius: 10px;
+  display: grid; place-items: center;
+  overflow: hidden;
+}
+.fig__art img { width: 86%; height: 86%; object-fit: contain; transition: transform .25s; }
+.fig:hover .fig__art img { transform: scale(1.05) rotate(-2deg); }
+.fig__name { font-family: var(--font-display); font-size: 16px; line-height: 1.1; text-transform: uppercase; letter-spacing: -.01em; margin: 12px 2px 12px; min-height: 2.2em; }
+.fig__btns { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: auto; }
+.fig__btns .btn { justify-content: center; padding: 8px 6px; font-size: 12px; }
+
+/* Owned: black check stamp over the art */
+.stamp {
+  position: absolute; right: 8px; top: 8px;
+  width: 64px; height: 64px; border-radius: 50%;
+  border: 4px solid var(--ink);
+  color: var(--ink);
+  display: grid; place-items: center;
+  transform: rotate(-14deg) scale(.4);
+  opacity: 0;
+  transition: transform .25s cubic-bezier(.3,1.8,.5,1), opacity .15s;
+  background: rgba(253,224,27,.9);
+}
+.stamp svg { width: 36px; height: 36px; }
+.fig.is-owned .stamp { opacity: 1; transform: rotate(-14deg) scale(1); }
+.fig.is-owned .fig__art { background: var(--lego-yellow); }
+/* Wanted: red hang tag */
+.tag {
+  position: absolute; left: 0; bottom: 12px;
+  background: var(--lego-red); color: var(--paper);
+  font: 900 12px var(--font-mono); letter-spacing: .14em;
+  padding: 6px 14px 6px 12px;
+  clip-path: polygon(0 0, 100% 0, calc(100% - 10px) 50%, 100% 100%, 0 100%);
+  transform: translateX(-110%);
+  transition: transform .25s cubic-bezier(.3,1.5,.6,1);
+}
+.fig.is-wanted .tag { transform: translateX(0); }
+
+/* ---------- Responsive ---------- */
+@media (max-width: 720px) {
+  .masthead__inner { padding: 14px 16px; gap: 12px; }
+  .logo { font-size: 22px; }
+  .tools { margin-left: 0; width: 100%; }
+  .field { flex: 1 1 100%; }
+  .field input { width: 100%; }
+  .field select { flex: 1; }
+  .wrap { padding: 28px 16px 60px; }
+  .grid-series { grid-template-columns: 1fr; gap: 100px; }
+  .intro { margin-bottom: 90px; }
+  .hero { grid-template-columns: 1fr; padding: 20px; gap: 8px; }
+  .hero__bag { height: 270px; }
+  .hero__bag img { height: 280px; transform: translate(-50%, -50%) rotate(-6deg); }
+  .tile__bagzone { height: 220px; }
+  .progress__label .hero__big { font-size: 48px; }
+  .grid-figs { grid-template-columns: 1fr 1fr; gap: 40px 14px; }
+  .fig { padding: 10px; }
+  .fig__no { width: 44px; height: 44px; font-size: 20px; top: -14px; left: -8px; }
+  .fig__name { font-size: 13px; }
+  .fig__btns { grid-template-columns: 1fr; }
+  .stamp { width: 44px; height: 44px; }
+  .stamp svg { width: 24px; height: 24px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition: none !important; }
+}

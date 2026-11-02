@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Minifig Vault - Collectible Minifigures checklist</title>
+<link rel="stylesheet" href="leaflet.css">
+</head>
+<body>
+<header class="masthead">
+  <div class="masthead__inner">
+    <a class="logo" href="index.html" aria-label="Minifig Vault home">
+      <span class="logo__mark" aria-hidden="true"></span>
+      <span>Minifig Vault<small>CMF COLLECTOR CHECKLIST</small></span>
+    </a>
+    <div class="tools">
+      <div class="field">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5 21 21"/></svg>
+        <input id="q" type="search" placeholder="Search name, number, year" aria-label="Search series">
+      </div>
+      <div class="field">
+        <label for="sort">Sort</label>
+        <select id="sort">
+          <option value="newest">Newest</option>
+          <option value="oldest">Oldest</option>
+          <option value="az">A-Z</option>
+          <option value="count">Figure count</option>
+        </select>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="intro">
+    <div>
+      <div class="kicker">Collectible Minifigures / Series checklist</div>
+      <h1 class="page-title">Every bag.<br>Every figure.</h1>
+    </div>
+    <div class="intro__stat" id="stat" aria-live="polite"></div>
+  </div>
+
+  <section class="grid-series" id="grid" aria-label="Series"></section>
+  <div class="empty" id="empty">
+    <h2>No series found</h2>
+    <p>Nothing matches that search. Try a set number like 71019 or a year.</p>
+  </div>
+</main>
+
+<script src="../assets/data.js"></script>
+<script>
+  // Mock collection state for the mockup only (not real user data).
+  const OWNED = { "71053": 3, "71045": 12, "71038": 9, "71031": 0, "71019": 7, "8683": 14 };
+  const wantAll = new Set(["71031"]);
+
+  const grid = document.getElementById("grid");
+  const q = document.getElementById("q");
+  const sort = document.getElementById("sort");
+  const empty = document.getElementById("empty");
+  const stat = document.getElementById("stat");
+
+  const tagIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" aria-hidden="true"><path d="M3 12V4h8l10 10-8 8z"/><circle cx="7.5" cy="8.5" r="1.5" fill="currentColor"/></svg>';
+
+  function esc(s) {
+    return String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+  }
+
+  function tile(s) {
+    const owned = OWNED[s.id] || 0;
+    const pips = Array.from({ length: s.figureCount }, (_, i) => `<i class="${i < owned ? "on" : ""}"></i>`).join("");
+    const want = wantAll.has(s.id);
+    // Only 71019 has a detail page in this mockup.
+    const href = "series.html";
+    return `<article class="brick tile">
+      <span class="tile__id">${esc(s.id)}</span>
+      <div class="tile__bagzone"><img class="tile__bag" src="../${esc(s.bag)}" alt="${esc(s.name)} blind bag"></div>
+      <h2 class="tile__name"><a href="${href}">${esc(s.name)}</a></h2>
+      <div class="meta">
+        <span class="chip chip--solid">${s.year}</span>
+        <span class="chip">${s.figureCount} figures</span>
+      </div>
+      <div class="progress">
+        <div class="progress__label"><b>${owned}<span style="font-size:15px;color:inherit;letter-spacing:0">/${s.figureCount}</span></b><span>${owned === s.figureCount ? "Complete" : "Owned"}</span></div>
+        <div class="pips" role="img" aria-label="Owned ${owned} of ${s.figureCount}">${pips}</div>
+      </div>
+      <div class="tile__foot">
+        <button class="btn btn--want" type="button" data-id="${esc(s.id)}" aria-pressed="${want}">${tagIcon}Want whole series</button>
+        <span class="tile__open" aria-hidden="true">Open &rarr;</span>
+      </div>
+    </article>`;
+  }
+
+  function render() {
+    const term = q.value.trim().toLowerCase();
+    let list = window.MOCK.series.filter(s =>
+      !term || s.name.toLowerCase().includes(term) || s.id.includes(term) || String(s.year).includes(term));
+    const by = {
+      newest: (a, b) => b.year - a.year,
+      oldest: (a, b) => a.year - b.year,
+      az: (a, b) => a.name.localeCompare(b.name),
+      count: (a, b) => b.figureCount - a.figureCount || b.year - a.year
+    }[sort.value];
+    list = list.slice().sort(by);
+    grid.innerHTML = list.map(tile).join("");
+    empty.classList.toggle("show", list.length === 0);
+    const figs = window.MOCK.series.reduce((n, s) => n + s.figureCount, 0);
+    const own = Object.values(OWNED).reduce((n, v) => n + v, 0);
+    stat.textContent = `${list.length} series shown / ${own} of ${figs} figures owned`;
+  }
+
+  grid.addEventListener("click", e => {
+    const b = e.target.closest(".btn--want");
+    if (!b) return;
+    const on = b.getAttribute("aria-pressed") !== "true";
+    b.setAttribute("aria-pressed", on);
+    on ? wantAll.add(b.dataset.id) : wantAll.delete(b.dataset.id);
+  });
+  q.addEventListener("input", render);
+  sort.addEventListener("change", render);
+  render();
+</script>
+</body>
+</html>
