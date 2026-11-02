@@ -27,7 +27,8 @@
    **V1-04** on `feature/V1-04-home`: home grid built, screenshots `mockups/v1-04/`, awaiting review. Tile links `#series/<id>` do nothing until V1-05. Merged (PR #11).
    **V1-06** merged (PR #12, 2026-11-01): cards for all 52 series, overview `docs/spike/V1-06-cards-all.png`, logos in `mockups/assets/logos/SOURCES.md`. Re-render: `python scripts/build_cards.py <ids>` (no args builds only missing cards). Merge is refused by the auto classifier unless review and qa agents passed on the final diff.
    **V1-05** merged (PR #13). Review findings were all non-blocking; deep-link focus finding checked and is not a defect.
-   **Live switch** on `feature/V1-05-pages-deploy`: `deploy` job in `app-ci.yml` publishes `app/dist` on push to `master`, v1 `pages.yml` removed. Merge into dev after review and qa. Going live = owner merges dev into `master` (release PR). v1 stays live until then.
+   **Live switch** merged into dev (PR #14): `deploy` job in `app-ci.yml` publishes `app/dist` on master pushes touching `app/**`, `site/img/**` or the workflow; v1 `pages.yml` removed. v1 stays live until the owner merges dev into `master`. Deploy on GitHub not yet exercised: check the Actions run and live URL after release.
+   Later, optional (review of PR #14): add `workflow_dispatch` for manual redeploy (deploy `if` must allow it); deploy-job concurrency `{group: pages, cancel-in-progress: false}`.
 4. Agent merges feature PRs into dev after code-reviewer and qa pass (`gh pr merge <n> --merge`; owner OK 2026-11-01, decisions.md). `master` stays owner-only.
 5. Later polish (not blocking): series page hero in mockup D still uses the bag image.
 
