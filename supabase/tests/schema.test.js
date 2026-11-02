@@ -133,6 +133,7 @@ test('profiles: display_name updates; other columns, other rows, insert refused'
     await assert.rejects(q('insert into public.profiles (user_id) values (gen_random_uuid())'), denied('42501'));
     await assert.rejects(q('delete from public.profiles'), denied('42501'));
     await assert.rejects(q('update public.profiles set display_name=$1', ['x'.repeat(51)]), denied('23514'));
+    await assert.rejects(q('update public.profiles set display_name=$1', ['a\nb']), denied('23514'));
     await q('update public.profiles set display_name=$1', ['x'.repeat(50)]);
   });
   const b = await q('select display_name from public.profiles where user_id=$1', [B]);
@@ -176,6 +177,8 @@ test('marks cap: 2000 rows per user, 2001st refused, other user unaffected', asy
   await assert.rejects(insMark(A, 'series', '99999'), denied('54000'));
   await asA(() => assert.rejects(insMark(A, 'series', '99998'), denied('54000')));
   await insMark(B, 'series', '99999');
+  // B must not learn that A is at the cap: RLS refusal, not the cap error.
+  await as('authenticated', B, () => assert.rejects(insMark(A, 'series', '99997'), denied('42501')));
   await q('delete from public.marks where user_id=$1 and target_id=$2', [A, '100001']);
   await insMark(A, 'series', '99999'); // room again after a delete
 });

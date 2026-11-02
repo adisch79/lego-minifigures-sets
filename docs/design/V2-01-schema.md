@@ -9,7 +9,7 @@ Goal: invited users store owned/wanted marks; each user reaches only their own r
 - Accounts are created already confirmed, not by invite link: `auth.admin.createUser({ email, email_confirm: true })`, or dashboard Add user with auto-confirm. Invite links are avoided because an unconfirmed user cannot use OTP with signups off, and the invite callback does not fit PKCE. SOURCE: supabase/auth `magic_link.go`, `signup.go`, `invite.go`, `admin.go`, read 2026-11-02. The owner tells the person by their own channel.
 - Adding a person, in order: insert allowlist row, create user, delete the row if creation fails. First admin, in order: allowlist row, create user, `admins` row, by one-off SQL.
 - Removing a person: delete the `auth.users` row by `user_id`, which cascades so a still-valid token can no longer write, then delete the allowlist row. Lists show the current `auth.users.email`.
-- Self-service email change is blocked by a `before update` trigger on `auth.users` raising when `email_change` is set.
+- Self-service email change is blocked by a `before update` trigger on `auth.users` raising when `email_change` is set. A second trigger applies the allowlist gate to any real change of `email`. This makes Auth's soft delete fail safely, so V2-05 uses hard delete only.
 - Auth settings live outside migrations, so a live smoke test is part of acceptance: unknown-address OTP, password signup, anonymous sign-in and `updateUser({ email })` are all refused, and a newly created address signs in by OTP with no prior link. Rerun before each release. SOURCE: https://github.com/supabase/supabase/issues/40582 (use the global flag, not the email-provider flag).
 
 ## Email
@@ -63,6 +63,8 @@ Stored separately from figure marks; expanding them would send one alert per fig
 - Free projects pause after low activity over 7 days, which stops sign-in and alerts until restored. SOURCE: https://supabase.com/docs/guides/platform/free-project-pausing
 - Session sits in `localStorage` on the shared origin `adisch79.github.io`, so any other Pages project of the owner can read it. Custom subdomain is a precondition for V2-05, since an admin session can add accounts. Add a CSP meta tag in V2-02.
 - `signInWithOtp` differs for listed and unlisted addresses, so the anon key can test who is invited, and can spend the mail quota. Accepted for a small private app; set auth rate limits, add CAPTCHA if abused.
+- `updateUser({ email })` is refused, but Auth sends the mail before the write the trigger aborts, so a signed-in user can spend the mail quota and mail any address. Only invited users can do this. Set a low email rate limit before V2-02; run that smoke test only against an address the owner controls. SOURCE: supabase/auth `internal/api/mail.go`, read 2026-11-02.
+- A user at the row cap gets the cap error even on `on conflict do nothing`, because the trigger fires first. V2-03 handles it.
 - Service-role key never gets a `VITE_` name.
 
 ## Migrations and tests

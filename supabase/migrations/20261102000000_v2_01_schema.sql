@@ -1,8 +1,9 @@
 -- V2-01 schema: allowlist, admins, profiles, marks.
 -- Design: docs/design/V2-01-schema.md. No emails, admin ids or secrets here.
 
-create schema if not exists private;
+create schema private;
 revoke all on schema private from public, anon, authenticated;
+alter default privileges in schema private revoke execute on functions from public;
 
 -- allowlist: gate for account creation, enforced by a trigger on auth.users. No client access.
 create table public.allowlist (
@@ -17,7 +18,7 @@ create table public.admins (
 
 create table public.profiles (
   user_id uuid primary key references auth.users (id) on delete cascade,
-  display_name text check (char_length(display_name) <= 50),
+  display_name text check (char_length(display_name) <= 50 and display_name !~ '[[:cntrl:]]'),
   created_at timestamptz not null default now()
 );
 
@@ -79,8 +80,9 @@ begin
 end;
 $$;
 
+-- Invoker rights: a definer count would reveal whether another user is at the cap.
 create function private.enforce_marks_cap() returns trigger
-language plpgsql security definer set search_path = ''
+language plpgsql set search_path = ''
 as $$
 declare
   -- SOURCE: docs/design/V2-01-schema.md ("Per-user row cap by trigger: 2000"),

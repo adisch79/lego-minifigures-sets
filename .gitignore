@@ -8,3 +8,5 @@ app/dist
 !.env.example
 docs/spike/V1-03-check/
 supabase/node_modules
+supabase/.temp/
+supabase/.branches/
