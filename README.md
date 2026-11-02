@@ -28,7 +28,7 @@ python -m unittest discover tests   # run tests
 ### Live site
 **https://adisch79.github.io/lego-minifigures-sets/**
 
-The workflow in `.github/workflows/pages.yml` publishes `site/` on every push to `master`.
+The `deploy` job in `.github/workflows/app-ci.yml` publishes `app/dist` on every push to `master`.
 Flow: `feature/<story>` → `dev` → release merge into `master` (which deploys).
 
 Repo settings this needs (already done): Pages source = GitHub Actions; default branch = `master`;

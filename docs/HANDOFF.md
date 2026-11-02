@@ -26,7 +26,8 @@
    Done on branch: QA, re-sourced images, `imgFallback` fix (12 left, 71049), ages (43 added; 8909, 8805, 8684 unreadable), gap report `docs/spike/V1-03-gaps.md`. V1-03 merged (PR #10).
    **V1-04** on `feature/V1-04-home`: home grid built, screenshots `mockups/v1-04/`, awaiting review. Tile links `#series/<id>` do nothing until V1-05. Merged (PR #11).
    **V1-06** merged (PR #12, 2026-11-01): cards for all 52 series, overview `docs/spike/V1-06-cards-all.png`, logos in `mockups/assets/logos/SOURCES.md`. Re-render: `python scripts/build_cards.py <ids>` (no args builds only missing cards). Merge is refused by the auto classifier unless review and qa agents passed on the final diff.
-   **V1-05 series page** built, PR #13 open, not merged (`feature/V1-05-series`, code at 7b88346). Vitest 71, pytest 95, lint and build pass; checked in running app (71019, 71049, unknown id, 375 px). NEXT: run code-reviewer and qa agents on final diff (both stopped at usage limit, no result), fix blockers, merge PR #13, set V1-05 Done in backlog, then re-enable Pages deploy of `app/dist`.
+   **V1-05** merged (PR #13). Review findings were all non-blocking; deep-link focus finding checked and is not a defect.
+   **Live switch** on `feature/V1-05-pages-deploy`: `deploy` job in `app-ci.yml` publishes `app/dist` on push to `master`, v1 `pages.yml` removed. Merge into dev after review and qa. Going live = owner merges dev into `master` (release PR). v1 stays live until then.
 4. Agent merges feature PRs into dev after code-reviewer and qa pass (`gh pr merge <n> --merge`; owner OK 2026-11-01, decisions.md). `master` stays owner-only.
 5. Later polish (not blocking): series page hero in mockup D still uses the bag image.
 
