@@ -4,7 +4,7 @@
 - **v2 refactor started**: collector app (sort/search, owned/wanted for invited users, Telegram alerts, lowest prices). Plan: [backlog.md](backlog.md). v1 backlog archived: [archive/backlog-v1.md](archive/backlog-v1.md).
 - Owner answers (see decisions.md): invite-only users; Telegram alerts; prices later by moderate scraping (no API keys); English first, Hebrew later; prices in original currency + ILS.
 - **V0-01 done**: images will come from BrickLink catalog images (`img.bricklink.com/ItemImage/SN/0/coltlnm-<n>.png`). Border flood fill gives clean transparency on 20/20 figures + bag. Proof: `docs/spike/V0-01-bricklink-cutout-71019.webp`; script `docs/spike/V0-01-cutout.py`.
-- Live v1 site (unchanged): https://adisch79.github.io/lego-minifigures-sets/
+- **MVP 1 live (2026-11-02)**: new app at https://adisch79.github.io/lego-minifigures-sets/ (release PR #16, `80624e8`, App CI run 41432764683: build and deploy success). Progress 12 of 22 stories.
 
 - Backlog approved. **V0-02 done**: 3 directions in `mockups/a` (Toy Shelf), `mockups/b` (Collector Leaflet), `mockups/c` (Unboxing); screenshots in `mockups/<x>/shots/`. Shared assets `mockups/assets` (6 bags + 20 BrickLink figure cut-outs of 71019).
 
@@ -27,7 +27,8 @@
    **V1-04** on `feature/V1-04-home`: home grid built, screenshots `mockups/v1-04/`, awaiting review. Tile links `#series/<id>` do nothing until V1-05. Merged (PR #11).
    **V1-06** merged (PR #12, 2026-11-01): cards for all 52 series, overview `docs/spike/V1-06-cards-all.png`, logos in `mockups/assets/logos/SOURCES.md`. Re-render: `python scripts/build_cards.py <ids>` (no args builds only missing cards). Merge is refused by the auto classifier unless review and qa agents passed on the final diff.
    **V1-05** merged (PR #13). Review findings were all non-blocking; deep-link focus finding checked and is not a defect.
-   **Live switch** merged into dev (PR #14): `deploy` job in `app-ci.yml` publishes `app/dist` on master pushes touching `app/**`, `site/img/**` or the workflow; v1 `pages.yml` removed. v1 stays live until the owner merges dev into `master`. Deploy on GitHub not yet exercised: check the Actions run and live URL after release.
+   **Live switch** released: `deploy` job in `app-ci.yml` publishes `app/dist` on master pushes touching `app/**`, `site/img/**` or the workflow.
+   **NEXT: V2-01** on `feature/V2-01-supabase-schema`.
    Later, optional (review of PR #14): add `workflow_dispatch` for manual redeploy (deploy `if` must allow it); deploy-job concurrency `{group: pages, cancel-in-progress: false}`.
 4. Agent merges feature PRs into dev after code-reviewer and qa pass (`gh pr merge <n> --merge`; owner OK 2026-11-01, decisions.md). `master` stays owner-only.
 5. Later polish (not blocking): series page hero in mockup D still uses the bag image.
