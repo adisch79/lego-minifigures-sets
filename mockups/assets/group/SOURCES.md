@@ -10,3 +10,17 @@ Official LEGO product images with real transparency. Trademarks of the LEGO Grou
 - 71034.png — SOURCE: https://cdn.rebricker.com/products/lego/71034/71034_Prod.png
 - 71033.png — SOURCE: https://cdn.rebricker.com/products/lego/71033/71033_Prod.png
 - 71045.png — SOURCE: https://www.lego.com/cdn/cs/set/assets/blt3949416516622d66/71045.png
+- 71017.png — SOURCE: https://www.electricbricks.com/images/71017-20_0.png
+- 71018.png — SOURCE: https://cdn.rebricker.com/products/lego/71018/71018-Lineup_1488.png
+- 71019.png — SOURCE: https://www.kostickyshop.cz/www/upload/products/images/20170808114859921.png
+- 71020.png — SOURCE: https://www.kostickyshop.cz/www/upload/products/images/20180114100332226.png
+- 71021.png — SOURCE: https://i.ebayimg.com/images/g/82cAAOSwft9hQ6e0/s-l1200.png
+- 71022.png — SOURCE: https://www.kostickyshop.cz/www/upload/products/images/20180816120002257.png
+- 71027.png — SOURCE: https://www.kostickyshop.cz/www/upload/products/images/20200426030327187.png
+- 71028.png — SOURCE: https://i.ebayimg.com/images/g/l0cAAOSwNuRmiqfc/s-l1200.png
+- 71029.png — SOURCE: https://www.kostickyshop.cz/www/upload/products/images/2021010303380527.png
+- 71030.png — SOURCE: https://i.ebayimg.com/images/g/5vUAAOSwkBtkR-W1/s-l1200.png
+- 71031.png — SOURCE: https://i.ebayimg.com/images/g/4s4AAOSwQwhhpwJo/s-l1200.png
+- 71032.png — SOURCE: https://i.ebayimg.com/images/g/NkIAAOSwb-1miqMN/s-l1200.png
+- 71039.png — SOURCE: https://www.lego.com/cdn/cs/set/assets/bltd099cc8c436240fb/71039.png
+- 71048.png — SOURCE: https://www.lego.com/cdn/cs/set/assets/bltbf544398cdda2fee/71048_Prod_en-gb.png
