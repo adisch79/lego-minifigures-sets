@@ -13,6 +13,11 @@ import { fileURLToPath } from "node:url";
 const SCRIPT = join(dirname(fileURLToPath(import.meta.url)), "smoke_auth.mjs");
 const FAKE_KEY = "FAKE-ANON-VALUE";
 const FAKE_TOKEN = "FAKE-TOKEN-VALUE";
+const FAKE_HASH = "FAKE-HASH-VALUE";
+// Same shape as the emailed link. The host is reserved: opening it would fail the run.
+// SOURCE: https://supabase.com/docs/guides/auth/auth-email-templates
+const linkOf = (type, hash = FAKE_HASH) =>
+  `https://project-ref.invalid/auth/v1/verify?token=${hash}&type=${type}&redirect_to=https://example.com/path`;
 
 // locked = true behaves like a correctly configured project; false like one with signups on.
 function handler(locked) {
@@ -31,7 +36,15 @@ function handler(locked) {
           external: { email: true, anonymous_users: !locked, phone: false, google: !locked },
         });
       }
-      if (url === "/auth/v1/verify") return send(200, { access_token: FAKE_TOKEN });
+      if (url === "/auth/v1/verify") {
+        const body = JSON.parse(raw);
+        if (body.token_hash) {
+          // Real rule: token_hash goes with type only. SOURCE: supabase/auth internal/api/verify.go
+          const exact = body.token_hash === FAKE_HASH && !body.token && !body.email && !body.redirect_to;
+          return exact ? send(200, { access_token: FAKE_TOKEN }) : send(400, { error_code: "validation_failed" });
+        }
+        return send(200, { access_token: FAKE_TOKEN });
+      }
       if (url === "/auth/v1/otp") {
         const unlisted = JSON.parse(raw).email.endsWith(".invalid");
         return unlisted && locked ? send(422, { error_code: "otp_disabled" }) : send(200, {});
@@ -107,6 +120,45 @@ test("verify mode fails when an email change is accepted", async () => {
   assert.match(output, /FAIL {2}user cannot read admins/);
 });
 
+test("verify-link mode signs in with only the hash and type, and never opens the link", async () => {
+  for (const type of ["magiclink", "email", "signup"]) {
+    const { code, output } = await runScript(true, ["verify-link", linkOf(type), "b@example.com"]);
+    assert.equal(code, 0, output);
+    assert.match(output, /PASS {2}link signs in/);
+    assert.match(output, /PASS {2}email change refused/);
+    assert.match(output, /PASS {2}user cannot read admins/);
+    assert.match(output, /PASS {2}user reads own profile only/);
+  }
+});
+
+test("verify-link mode fails when the server refuses the hash", async () => {
+  const { code, output } = await runScript(true, ["verify-link", linkOf("magiclink", "WRONG"), "b@example.com"]);
+  assert.equal(code, 1, output);
+  assert.match(output, /FAIL {2}link signs in/);
+  assert.doesNotMatch(output, /email change refused/);
+});
+
+test("verify-link mode fails when an email change is accepted", async () => {
+  const { code, output } = await runScript(false, ["verify-link", linkOf("magiclink"), "b@example.com"]);
+  assert.equal(code, 1, output);
+  assert.match(output, /FAIL {2}email change refused/);
+});
+
+test("verify-link mode exits 2 on a bad link, without echoing it", async () => {
+  const bad = [
+    "not-a-url-SECRET",
+    "https://x.invalid/auth/v1/verify?type=magiclink&note=SECRET",
+    "https://x.invalid/auth/v1/verify?token=SECRET",
+    "https://x.invalid/auth/v1/verify?token=SECRET&type=recovery",
+  ];
+  for (const link of bad) {
+    const { code, output } = await runScript(true, ["verify-link", link, "b@example.com"]);
+    assert.equal(code, 2, output);
+    assert.ok(!output.includes("SECRET"));
+  }
+  assert.equal((await runScript(true, ["verify-link", linkOf("magiclink")])).code, 2);
+});
+
 test("send mode reports a sent code", async () => {
   const { code, output } = await runScript(true, ["send", "a@example.com"]);
   assert.equal(code, 0, output);
@@ -123,10 +175,12 @@ test("output never contains the key, the token or the code", async () => {
     runScript(true, []),
     runScript(false, []),
     runScript(true, ["verify", "a@example.com", "123456", "b@example.com"]),
+    runScript(true, ["verify-link", linkOf("magiclink"), "b@example.com"]),
   ]);
   for (const { output } of runs) {
     assert.ok(!output.includes(FAKE_KEY));
     assert.ok(!output.includes(FAKE_TOKEN));
     assert.ok(!output.includes("123456"));
+    assert.ok(!output.includes(FAKE_HASH));
   }
 });

@@ -7,10 +7,13 @@
 //
 // Usage:
 //   node scripts/smoke_auth.mjs                 checks that send no mail
-//   node scripts/smoke_auth.mjs send <email>    mails a sign-in code to a listed address
+//   node scripts/smoke_auth.mjs send <email>    mails a sign-in code or link to a listed address
 //   node scripts/smoke_auth.mjs verify <email> <code> <other-email>
 //       signs in with the code, then checks that an email change is refused.
 //       Auth mails <other-email> before refusing, so use an address you control.
+//   node scripts/smoke_auth.mjs verify-link '<link>' <other-email>
+//       same checks for a link-only email. Copy the link without opening it: opening uses it up.
+//       Quote the link: it contains &. The script reads the link and never requests it.
 //
 // Exit code: 0 all passed, 1 a check failed, 2 could not run.
 
@@ -23,6 +26,10 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const ENV_FILE = process.env.SMOKE_ENV_FILE || join(ROOT, ".env");
 // Reserved TLD, can never receive mail. SOURCE: https://www.rfc-editor.org/rfc/rfc2606
 const UNKNOWN_ADDRESS = "smoke-unlisted@example.invalid";
+// Link types expected for a sign-in mail. An existing user whose address is not yet
+// confirmed gets "signup". SOURCE: https://supabase.com/docs/guides/auth/auth-email-templates
+// and supabase/auth internal/api/verify.go
+const LINK_TYPES = ["magiclink", "email", "signup"];
 
 function readEnv(file) {
   const values = {};
@@ -100,6 +107,32 @@ async function checksWithoutMail(base, key) {
   report("anon cannot read allowlist", !leaked, `HTTP ${allowlist.status}`);
 }
 
+// The link's "token" parameter holds the token hash, not the 6-digit code.
+// SOURCE: https://supabase.com/docs/guides/auth/auth-email-templates
+// Returns null on a bad link. Callers must not echo the link: it signs in.
+function parseLink(link) {
+  let params;
+  try {
+    params = new URL(link).searchParams;
+  } catch {
+    return null;
+  }
+  const tokenHash = params.get("token");
+  const type = params.get("type");
+  return tokenHash && LINK_TYPES.includes(type) ? { tokenHash, type } : null;
+}
+
+async function checksSignedIn(base, key, token, otherEmail) {
+  const change = await call(base, key, "/auth/v1/user", { method: "PUT", token, body: { email: otherEmail } });
+  report("email change refused", change.status >= 400 && change.status !== 429, `HTTP ${change.status}, ${codeOf(change)}`);
+  const admins = await call(base, key, "/rest/v1/admins?select=user_id", { method: "GET", token });
+  const leaked = Array.isArray(admins.json) && admins.json.length > 0;
+  report("user cannot read admins", !leaked, `HTTP ${admins.status}`);
+  const profiles = await call(base, key, "/rest/v1/profiles?select=user_id", { method: "GET", token });
+  const own = Array.isArray(profiles.json) ? profiles.json.length : -1;
+  report("user reads own profile only", own === 1, `HTTP ${profiles.status}, rows ${own}`);
+}
+
 async function main() {
   const [mode, email, code, otherEmail] = process.argv.slice(2);
   const env = readEnv(ENV_FILE);
@@ -119,18 +152,23 @@ async function main() {
     const r = await call(base, key, "/auth/v1/verify", { body: { type: "email", email, token: code } });
     const token = r.json && r.json.access_token;
     report("code signs in", r.status === 200 && Boolean(token), `HTTP ${r.status}, ${codeOf(r)}`);
-    if (token) {
-      const change = await call(base, key, "/auth/v1/user", { method: "PUT", token, body: { email: otherEmail } });
-      report("email change refused", change.status >= 400 && change.status !== 429, `HTTP ${change.status}, ${codeOf(change)}`);
-      const admins = await call(base, key, "/rest/v1/admins?select=user_id", { method: "GET", token });
-      const leaked = Array.isArray(admins.json) && admins.json.length > 0;
-      report("user cannot read admins", !leaked, `HTTP ${admins.status}`);
-      const profiles = await call(base, key, "/rest/v1/profiles?select=user_id", { method: "GET", token });
-      const own = Array.isArray(profiles.json) ? profiles.json.length : -1;
-      report("user reads own profile only", own === 1, `HTTP ${profiles.status}, rows ${own}`);
+    if (token) await checksSignedIn(base, key, token, otherEmail);
+  } else if (mode === "verify-link" && process.argv[3] && process.argv[4]) {
+    const [link, linkOtherEmail] = process.argv.slice(3);
+    const parsed = parseLink(link);
+    if (!parsed) {
+      console.error(`Link has no token, or its type is not one of: ${LINK_TYPES.join(", ")}`);
+      process.exitCode = 2;
+      return;
     }
+    // token_hash goes with type only: the server refuses email or redirect_to beside it.
+    // SOURCE: supabase/auth internal/api/verify.go
+    const r = await call(base, key, "/auth/v1/verify", { body: { type: parsed.type, token_hash: parsed.tokenHash } });
+    const token = r.json && r.json.access_token;
+    report("link signs in", r.status === 200 && Boolean(token), `type ${parsed.type}, HTTP ${r.status}, ${codeOf(r)}`);
+    if (token) await checksSignedIn(base, key, token, linkOtherEmail);
   } else {
-    console.error("Usage: smoke_auth.mjs | send <email> | verify <email> <code> <other-email>");
+    console.error("Usage: smoke_auth.mjs | send <email> | verify <email> <code> <other-email> | verify-link '<link>' <other-email>");
     process.exit(2);
   }
 
