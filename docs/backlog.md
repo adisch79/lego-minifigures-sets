@@ -48,6 +48,7 @@ Legend: **UI** = needs approved direction first. **Owner** = needs something onl
 | V1-04 | Home: grid, sort, search | Sort: newest, oldest, A–Z, series number, figure count. Search: series name/number/year and figure name. State in URL | M | senior-frontend-dev | UI | Done (PR #11) |
 | V1-06 | Composed cards for all series | v4 template card per series, real-alpha logos for licensed series; tile uses the card | M | sonnet + senior-frontend-dev | UI | Done (PR #12) |
 | V1-05 | Series page | All figures with name + number; works on desktop and 375 px; keyboard accessible | M | senior-frontend-dev | UI | Done (PR #13) |
+| V1-07 | Card redesign | Official group image on flat bag colour for all 52 series; round SERIES frame, count in yellow head | M | opus | UI | In progress: all 52 rendered, awaiting owner sign-off |
 
 ## MVP 2 — Invited collectors + Telegram alerts · demo: sign in, mark wanted, phone pings
 | ID | Title | Acceptance criteria | Size | Model | Flags | Status |

@@ -8,17 +8,11 @@ Official LEGO product images with real transparency. Trademarks of the LEGO Grou
 - 71038.png — SOURCE: https://cdn.rebricker.com/products/lego/71038/71038_Prod.png
 - 71037.png — SOURCE: https://cdn.rebricker.com/products/lego/71037/71037_Prod.png
 - 71034.png — SOURCE: https://cdn.rebricker.com/products/lego/71034/71034_Prod.png
-- 71033.png — SOURCE: https://cdn.rebricker.com/products/lego/71033/71033_Prod.png
 - 71045.png — SOURCE: https://www.lego.com/cdn/cs/set/assets/blt3949416516622d66/71045.png
 - 71017.png — SOURCE: https://www.electricbricks.com/images/71017-20_0.png
-- 71018.png — SOURCE: https://cdn.rebricker.com/products/lego/71018/71018-Lineup_1488.png
-- 71019.png — SOURCE: https://www.kostickyshop.cz/www/upload/products/images/20170808114859921.png
-- 71020.png — SOURCE: https://www.kostickyshop.cz/www/upload/products/images/20180114100332226.png
 - 71021.png — SOURCE: https://i.ebayimg.com/images/g/82cAAOSwft9hQ6e0/s-l1200.png
 - 71022.png — SOURCE: https://www.kostickyshop.cz/www/upload/products/images/20180816120002257.png
-- 71027.png — SOURCE: https://www.kostickyshop.cz/www/upload/products/images/20200426030327187.png
 - 71028.png — SOURCE: https://i.ebayimg.com/images/g/l0cAAOSwNuRmiqfc/s-l1200.png
-- 71029.png — SOURCE: https://www.kostickyshop.cz/www/upload/products/images/2021010303380527.png
 - 71030.png — SOURCE: https://i.ebayimg.com/images/g/5vUAAOSwkBtkR-W1/s-l1200.png
 - 71031.png — SOURCE: https://i.ebayimg.com/images/g/4s4AAOSwQwhhpwJo/s-l1200.png
 - 71032.png — SOURCE: https://i.ebayimg.com/images/g/NkIAAOSwb-1miqMN/s-l1200.png
@@ -47,3 +41,14 @@ Official LEGO product images with real transparency. Trademarks of the LEGO Grou
 - 71000.png — SOURCE: https://cdn.kiobi.com/images/brickwatch/sets/71000.png
 - 8833.png — SOURCE: https://cdn.kiobi.com/images/brickwatch/sets/8833.png
 - 71023.png — SOURCE: https://cdn.kiobi.com/images/brickwatch/sets/71023.png
+- 8804.png — SOURCE: https://www.brickmerge.de/img/sets/l/LEGO_8804_alt3.jpg (white background removed with scripts/cutout.py)
+- 8827.png — SOURCE: https://www.brickmerge.de/img/sets/l/LEGO_8827_alt3.jpg (white background removed with scripts/cutout.py)
+- 8683.png — SOURCE: https://img.bricklink.com/ItemImage/SL/8683-2.png (white background removed with scripts/cutout.py)
+- 8684.png — SOURCE: https://img.bricklink.com/ItemImage/SL/8684-2.png (white background removed with scripts/cutout.py)
+- 8805.png — SOURCE: https://img.bricklink.com/ItemImage/SL/8805-2.png (white background removed with scripts/cutout.py)
+- 71033.png — SOURCE: https://i.ebayimg.com/images/g/CrkAAOSwae9miqzH/s-l1200.png
+- 71029.png — SOURCE: https://i.ebayimg.com/images/g/z3sAAOSwhH1miqK9/s-l1200.png
+- 71027.png — SOURCE: https://i.ebayimg.com/images/g/TSUAAOSwlLFmiqJ2/s-l1200.png
+- 71020.png — SOURCE: https://i.ebayimg.com/images/g/Jz4AAOSwvnpmiqYt/s-l1200.png
+- 71019.png — SOURCE: https://i.ebayimg.com/images/g/4nQAAOSw3QRmiqhr/s-l1200.png
+- 71018.png — SOURCE: https://i.ebayimg.com/images/g/3~MAAOSw9phmiqF2/s-l1200.png
