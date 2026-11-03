@@ -1,45 +1,32 @@
 # HANDOFF
 
-## Current state (2026-11-01, updated end of session)
-- **v2 refactor started**: collector app (sort/search, owned/wanted for invited users, Telegram alerts, lowest prices). Plan: [backlog.md](backlog.md). v1 backlog archived: [archive/backlog-v1.md](archive/backlog-v1.md).
-- Owner answers (see decisions.md): invite-only users; Telegram alerts; prices later by moderate scraping (no API keys); English first, Hebrew later; prices in original currency + ILS.
-- **V0-01 done**: images will come from BrickLink catalog images (`img.bricklink.com/ItemImage/SN/0/coltlnm-<n>.png`). Border flood fill gives clean transparency on 20/20 figures + bag. Proof: `docs/spike/V0-01-bricklink-cutout-71019.webp`; script `docs/spike/V0-01-cutout.py`.
-- **MVP 1 live (2026-11-02)**: new app at https://adisch79.github.io/lego-minifigures-sets/ (release PR #16, `80624e8`, App CI run 41432764683: build and deploy success). Progress 12 of 22 stories.
-
-- Backlog approved. **V0-02 done**: 3 directions in `mockups/a` (Toy Shelf), `mockups/b` (Collector Leaflet), `mockups/c` (Unboxing); screenshots in `mockups/<x>/shots/`. Shared assets `mockups/assets` (6 bags + 20 BrickLink figure cut-outs of 71019).
-
-- Owner picked a mix (decisions.md 2026-10-31 V0-03); flat series artwork spike `docs/spike/V0-03-flatten.py`. **Combined mockup D** in `mockups/d` (shots in `mockups/d/shots/`), awaiting owner sign-off.
-
-- Owner rejected cropped flat art: series image must be a NEW composed card (decisions.md). **3 card variants for 71019** in `mockups/cards/` (v1 bag-front, v2 poster, v3 collector; side-by-side `compare.png`); generator `docs/spike/V0-04-cards-gen.py`; logos `mockups/assets/logos/` (Wikimedia, see SOURCES.md).
-
-- **V0-05 done, owner approved v4 (2026-10-31)**: `mockups/cards/v4.png`. Bag-style round seal (LIMITED EDITION / 20 / TO COLLECT, SVG `seal()` in generator), official coloured Ninjago Movie logo with LEGO brick (real alpha, smaller, clear of the seal), HD LEGO Minifigures lockup (1600 px). Crowd raised to fill the gap, clamped inside card, Lloyd centre front.
-- Logo rule: only files that already have real alpha; find them with Google Images filter `&udm=2&tbs=ic:trans,isz:l` in Chrome, then read original URLs from the page HTML (`["url",h,w]` triples). Sources in `mockups/assets/logos/SOURCES.md`.
-
-- **V0-06 in progress**: figure cut-outs for all 6 mockup series in `mockups/assets/figs/<set>-<n>.webp` (70 new + 20 of 71019). Script `docs/spike/V0-06-figs.py` (V0-01 flood fill + speck removal). BrickLink CMF codes verified (image n = Rebrickable figure n, next number 404): 71053 `colshr` (12), 71045 `col25` (12), 71038 `coldis100` (18), 71031 `colmar` (12), 71019 `coltlnm` (20), 8683 `col01` (16). URL `img.bricklink.com/ItemImage/SN/0/<code>-<n>.png`.
-
-- **V0-06 done (2026-10-31)**: 6 series cards from the v4 template, `docs/spike/V0-06-cards.py` (renders with headless Chrome) -> `mockups/cards/<id>.png`, overview `mockups/cards/all.png`. Logos `shrek.png`, `disney-100.png`, `marvel-studios.png` (real alpha, SOURCES.md). Numbered series use lockup + red SERIES N badge. Backgrounds sampled from each bag (71019 keeps approved v4). Mockup D home now shows the cards (`mockups/d/shots/home-desktop.png`, `mobile.png`).
+## Current state (updated 2026-11-03)
+- **Live:** MVP 1 at https://adisch79.github.io/lego-minifigures-sets/ (release PR #16). 12 of 23 stories done ([backlog](backlog.md)).
+- **V1-07 card redesign:** owner signed off 2026-11-04; review and QA passed; PR #18 merged into dev. Not live until the release PR to master is merged. Cards in `app/public/cards/`, built by `scripts/build_cards.py`; group images in `mockups/assets/group/` (SOURCES.md).
+- **V2-01:** PR #17 merged into dev (2026-11-02). Migration and tests in `supabase/`. Not applied to the live project.
+- **Context-cost hook:** built, registered, 9 of 9 acceptance cases pass (2026-11-03). Cost measurements: [context-cost.md](context-cost.md).
 
 ## Next step
-1. V1-01 merged into dev (PR #8, 2026-11-01); MVP 0 merged (PR #7). Vite/React/TS app in `app/`, CI `app-ci.yml`; Pages deploy of `app/dist` disabled until V1-05. TypeScript pinned ~6.0 (typescript-eslint needs <6.1). `.env` also in `.git/info/exclude`.
-2. V1-02 merged into dev (PR #9).
-3. **V1-03 in progress** on `feature/V1-03-images` (pushed). Done: (a) BrickLink codes for 51/52 series, visually verified (docs/spike/V1-03-codes-sheet-1..3.png); 71049 F1 has no code and keeps v1 images; 71001-19 -> bricklinkNo 17. (b) `scripts/fetch_figures.py <ids>` (resumable, 1 req/2 s, cut-out via `scripts/cutout.py`) -> `site/img/<id>/<id>-<n>.webp`. Batches 1-6 committed (39 series; batch 6 = 71001 71000 8909 8833 8831, re-run: written 0, failures []).
-   Done on branch: QA, re-sourced images, `imgFallback` fix (12 left, 71049), ages (43 added; 8909, 8805, 8684 unreadable), gap report `docs/spike/V1-03-gaps.md`. V1-03 merged (PR #10).
-   **V1-04** on `feature/V1-04-home`: home grid built, screenshots `mockups/v1-04/`, awaiting review. Tile links `#series/<id>` do nothing until V1-05. Merged (PR #11).
-   **V1-06** merged (PR #12, 2026-11-01): cards for all 52 series, overview `docs/spike/V1-06-cards-all.png`, logos in `mockups/assets/logos/SOURCES.md`. Re-render: `python scripts/build_cards.py <ids>` (no args builds only missing cards). Merge is refused by the auto classifier unless review and qa agents passed on the final diff.
-   **V1-05** merged (PR #13). Review findings were all non-blocking; deep-link focus finding checked and is not a defect.
-   **Live switch** released: `deploy` job in `app-ci.yml` publishes `app/dist` on master pushes touching `app/**`, `site/img/**` or the workflow.
-   **V2-01 in progress** on `feature/V2-01-supabase-schema`: design rev 2 `docs/design/V2-01-schema.md` after design and security review. Migration and 22+ PGlite tests in `supabase/`, PR #17; code review, security review and QA found no blockers. NEXT: merge PR #17 after review and qa on the final diff, then apply to the live project (needs a database password or access token from the owner) and run the live smoke test. One unreproduced `app/` vitest failure in 6 QA runs (2026-11-02): possible flaky test, name lost, watch for it. Tool-call count no longer ends sessions (hooks edited, 2026-11-02).
-   Later, optional (review of PR #14): add `workflow_dispatch` for manual redeploy (deploy `if` must allow it); deploy-job concurrency `{group: pages, cancel-in-progress: false}`.
-4. Agent merges feature PRs into dev after code-reviewer and qa pass (`gh pr merge <n> --merge`; owner OK 2026-11-01, decisions.md). `master` stays owner-only.
-5. Later polish (not blocking): series page hero in mockup D still uses the bag image.
+1. **Owner merges the release PR dev into master**, which publishes the new cards. It also carries V2-01 files (`supabase/`, docs), which do not affect the site.
+2. Then V2-01 live apply: paste the migration from dev in the Supabase SQL Editor, run the live smoke test. Paused until V1-07 is released (owner, 2026-11-02).
+3. Then V2-02 invite-only sign-in.
 
-## Owner-needed later (MVP 2)
-- Supabase: owner added keys to `.env` (2026-10-31, file 191 -> 377 bytes; contents unread, deny rule). Applying migrations likely needs a database password or access token (not in the documented key list). Custom SMTP account needed before anyone but the owner can sign in.
-- Telegram bot token + chat id: PC: repo-root `.env` (git-ignored; key names unverified, read blocked by deny rule); NAS copy too (owner, 2026-10-31); read from env, never commit.
+## Owner-needed
+- Merge to master: owner only.
+- MVP 2: custom SMTP account before anyone but the owner can sign in.
+- Supabase keys are in `.env` (2026-10-31); a database password or access token may also be needed for migrations. Telegram bot token and chat id: repo-root `.env` and a NAS copy. Key names unverified: a deny rule blocks reading `.env`.
+
+## Rules worth keeping at hand
+- Agent merges feature PRs into dev after code-reviewer and qa pass on the final diff (`gh pr merge <n> --merge`). The auto classifier refuses it otherwise.
+- Re-render cards: `python scripts/build_cards.py <ids>` (no args builds only missing cards).
+- Figure images: `img.bricklink.com/ItemImage/SN/0/<code>-<n>.png`. 71049 has no code and keeps v1 images.
+- Logos: only files with real alpha (memory `feedback-asset-search`).
 
 ## Open questions
-- Ages unreadable for 3 series (8909, 8805, 8684); no age is printed on their cards.
-- "Flatten" bag: current bag image shows slight 3D bag shape; V0-02 shows options (as-is cut-out vs flat artwork crop).
+- Ages unreadable for 8909, 8805, 8684; no age is printed on their cards.
+- One unreproduced `app/` vitest failure in 6 QA runs (2026-11-02): possibly flaky, name lost.
+- Later, optional: `workflow_dispatch` for manual redeploy; deploy-job concurrency `{group: pages, cancel-in-progress: false}`; series page hero in mockup D still uses the bag image.
+- `scripts/build_cards.py` review items deferred: Chrome stderr hidden on failure (line 144), hardcoded Chrome path (line 18). Weakest card images, replace if better ones appear: 600x450 grids on stands (71023, 71007, 71002, 71000, 8833, 8831), white-background cut-outs (8683, 8684, 8805, 8804, 8827).
 
 ## Docs
-[backlog](backlog.md) · [decisions](decisions.md) · [README](../README.md) · [CLAUDE.md](../CLAUDE.md)
+[backlog](backlog.md) · [decisions](decisions.md) · [context cost](context-cost.md) · [README](../README.md) · [CLAUDE.md](../CLAUDE.md) · history up to 2026-11-03: [archive/handoff-2026-11-03.md](archive/handoff-2026-11-03.md)
