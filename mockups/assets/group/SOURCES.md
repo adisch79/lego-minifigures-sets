@@ -38,3 +38,12 @@ Official LEGO product images with real transparency. Trademarks of the LEGO Grou
 - 71005.png — SOURCE: https://i.ebayimg.com/images/g/a0cAAOSwk-tmiqVK/s-l1200.png
 - 71004.png — SOURCE: https://i.ebayimg.com/images/g/1sgAAOSwcVRmiqSm/s-l1200.png
 - 71001.png — SOURCE: https://i.ebayimg.com/images/g/aysAAOSw2VFmip4L/s-l1200.png
+- 71013.png — SOURCE: https://i.ebayimg.com/images/g/ktoAAOSwartmiqEr/s-l1200.png
+- 8831.png — SOURCE: https://i.ebayimg.com/images/g/qi4AAOSwmgJY66A-/s-l1200.png
+- 8803.png — SOURCE: http://www.electricbricks.com/images/8803_lego_minifigures_series_3.png
+- 8909.png — SOURCE: https://i.ebayimg.com/images/g/axwAAOSww3tY7jBk/s-l1200.png
+- 71007.png — SOURCE: https://cdn.kiobi.com/images/brickwatch/sets/71007.png
+- 71002.png — SOURCE: https://cdn.kiobi.com/images/brickwatch/sets/71002.png
+- 71000.png — SOURCE: https://cdn.kiobi.com/images/brickwatch/sets/71000.png
+- 8833.png — SOURCE: https://cdn.kiobi.com/images/brickwatch/sets/8833.png
+- 71023.png — SOURCE: https://cdn.kiobi.com/images/brickwatch/sets/71023.png
