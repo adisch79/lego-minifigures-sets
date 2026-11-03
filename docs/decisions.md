@@ -57,3 +57,4 @@
 - 2026-11-03 — V1-07 group images: 52 of 52 found. Older sets have no transparent crowd image: 5 use official white-background images cut out with scripts/cutout.py (owner's card rule allows white-background sources), 6 use official 600x450 grids on stands. Default, owner can reject at sign-off.
 - 2026-11-03 — V1-07 bag colour: most common saturated bag colour; bags with a neutral main colour (black, grey, white) are listed in NEUTRAL_BAG/DARK_BAG in scripts/build_cards.py and sampled without the saturation filter. 71019 keeps the approved v4 background.
 - 2026-11-03 — Image hosts that refuse plain requests (kubiki.ge 403, fandom placeholder) are not used. The auto classifier blocked a request with a browser User-Agent and referer as bot-check circumvention; do not retry that.
+- 2026-11-03 — Owner: add a context-cost hook next session (spec in HANDOFF item 0a). Reason: resuming a 400k+ context after the cache expired used the 5-hour limit in 10 requests.
