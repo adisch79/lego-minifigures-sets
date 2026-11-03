@@ -20,7 +20,7 @@ HEAD, HEAD_DARK, FRAME, NAVY = "#F8C800", "#F0B800", "#38B8E8", "#002050"
 
 # box: plain background area of the bag image (left, top, right, bottom) in bag pixels.
 SERIES = [
-    dict(id="71053", age="6+", count=12, logo="shrek.png", logo_w=430, series=None, box=(0, 250, 25, 450)),
+    dict(id="71053", age="6+", count=12, logo="shrek-dreamworks.png", logo_w=430, series=None, box=(0, 250, 25, 450)),
     # bg SOURCE: OWNER-SUPPLIED badge screenshot, 2026-11-02 (sampled pixels); sharper than the bag image.
     dict(id="71051", age="5+", count=12, logo=None, series=28, box=(270, 58, 345, 72), bg="#70b0d8"),
 ]
