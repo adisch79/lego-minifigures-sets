@@ -53,7 +53,7 @@ Legend: **UI** = needs approved direction first. **Owner** = needs something onl
 ## MVP 2 — Invited collectors + Telegram alerts · demo: sign in, mark wanted, phone pings
 | ID | Title | Acceptance criteria | Size | Model | Flags | Status |
 |---|---|---|---|---|---|---|
-| V2-01 | Supabase project + schema | Tables: allowlist, profiles, marks (user, figure_id or series_id, owned/wanted); RLS: users see/write only their own marks; migrations in repo | M | opus design + security review | Owner (create free Supabase account) | Ready |
+| V2-01 | Supabase project + schema | Tables: allowlist, profiles, marks (user, figure_id or series_id, owned/wanted); RLS: users see/write only their own marks; migrations in repo | M | opus design + security review | Owner (create free Supabase account) | In progress: merged to dev (PR #17), live apply paused until V1-07 is released |
 | V2-02 | Invite-only sign-in | Email magic link; addresses not on the allowlist are refused; sign-out | M | sonnet | | Ready |
 | V2-03 | Mark owned / wanted | Per figure and per whole series; progress (e.g. 12/20 owned); filter "my wanted" / "missing" | M | sonnet + senior-frontend-dev | UI | Ready |
 | V2-04 | Telegram alert on wanted | New wanted mark → one Telegram message (who, what, link) within 1 min; repeat clicks not re-sent; token only in Supabase secrets | S | sonnet + security review | Owner (bot token) | Ready |
