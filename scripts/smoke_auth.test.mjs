@@ -1,0 +1,132 @@
+// Tests for smoke_auth.mjs against an in-process mock of Supabase Auth. No network, no real keys.
+// Run: node --test scripts/smoke_auth.test.mjs
+
+import assert from "node:assert/strict";
+import { spawn } from "node:child_process";
+import { unlinkSync, writeFileSync } from "node:fs";
+import { createServer } from "node:http";
+import { tmpdir } from "node:os";
+import { dirname, join } from "node:path";
+import { test } from "node:test";
+import { fileURLToPath } from "node:url";
+
+const SCRIPT = join(dirname(fileURLToPath(import.meta.url)), "smoke_auth.mjs");
+const FAKE_KEY = "FAKE-ANON-VALUE";
+const FAKE_TOKEN = "FAKE-TOKEN-VALUE";
+
+// locked = true behaves like a correctly configured project; false like one with signups on.
+function handler(locked) {
+  return (req, res) => {
+    let raw = "";
+    req.on("data", (chunk) => (raw += chunk));
+    req.on("end", () => {
+      const send = (status, body) => {
+        res.writeHead(status, { "Content-Type": "application/json" });
+        res.end(JSON.stringify(body));
+      };
+      const url = req.url;
+      if (url === "/auth/v1/settings") {
+        return send(200, {
+          disable_signup: locked,
+          external: { email: true, anonymous_users: !locked, phone: false, google: !locked },
+        });
+      }
+      if (url === "/auth/v1/verify") return send(200, { access_token: FAKE_TOKEN });
+      if (url === "/auth/v1/otp") {
+        const unlisted = JSON.parse(raw).email.endsWith(".invalid");
+        return unlisted && locked ? send(422, { error_code: "otp_disabled" }) : send(200, {});
+      }
+      if (url === "/auth/v1/signup") {
+        return locked ? send(422, { error_code: "signup_disabled" }) : send(500, { error_code: "unexpected_failure" });
+      }
+      if (url === "/auth/v1/user") return locked ? send(500, { error_code: "unexpected_failure" }) : send(200, {});
+      if (url.startsWith("/rest/v1/allowlist")) return locked ? send(401, { code: "42501" }) : send(200, [{ email: "x" }]);
+      if (url.startsWith("/rest/v1/admins")) return locked ? send(403, { code: "42501" }) : send(200, [{ user_id: "x" }]);
+      if (url.startsWith("/rest/v1/profiles")) return send(200, [{ user_id: "x" }]);
+      return send(404, {});
+    });
+  };
+}
+
+async function runScript(locked, args, envText) {
+  const server = createServer(handler(locked));
+  await new Promise((resolve) => server.listen(0, "127.0.0.1", resolve));
+  const { port } = server.address();
+  const envFile = join(tmpdir(), `smoke-auth-test-${process.pid}-${port}.env`);
+  const text = envText ?? `SUPABASE_URL=http://127.0.0.1:${port}/\r\nSUPABASE_ANON_KEY="${FAKE_KEY}"\r\n`;
+  writeFileSync(envFile, text);
+  try {
+    return await new Promise((resolve) => {
+      const child = spawn(process.execPath, [SCRIPT, ...args], {
+        env: { ...process.env, SMOKE_ENV_FILE: envFile },
+      });
+      let output = "";
+      child.stdout.on("data", (d) => (output += d));
+      child.stderr.on("data", (d) => (output += d));
+      child.on("close", (code) => resolve({ code, output }));
+    });
+  } finally {
+    unlinkSync(envFile);
+    server.close();
+  }
+}
+
+test("locked project passes every check without mail", async () => {
+  const { code, output } = await runScript(true, []);
+  assert.equal(code, 0, output);
+  assert.match(output, /ALL PASSED/);
+  assert.doesNotMatch(output, /FAIL/);
+});
+
+test("open project fails the settings and refusal checks", async () => {
+  const { code, output } = await runScript(false, []);
+  assert.equal(code, 1, output);
+  for (const name of [
+    "signups off",
+    "anonymous off",
+    "no other providers on",
+    "unlisted address OTP refused",
+    "password signup refused",
+    "anon cannot read allowlist",
+  ]) {
+    assert.match(output, new RegExp(`FAIL  ${name}`));
+  }
+});
+
+test("verify mode passes on a locked project", async () => {
+  const { code, output } = await runScript(true, ["verify", "a@example.com", "123456", "b@example.com"]);
+  assert.equal(code, 0, output);
+  assert.match(output, /PASS {2}code signs in/);
+  assert.match(output, /PASS {2}email change refused/);
+});
+
+test("verify mode fails when an email change is accepted", async () => {
+  const { code, output } = await runScript(false, ["verify", "a@example.com", "123456", "b@example.com"]);
+  assert.equal(code, 1, output);
+  assert.match(output, /FAIL {2}email change refused/);
+  assert.match(output, /FAIL {2}user cannot read admins/);
+});
+
+test("send mode reports a sent code", async () => {
+  const { code, output } = await runScript(true, ["send", "a@example.com"]);
+  assert.equal(code, 0, output);
+  assert.match(output, /PASS {2}listed address gets a code/);
+});
+
+test("missing keys and bad arguments exit 2", async () => {
+  assert.equal((await runScript(true, [], "OTHER=1\n")).code, 2);
+  assert.equal((await runScript(true, ["send"])).code, 2);
+});
+
+test("output never contains the key, the token or the code", async () => {
+  const runs = await Promise.all([
+    runScript(true, []),
+    runScript(false, []),
+    runScript(true, ["verify", "a@example.com", "123456", "b@example.com"]),
+  ]);
+  for (const { output } of runs) {
+    assert.ok(!output.includes(FAKE_KEY));
+    assert.ok(!output.includes(FAKE_TOKEN));
+    assert.ok(!output.includes("123456"));
+  }
+});
