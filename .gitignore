@@ -7,3 +7,7 @@ app/dist
 .env.*
 !.env.example
 docs/spike/V1-03-check/
+supabase/node_modules
+supabase/.temp/
+supabase/.branches/
+docs/spike/V1-07-tmp/

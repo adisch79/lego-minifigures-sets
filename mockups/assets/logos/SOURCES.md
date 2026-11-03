@@ -21,3 +21,4 @@ Added for V1-06 (2026-11-01). All have real alpha, found with the Google Images 
 - dfb.png — SOURCE: https://logos-world.net/wp-content/uploads/2024/06/Germany-National-Football-Team-Logo.png
 - simpsons.png — SOURCE: https://image.tmdb.org/t/p/original/z0Zbr93XD605jMp9VdHDHaUjNfK.png
 - team-gb.png — SOURCE: https://content.bensherman.co.uk/upload/Olympics/BS_TeamGB_Rankin_Lockup.png (Team GB mark cropped from the left of the lockup, recoloured white, alpha unchanged)
+- shrek-dreamworks.png — shrek.png plus the DreamWorks wordmark, SOURCE: https://www.nicepng.com/png/full/307-3073174_dreamworks-wordmark-dreamworks-studio-logo.png (top row only, real alpha, recoloured to the green on the 71053 bag and placed as on the bag)

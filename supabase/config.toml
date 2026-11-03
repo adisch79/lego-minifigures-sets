@@ -1,0 +1,22 @@
+# Intended auth settings for the project. Design: docs/design/V2-01-schema.md.
+# Records intent; live settings are checked by the smoke test in the design doc.
+# SOURCE: key names from https://supabase.com/docs/guides/local-development/cli/config
+project_id = "lego-minifigures-sets"
+
+[auth]
+site_url = "https://adisch79.github.io/lego-minifigures-sets/"
+additional_redirect_urls = []
+# Global flag: nobody signs up. Accounts are created by an admin.
+# SOURCE: https://github.com/supabase/supabase/issues/40582
+enable_signup = false
+enable_anonymous_sign_ins = false
+
+[auth.email]
+# Stays on: turning it off disables the whole email provider, so sign-in would break too.
+# SOURCE: https://github.com/supabase/supabase/issues/40582
+enable_signup = true
+double_confirm_changes = true
+secure_password_change = true
+
+[auth.sms]
+enable_signup = false

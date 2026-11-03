@@ -1,0 +1,54 @@
+# Group image sources
+Official LEGO product images with real transparency. Trademarks of the LEGO Group; personal non-commercial use. Trimmed to content.
+- 71053.png — SOURCE: https://www.lego.com/cdn/cs/set/assets/blt11defb77b4e145c4/blt4849c1b44cb1dbf6-71053_Prod_en-gb.png (OWNER-SUPPLIED)
+- 71051.png — SOURCE: https://www.lego.com/cdn/cs/set/assets/bltb89414ad1b626107/71051_Prod_en-gb.png (OWNER-SUPPLIED)
+- 71049.png — SOURCE: https://cdn.rebricker.com/products/lego/71049/71049_Prod.png
+- 71047.png — SOURCE: https://cdn.rebricker.com/products/lego/71047/71047_Prod.png
+- 71046.png — SOURCE: https://cdn.rebricker.com/products/lego/71046/71046_Prod.png
+- 71038.png — SOURCE: https://cdn.rebricker.com/products/lego/71038/71038_Prod.png
+- 71037.png — SOURCE: https://cdn.rebricker.com/products/lego/71037/71037_Prod.png
+- 71034.png — SOURCE: https://cdn.rebricker.com/products/lego/71034/71034_Prod.png
+- 71045.png — SOURCE: https://www.lego.com/cdn/cs/set/assets/blt3949416516622d66/71045.png
+- 71017.png — SOURCE: https://www.electricbricks.com/images/71017-20_0.png
+- 71021.png — SOURCE: https://i.ebayimg.com/images/g/82cAAOSwft9hQ6e0/s-l1200.png
+- 71022.png — SOURCE: https://www.kostickyshop.cz/www/upload/products/images/20180816120002257.png
+- 71028.png — SOURCE: https://i.ebayimg.com/images/g/l0cAAOSwNuRmiqfc/s-l1200.png
+- 71030.png — SOURCE: https://i.ebayimg.com/images/g/5vUAAOSwkBtkR-W1/s-l1200.png
+- 71031.png — SOURCE: https://i.ebayimg.com/images/g/4s4AAOSwQwhhpwJo/s-l1200.png
+- 71032.png — SOURCE: https://i.ebayimg.com/images/g/NkIAAOSwb-1miqMN/s-l1200.png
+- 71039.png — SOURCE: https://www.lego.com/cdn/cs/set/assets/bltd099cc8c436240fb/71039.png
+- 71048.png — SOURCE: https://www.lego.com/cdn/cs/set/assets/bltbf544398cdda2fee/71048_Prod_en-gb.png
+- 71052.png — SOURCE: https://imrickjamesbricks.com.au/cdn/shop/files/71052_Prod.png
+- 71050.png — SOURCE: https://imrickjamesbricks.com.au/cdn/shop/files/71050_WEB_PRI_NOBG_en-gb.png
+- 71026.png — SOURCE: https://i.ebayimg.com/images/g/8p4AAOSwLohmiqkS/s-l1200.png
+- 71025.png — SOURCE: https://i.ebayimg.com/images/g/TJoAAOSwlLFmiqIi/s-l1200.png
+- 71024.png — SOURCE: https://i.ebayimg.com/images/g/NFUAAOSwRuxmiqcX/s-l1200.png
+- 71014.png — SOURCE: https://i.ebayimg.com/images/g/TnkAAOSwuH5miqgh/s-l1200.png
+- 71012.png — SOURCE: https://cdn.shopify.com/s/files/1/1123/3426/files/Disney_Minifigures_and_frames_x900.png
+- 71011.png — SOURCE: https://i.ebayimg.com/images/g/K1MAAOSwunhmiqDh/s-l1200.png
+- 71010.png — SOURCE: https://i.ebayimg.com/images/g/AIEAAOSw~gRmiqCH/s-l1200.png
+- 71009.png — SOURCE: https://i.ebayimg.com/images/g/vYoAAOSw~XJmiqWr/s-l1200.png
+- 71008.png — SOURCE: https://jaysbrickblog.com/wp-content/uploads/2015/01/LEGO-Series-13-Minifigures-Characters.png
+- 71005.png — SOURCE: https://i.ebayimg.com/images/g/a0cAAOSwk-tmiqVK/s-l1200.png
+- 71004.png — SOURCE: https://i.ebayimg.com/images/g/1sgAAOSwcVRmiqSm/s-l1200.png
+- 71001.png — SOURCE: https://i.ebayimg.com/images/g/aysAAOSw2VFmip4L/s-l1200.png
+- 71013.png — SOURCE: https://i.ebayimg.com/images/g/ktoAAOSwartmiqEr/s-l1200.png
+- 8831.png — SOURCE: https://i.ebayimg.com/images/g/qi4AAOSwmgJY66A-/s-l1200.png
+- 8803.png — SOURCE: http://www.electricbricks.com/images/8803_lego_minifigures_series_3.png
+- 8909.png — SOURCE: https://i.ebayimg.com/images/g/axwAAOSww3tY7jBk/s-l1200.png
+- 71007.png — SOURCE: https://cdn.kiobi.com/images/brickwatch/sets/71007.png
+- 71002.png — SOURCE: https://cdn.kiobi.com/images/brickwatch/sets/71002.png
+- 71000.png — SOURCE: https://cdn.kiobi.com/images/brickwatch/sets/71000.png
+- 8833.png — SOURCE: https://cdn.kiobi.com/images/brickwatch/sets/8833.png
+- 71023.png — SOURCE: https://cdn.kiobi.com/images/brickwatch/sets/71023.png
+- 8804.png — SOURCE: https://www.brickmerge.de/img/sets/l/LEGO_8804_alt3.jpg (white background removed with scripts/cutout.py)
+- 8827.png — SOURCE: https://www.brickmerge.de/img/sets/l/LEGO_8827_alt3.jpg (white background removed with scripts/cutout.py)
+- 8683.png — SOURCE: https://img.bricklink.com/ItemImage/SL/8683-2.png (white background removed with scripts/cutout.py)
+- 8684.png — SOURCE: https://img.bricklink.com/ItemImage/SL/8684-2.png (white background removed with scripts/cutout.py)
+- 8805.png — SOURCE: https://img.bricklink.com/ItemImage/SL/8805-2.png (white background removed with scripts/cutout.py)
+- 71033.png — SOURCE: https://i.ebayimg.com/images/g/CrkAAOSwae9miqzH/s-l1200.png
+- 71029.png — SOURCE: https://i.ebayimg.com/images/g/z3sAAOSwhH1miqK9/s-l1200.png
+- 71027.png — SOURCE: https://i.ebayimg.com/images/g/TSUAAOSwlLFmiqJ2/s-l1200.png
+- 71020.png — SOURCE: https://i.ebayimg.com/images/g/Jz4AAOSwvnpmiqYt/s-l1200.png
+- 71019.png — SOURCE: https://i.ebayimg.com/images/g/4nQAAOSw3QRmiqhr/s-l1200.png
+- 71018.png — SOURCE: https://i.ebayimg.com/images/g/3~MAAOSw9phmiqF2/s-l1200.png
