@@ -1,18 +1,17 @@
 # HANDOFF
 
-## Current state (updated 2026-11-03)
-- **Live:** MVP 1 at https://adisch79.github.io/lego-minifigures-sets/ (release PR #16). 12 of 23 stories done ([backlog](backlog.md)).
-- **V1-07 card redesign:** owner signed off 2026-11-04; review and QA passed; PR #18 merged into dev. Not live until the release PR to master is merged. Cards in `app/public/cards/`, built by `scripts/build_cards.py`; group images in `mockups/assets/group/` (SOURCES.md).
-- **V2-01:** PR #17 merged into dev (2026-11-02). Migration and tests in `supabase/`. Not applied to the live project.
+## Current state (updated 2026-11-04)
+- **Live:** MVP 1 at https://adisch79.github.io/lego-minifigures-sets/ (release PR #16). 13 of 23 stories done ([backlog](backlog.md)).
+- **V1-07 card redesign:** owner signed off 2026-11-04; review and QA passed; released: PR #18 into dev, PR #19 into master, deploy success, live card verified 2026-11-03. Cards in `app/public/cards/`, built by `scripts/build_cards.py`; group images in `mockups/assets/group/` (SOURCES.md).
+- **V2-01:** PR #17 merged into dev (2026-11-02). Migration applied to the live project by the owner in the SQL Editor (2026-11-04, "Success. No rows returned"). First admin and live smoke test not done yet.
 - **Context-cost hook:** built, registered, 9 of 9 acceptance cases pass (2026-11-03). Cost measurements: [context-cost.md](context-cost.md).
 
 ## Next step
-1. **Owner merges the release PR dev into master**, which publishes the new cards. It also carries V2-01 files (`supabase/`, docs), which do not affect the site.
-2. Then V2-01 live apply: paste the migration from dev in the Supabase SQL Editor, run the live smoke test. Paused until V1-07 is released (owner, 2026-11-02).
-3. Then V2-02 invite-only sign-in.
+1. V2-01 finish: first admin in this order (design doc): allowlist row, create user in dashboard with auto-confirm, `admins` row. Then the live smoke test in `docs/design/V2-01-schema.md`.
+2. Then V2-02 invite-only sign-in.
 
 ## Owner-needed
-- Merge to master: owner only.
+- V2-01 first admin and auth settings: owner, in the dashboard. Merge to master: owner only.
 - MVP 2: custom SMTP account before anyone but the owner can sign in.
 - Supabase keys are in `.env` (2026-10-31); a database password or access token may also be needed for migrations. Telegram bot token and chat id: repo-root `.env` and a NAS copy. Key names unverified: a deny rule blocks reading `.env`.
 

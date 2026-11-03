@@ -48,12 +48,12 @@ Legend: **UI** = needs approved direction first. **Owner** = needs something onl
 | V1-04 | Home: grid, sort, search | Sort: newest, oldest, A–Z, series number, figure count. Search: series name/number/year and figure name. State in URL | M | senior-frontend-dev | UI | Done (PR #11) |
 | V1-06 | Composed cards for all series | v4 template card per series, real-alpha logos for licensed series; tile uses the card | M | sonnet + senior-frontend-dev | UI | Done (PR #12) |
 | V1-05 | Series page | All figures with name + number; works on desktop and 375 px; keyboard accessible | M | senior-frontend-dev | UI | Done (PR #13) |
-| V1-07 | Card redesign | Official group image on flat bag colour for all 52 series; round SERIES frame, count in yellow head | M | opus | UI | Done (PR #18), release to master pending |
+| V1-07 | Card redesign | Official group image on flat bag colour for all 52 series; round SERIES frame, count in yellow head | M | opus | UI | Done (PR #18, released by PR #19) |
 
 ## MVP 2 — Invited collectors + Telegram alerts · demo: sign in, mark wanted, phone pings
 | ID | Title | Acceptance criteria | Size | Model | Flags | Status |
 |---|---|---|---|---|---|---|
-| V2-01 | Supabase project + schema | Tables: allowlist, profiles, marks (user, figure_id or series_id, owned/wanted); RLS: users see/write only their own marks; migrations in repo | M | opus design + security review | Owner (create free Supabase account) | In progress: merged to dev (PR #17), live apply paused until V1-07 is released |
+| V2-01 | Supabase project + schema | Tables: allowlist, profiles, marks (user, figure_id or series_id, owned/wanted); RLS: users see/write only their own marks; migrations in repo | M | opus design + security review | Owner (create free Supabase account) | In progress: merged to dev (PR #17), live apply next |
 | V2-02 | Invite-only sign-in | Email magic link; addresses not on the allowlist are refused; sign-out | M | sonnet | | Ready |
 | V2-03 | Mark owned / wanted | Per figure and per whole series; progress (e.g. 12/20 owned); filter "my wanted" / "missing" | M | sonnet + senior-frontend-dev | UI | Ready |
 | V2-04 | Telegram alert on wanted | New wanted mark → one Telegram message (who, what, link) within 1 min; repeat clicks not re-sent; token only in Supabase secrets | S | sonnet + security review | Owner (bot token) | Ready |
