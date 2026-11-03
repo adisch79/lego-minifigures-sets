@@ -60,3 +60,4 @@
 - 2026-11-03 — Owner: add a context-cost hook next session (spec in HANDOFF item 0a). Reason: resuming a 400k+ context after the cache expired used the 5-hour limit in 10 requests.
 - 2026-11-03 — Context-cost hook built (`~/.claude/hooks/context-cost-guard.js`, UserPromptSubmit). Rule 1 also sets the once-per-session flag, so the prompt after a rule 1 warning does not repeat it. A compaction newer than the last request makes the hook silent, because the old size is stale. Reason: avoid duplicate warnings and false ones after compaction.
 - 2026-11-03 — HANDOFF compacted to one page; history moved to `docs/archive/handoff-2026-11-03.md`. Reason: the session-start hook injects its first 25 lines on every start.
+- 2026-11-04 — Owner signed off the V1-07 cards as they are. Two should-fix review items in `scripts/build_cards.py` deferred: it is a local Windows-only build script and neither affects the published cards.
