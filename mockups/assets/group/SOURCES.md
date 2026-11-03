@@ -24,3 +24,17 @@ Official LEGO product images with real transparency. Trademarks of the LEGO Grou
 - 71032.png — SOURCE: https://i.ebayimg.com/images/g/NkIAAOSwb-1miqMN/s-l1200.png
 - 71039.png — SOURCE: https://www.lego.com/cdn/cs/set/assets/bltd099cc8c436240fb/71039.png
 - 71048.png — SOURCE: https://www.lego.com/cdn/cs/set/assets/bltbf544398cdda2fee/71048_Prod_en-gb.png
+- 71052.png — SOURCE: https://imrickjamesbricks.com.au/cdn/shop/files/71052_Prod.png
+- 71050.png — SOURCE: https://imrickjamesbricks.com.au/cdn/shop/files/71050_WEB_PRI_NOBG_en-gb.png
+- 71026.png — SOURCE: https://i.ebayimg.com/images/g/8p4AAOSwLohmiqkS/s-l1200.png
+- 71025.png — SOURCE: https://i.ebayimg.com/images/g/TJoAAOSwlLFmiqIi/s-l1200.png
+- 71024.png — SOURCE: https://i.ebayimg.com/images/g/NFUAAOSwRuxmiqcX/s-l1200.png
+- 71014.png — SOURCE: https://i.ebayimg.com/images/g/TnkAAOSwuH5miqgh/s-l1200.png
+- 71012.png — SOURCE: https://cdn.shopify.com/s/files/1/1123/3426/files/Disney_Minifigures_and_frames_x900.png
+- 71011.png — SOURCE: https://i.ebayimg.com/images/g/K1MAAOSwunhmiqDh/s-l1200.png
+- 71010.png — SOURCE: https://i.ebayimg.com/images/g/AIEAAOSw~gRmiqCH/s-l1200.png
+- 71009.png — SOURCE: https://i.ebayimg.com/images/g/vYoAAOSw~XJmiqWr/s-l1200.png
+- 71008.png — SOURCE: https://jaysbrickblog.com/wp-content/uploads/2015/01/LEGO-Series-13-Minifigures-Characters.png
+- 71005.png — SOURCE: https://i.ebayimg.com/images/g/a0cAAOSwk-tmiqVK/s-l1200.png
+- 71004.png — SOURCE: https://i.ebayimg.com/images/g/1sgAAOSwcVRmiqSm/s-l1200.png
+- 71001.png — SOURCE: https://i.ebayimg.com/images/g/aysAAOSw2VFmip4L/s-l1200.png
