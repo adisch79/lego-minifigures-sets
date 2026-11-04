@@ -15,6 +15,9 @@
 //       same checks for a link-only email. Copy the link without opening it: opening uses it up.
 //       Quote the link: it contains &. The script reads the link and never requests it.
 //
+// Warning: the refusal checks really try to sign up. On a project with signups on, they
+// create an anonymous user and a user for smoke-unlisted@example.invalid. Delete both.
+//
 // Exit code: 0 all passed, 1 a check failed, 2 could not run.
 
 import { readFileSync } from "node:fs";
@@ -78,6 +81,20 @@ function reportRefused(name, r) {
   report(name, r.status >= 400 && r.status < 500 && r.status !== 429, `HTTP ${r.status}, ${codeOf(r)}`);
 }
 
+// Refused, or allowed with no rows. A 404, 429 or 5xx proves nothing about access.
+function reportNoRows(name, r) {
+  const empty = r.status === 200 && Array.isArray(r.json) && r.json.length === 0;
+  report(name, empty || r.status === 401 || r.status === 403, `HTTP ${r.status}`);
+}
+
+// A refusal from the block_email_change trigger reaches the client as this exact 500:
+// see supabase/migrations/20261102000000_v2_01_schema.sql. Any other 5xx is an outage.
+function reportEmailChangeRefused(r) {
+  const fromTrigger = r.status === 500 && codeOf(r) === "unexpected_failure";
+  const clientError = r.status >= 400 && r.status < 500 && r.status !== 429;
+  report("email change refused", fromTrigger || clientError, `HTTP ${r.status}, ${codeOf(r)}`);
+}
+
 async function checksWithoutMail(base, key) {
   const settings = await call(base, key, "/auth/v1/settings", { method: "GET" });
   if (settings.status !== 200 || !settings.json) {
@@ -105,9 +122,7 @@ async function checksWithoutMail(base, key) {
     })
   );
   reportRefused("anonymous sign-in refused", await call(base, key, "/auth/v1/signup", { body: {} }));
-  const allowlist = await call(base, key, "/rest/v1/allowlist?select=email", { method: "GET" });
-  const leaked = Array.isArray(allowlist.json) && allowlist.json.length > 0;
-  report("anon cannot read allowlist", !leaked, `HTTP ${allowlist.status}`);
+  reportNoRows("anon cannot read allowlist", await call(base, key, "/rest/v1/allowlist?select=email", { method: "GET" }));
 }
 
 // The link's "token" parameter holds the token hash, not the 6-digit code.
@@ -127,10 +142,8 @@ function parseLink(link) {
 
 async function checksSignedIn(base, key, token, otherEmail) {
   const change = await call(base, key, "/auth/v1/user", { method: "PUT", token, body: { email: otherEmail } });
-  report("email change refused", change.status >= 400 && change.status !== 429, `HTTP ${change.status}, ${codeOf(change)}`);
-  const admins = await call(base, key, "/rest/v1/admins?select=user_id", { method: "GET", token });
-  const leaked = Array.isArray(admins.json) && admins.json.length > 0;
-  report("user cannot read admins", !leaked, `HTTP ${admins.status}`);
+  reportEmailChangeRefused(change);
+  reportNoRows("user cannot read admins", await call(base, key, "/rest/v1/admins?select=user_id", { method: "GET", token }));
   const profiles = await call(base, key, "/rest/v1/profiles?select=user_id", { method: "GET", token });
   const own = Array.isArray(profiles.json) ? profiles.json.length : -1;
   report("user reads own profile only", own === 1, `HTTP ${profiles.status}, rows ${own}`);

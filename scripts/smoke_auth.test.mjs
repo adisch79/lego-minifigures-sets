@@ -20,6 +20,7 @@ const linkOf = (type, hash = FAKE_HASH, redirect = "https://adisch79.github.io/l
   `https://project-ref.invalid/auth/v1/verify?token=${hash}&type=${type}&redirect_to=${redirect}`;
 
 // locked = true behaves like a correctly configured project; false like one with signups on.
+// "throttled" answers mail and signup calls with 429; "outage" answers user and data calls with 503.
 function handler(locked) {
   return (req, res) => {
     let raw = "";
@@ -30,9 +31,13 @@ function handler(locked) {
         res.end(JSON.stringify(body));
       };
       const url = req.url;
+      if (locked === "throttled" && ["/auth/v1/otp", "/auth/v1/signup", "/auth/v1/user"].includes(url)) {
+        return send(429, { error_code: "over_email_send_rate_limit" });
+      }
+      if (locked === "outage" && (url === "/auth/v1/user" || url.startsWith("/rest/v1/"))) return send(503, {});
       if (url === "/auth/v1/settings") {
         return send(200, {
-          disable_signup: locked,
+          disable_signup: Boolean(locked),
           external: { email: true, anonymous_users: !locked, phone: false, google: !locked },
         });
       }
@@ -165,6 +170,27 @@ test("verify-link mode exits 2 on a bad link, without echoing it", async () => {
     assert.ok(!output.includes("SECRET"));
   }
   assert.equal((await runScript(true, ["verify-link", linkOf("magiclink")])).code, 2);
+});
+
+test("a 429 never passes as a refusal", async () => {
+  const noMail = await runScript("throttled", []);
+  assert.equal(noMail.code, 1, noMail.output);
+  for (const name of ["unlisted address OTP refused", "password signup refused", "anonymous sign-in refused"]) {
+    assert.match(noMail.output, new RegExp(`FAIL  ${name}`));
+  }
+  const link = await runScript("throttled", ["verify-link", linkOf("magiclink"), "b@example.com"]);
+  assert.equal(link.code, 1, link.output);
+  assert.match(link.output, /FAIL {2}email change refused/);
+});
+
+test("an outage never passes as a refusal or as no access", async () => {
+  const noMail = await runScript("outage", []);
+  assert.equal(noMail.code, 1, noMail.output);
+  assert.match(noMail.output, /FAIL {2}anon cannot read allowlist/);
+  const link = await runScript("outage", ["verify-link", linkOf("magiclink"), "b@example.com"]);
+  assert.equal(link.code, 1, link.output);
+  assert.match(link.output, /FAIL {2}email change refused/);
+  assert.match(link.output, /FAIL {2}user cannot read admins/);
 });
 
 test("send mode reports a sent code", async () => {
