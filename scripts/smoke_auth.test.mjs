@@ -16,8 +16,8 @@ const FAKE_TOKEN = "FAKE-TOKEN-VALUE";
 const FAKE_HASH = "FAKE-HASH-VALUE";
 // Same shape as the emailed link. The host is reserved: opening it would fail the run.
 // SOURCE: https://supabase.com/docs/guides/auth/auth-email-templates
-const linkOf = (type, hash = FAKE_HASH) =>
-  `https://project-ref.invalid/auth/v1/verify?token=${hash}&type=${type}&redirect_to=https://example.com/path`;
+const linkOf = (type, hash = FAKE_HASH, redirect = "https://adisch79.github.io/lego-minifigures-sets/") =>
+  `https://project-ref.invalid/auth/v1/verify?token=${hash}&type=${type}&redirect_to=${redirect}`;
 
 // locked = true behaves like a correctly configured project; false like one with signups on.
 function handler(locked) {
@@ -129,6 +129,14 @@ test("verify-link mode signs in with only the hash and type, and never opens the
     assert.match(output, /PASS {2}user cannot read admins/);
     assert.match(output, /PASS {2}user reads own profile only/);
   }
+});
+
+test("verify-link mode fails when the link returns to the default Site URL", async () => {
+  const link = linkOf("magiclink", FAKE_HASH, "http://localhost:3000");
+  const { code, output } = await runScript(true, ["verify-link", link, "b@example.com"]);
+  assert.equal(code, 1, output);
+  assert.match(output, /FAIL {2}link returns to the live site/);
+  assert.match(output, /PASS {2}link signs in/);
 });
 
 test("verify-link mode fails when the server refuses the hash", async () => {

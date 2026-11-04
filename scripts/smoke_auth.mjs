@@ -30,6 +30,9 @@ const UNKNOWN_ADDRESS = "smoke-unlisted@example.invalid";
 // confirmed gets "signup". SOURCE: https://supabase.com/docs/guides/auth/auth-email-templates
 // and supabase/auth internal/api/verify.go
 const LINK_TYPES = ["magiclink", "email", "signup"];
+// The live app. Without a redirect in the request, the link falls back to the project's Site URL.
+// SOURCE: docs/design/V2-01-schema.md and docs/HANDOFF.md (live URL)
+const SITE_URL = "https://adisch79.github.io/lego-minifigures-sets/";
 
 function readEnv(file) {
   const values = {};
@@ -119,7 +122,7 @@ function parseLink(link) {
   }
   const tokenHash = params.get("token");
   const type = params.get("type");
-  return tokenHash && LINK_TYPES.includes(type) ? { tokenHash, type } : null;
+  return tokenHash && LINK_TYPES.includes(type) ? { tokenHash, type, redirectTo: params.get("redirect_to") } : null;
 }
 
 async function checksSignedIn(base, key, token, otherEmail) {
@@ -161,6 +164,7 @@ async function main() {
       process.exitCode = 2;
       return;
     }
+    report("link returns to the live site", parsed.redirectTo === SITE_URL, `redirect_to=${parsed.redirectTo}`);
     // token_hash goes with type only: the server refuses email or redirect_to beside it.
     // SOURCE: supabase/auth internal/api/verify.go
     const r = await call(base, key, "/auth/v1/verify", { body: { type: parsed.type, token_hash: parsed.tokenHash } });
