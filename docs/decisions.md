@@ -61,3 +61,5 @@
 - 2026-11-03 — Context-cost hook built (`~/.claude/hooks/context-cost-guard.js`, UserPromptSubmit). Rule 1 also sets the once-per-session flag, so the prompt after a rule 1 warning does not repeat it. A compaction newer than the last request makes the hook silent, because the old size is stale. Reason: avoid duplicate warnings and false ones after compaction.
 - 2026-11-03 — HANDOFF compacted to one page; history moved to `docs/archive/handoff-2026-11-03.md`. Reason: the session-start hook injects its first 25 lines on every start.
 - 2026-11-04 — Owner signed off the V1-07 cards as they are. Two should-fix review items in `scripts/build_cards.py` deferred: it is a local Windows-only build script and neither affects the published cards.
+- 2026-11-04 — Smoke test signs in from the emailed link with `verify-link`, not a code. Reason: built-in mail has a link only, and templates need custom SMTP.
+- 2026-11-04 — Email change refused counts as a 4xx other than 429, or HTTP 500 `unexpected_failure`. Reason: the `block_email_change` trigger reaches the client as that 500 (live run); other 5xx are outages.
