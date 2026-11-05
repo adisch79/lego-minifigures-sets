@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>V2-03 marks, direction B: Rubber stamp</title>
+<link rel="stylesheet" href="../../app/src/index.css">
+<link rel="stylesheet" href="../V2-02/board.css">
+<link rel="stylesheet" href="kit.css">
+<style>
+/* Direction B: one round stamp button on each picture. Tap cycles none, owned, wanted, none.
+   The stamp lands with a thump, like inking a checklist. */
+
+.stamp { position:absolute; right:8px; bottom:8px; z-index:2; width:64px; height:64px; border-radius:50%; border:0; padding:0; cursor:pointer;
+  display:grid; place-items:center; font:inherit; font-size:10px; font-weight:900; letter-spacing:.08em; line-height:1.05; text-transform:uppercase; text-align:center;
+  transition:transform .2s var(--ease); }
+.stamp:hover { transform:scale(1.06) rotate(-4deg); }
+.stamp .ring { position:absolute; inset:4px; border-radius:50%; border:2px solid currentColor; opacity:.55; }
+/* none: a faint dashed target that says what a tap does */
+.stamp.s-none { background:rgba(255,255,255,.85); color:var(--grey-500); box-shadow:inset 0 0 0 2px var(--grey-300); }
+.stamp.s-none .ring { border-style:dashed; }
+.stamp.s-owned { background:var(--lego-red); color:var(--white); transform:rotate(-12deg); box-shadow:0 8px 16px -8px rgba(160,0,10,.8); animation:thump .45s var(--ease); }
+.stamp.s-wanted { background:var(--lego-yellow); color:var(--ink); transform:rotate(9deg); box-shadow:inset 0 0 0 2px var(--ink); animation:thump .45s var(--ease); }
+.stamp.s-wanted .ring { border-style:dashed; opacity:.8; }
+.stamp.s-saving { background:var(--lego-red); color:var(--white); transform:rotate(-12deg); opacity:.55; }
+.stamp.s-saving .ring { border:3px solid var(--white); border-right-color:transparent; opacity:1; animation:spin .8s linear infinite; }
+.stamp.s-failed { background:var(--white); color:#B3000E; box-shadow:inset 0 0 0 3px var(--lego-red); animation:shake .4s; }
+.stamp.s-failed .ring { display:none; }
+.cycle { display:flex; gap:4px; margin:2px 2px 0; }
+.cycle i { width:18px; height:4px; border-radius:2px; background:var(--grey-100); }
+.cycle i.on { background:var(--ink); }
+.fig .say { margin:6px 2px 0; font-size:12.5px; font-weight:700; color:var(--grey-500); }
+.fig .say.bad { color:#B3000E; }
+.fig .say.bad b { color:var(--ink); text-decoration:underline; text-underline-offset:3px; }
+.fig.is-owned .pic img { filter:none; }
+.fig.is-none .pic img, .fig.is-wanted .pic img { filter:saturate(.75); }
+
+/* Home band: the hero stats become the filter. Tap a number to show those series. */
+.band-hero.bh { padding:20px 0 34px; align-items:end; }
+.bh h1.big { font-size:clamp(36px,5vw,60px); }
+.fstats { display:flex; gap:10px; flex-wrap:wrap; }
+.fstat { min-width:128px; text-align:left; border:0; border-radius:18px; padding:12px 16px 12px; background:rgba(255,255,255,.55); font:inherit; color:var(--ink); cursor:pointer; transition:background .2s, transform .15s; }
+.fstat:hover { background:var(--white); }
+.fstat:active { transform:scale(.97); }
+.fstat strong { display:block; font-size:30px; line-height:1.05; font-weight:800; letter-spacing:-.03em; font-variant-numeric:tabular-nums; }
+.fstat span { font-size:11.5px; font-weight:800; letter-spacing:.12em; text-transform:uppercase; }
+.fstat[aria-pressed=true] { background:var(--ink); color:var(--lego-yellow); box-shadow:0 14px 24px -14px rgba(0,0,0,.6); }
+
+/* Home tiles: a progress ring replaces the count badge, the series stamp sits on the card */
+.ringc { display:inline-flex; align-items:center; gap:8px; font-size:13px; font-weight:800; font-variant-numeric:tabular-nums; }
+.ringc svg { transform:rotate(-90deg); }
+.ringc .bg { stroke:var(--grey-100); }
+.ringc .fg { stroke:var(--ink); stroke-linecap:round; }
+.ringc.done .fg { stroke:var(--lego-red); }
+.ringc small { color:var(--grey-500); font-weight:700; font-size:12px; }
+.art { position:relative; }
+.sstamp { position:absolute; right:14px; bottom:74px; width:96px; height:96px; border-radius:50%; display:grid; place-items:center; text-align:center;
+  font-size:12px; font-weight:900; letter-spacing:.08em; text-transform:uppercase; line-height:1.1; }
+.sstamp::after { content:""; position:absolute; inset:6px; border-radius:50%; border:2px solid currentColor; opacity:.6; }
+.sstamp.owned { background:var(--lego-red); color:var(--white); transform:rotate(-14deg); box-shadow:0 12px 24px -10px rgba(0,0,0,.6); }
+.sstamp.wanted { background:var(--lego-yellow); color:var(--ink); transform:rotate(10deg); box-shadow:0 12px 24px -10px rgba(0,0,0,.6); }
+.sstamp.wanted::after { border-style:dashed; }
+.tile-want { font-size:12.5px; font-weight:700; color:var(--grey-500); margin:-6px 0 0; }
+
+/* Series hero: big ring and the series stamp, which cycles the same way */
+.hring { display:flex; align-items:center; gap:18px; margin-top:22px; }
+.hring svg { transform:rotate(-90deg); flex:none; }
+.hring .bg { stroke:rgba(255,255,255,.7); }
+.hring .fg { stroke:var(--ink); stroke-linecap:round; }
+.hring b { display:block; font-size:34px; line-height:1; font-weight:800; letter-spacing:-.03em; font-variant-numeric:tabular-nums; }
+.hring b span { opacity:.4; }
+.hring small { font-size:12px; font-weight:800; letter-spacing:.12em; text-transform:uppercase; }
+.hstamp { position:absolute; right:-18px; top:-18px; z-index:3; width:104px; height:104px; }
+.hstamp .stamp { position:static; width:104px; height:104px; font-size:13px; }
+.hint-s { font-size:13px; font-weight:700; margin:14px 0 0; display:flex; align-items:center; gap:8px; }
+.hint-s .k { width:22px; height:22px; border-radius:50%; background:var(--white); display:inline-grid; place-items:center; }
+.empty p { margin:0 auto; max-width:42ch; line-height:1.5; }
+.empty .demo { display:inline-grid; margin:0 auto 18px; }
+.empty .demo .stamp { position:static; width:76px; height:76px; font-size:11px; }
+
+@keyframes thump { 0% { transform:scale(1.6) rotate(0); opacity:0; } 60% { transform:scale(.92) rotate(-12deg); opacity:1; } }
+@keyframes spin { to { transform:rotate(360deg); } }
+@keyframes shake { 25% { translate:-4px 0; } 75% { translate:4px 0; } }
+
+@media (max-width:640px) {
+  .stamp { width:58px; height:58px; font-size:8.5px; letter-spacing:.04em; right:6px; bottom:6px; }
+  .fstats { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; }
+  .fstat { min-width:0; padding:10px 12px; border-radius:14px; }
+  .fstat strong { font-size:24px; }
+  .fstat span { font-size:10px; letter-spacing:.08em; }
+  .bh h1.big { font-size:34px; }
+  .bh .lede { display:none; }
+  .hstamp { right:-10px; top:-12px; width:76px; height:76px; }
+  .hstamp .stamp { width:76px; height:76px; font-size:10px; }
+  .hring b { font-size:28px; }
+}
+</style>
+</head>
+<body class="board">
+<div id="board"></div>
+<script src="kit.js"></script>
+<script>
+var CHECK = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg>';
+var WARN = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" aria-hidden="true"><path d="M12 6v8m0 4h.01"/></svg>';
+var LABEL = { none: 'Tap to<br>stamp', owned: 'Got<br>it', wanted: 'Want<br>it', saving: 'Got<br>it', failed: WARN };
+var NEXT = { none: 'owned', owned: 'wanted', wanted: 'not marked', saving: 'wanted', failed: 'retry' };
+
+function stamp(st, big) {
+  return '<button class="stamp s-' + st + '" aria-label="Mark: ' + (st === 'failed' ? 'not saved, tap to retry' : st) + '. Tap for ' + NEXT[st] + '"' +
+    (st === 'saving' ? ' aria-busy="true"' : '') + '><i class="ring"></i><span>' + LABEL[st] + '</span></button>';
+}
+function ring(own, n, r, w, cls) {
+  var c = 2 * Math.PI * r, s = (r + w) * 2;
+  return '<svg width="' + s + '" height="' + s + '" aria-hidden="true"><circle class="bg" cx="' + (r + w) + '" cy="' + (r + w) + '" r="' + r + '" fill="none" stroke-width="' + w + '"/>' +
+    '<circle class="fg" cx="' + (r + w) + '" cy="' + (r + w) + '" r="' + r + '" fill="none" stroke-width="' + w + '" stroke-dasharray="' + (c * own / n) + ' ' + c + '"/></svg>';
+}
+
+var B = {
+  figClass: function (st) { return 'is-' + (st === 'saving' ? 'owned' : st); },
+  figPic: function (st) { return stamp(st); },
+  figFoot: function (st) {
+    if (st === 'saving') return '<p class="say">Saving...</p>';
+    if (st === 'failed') return '<p class="say bad" role="alert">Not saved. <b>Tap the stamp</b> to retry.</p>';
+    return '';
+  },
+  tileArt: function (s) {
+    if (s.mark === 'owned') return '<span class="sstamp owned">Series<br>owned</span>';
+    if (s.mark === 'wanted') return '<span class="sstamp wanted">Series<br>wanted</span>';
+    return '';
+  },
+  tileBadge: function (s) {
+    return '<span class="ringc' + (s.own === s.n ? ' done' : '') + '">' + ring(s.own, s.n, 9, 4) + s.own + '<small>/ ' + s.n + '</small></span>';
+  },
+  tileMeta: function (s) { return s.want ? '<p class="tile-want">' + s.want + ' figures wanted</p>' : ''; }
+};
+
+function band(active, counts) {
+  counts = counts || [52, 3, 51];
+  var items = [['all', 'All series', counts[0]], ['wanted', 'My wanted', counts[1]], ['missing', 'Missing', counts[2]]];
+  return '<div class="band-hero bh"><div><h1 class="big">Your <em>vault</em>.</h1></div><div><p class="lede">Tap a number to filter.</p><div class="fstats" role="group" aria-label="Filter series">' +
+    items.map(function (it) { return '<button class="fstat" aria-pressed="' + (it[0] === active) + '"><strong>' + it[2] + '</strong><span>' + it[1] + '</span></button>'; }).join('') + '</div></div></div>';
+}
+function rule(t) { return '<div class="rule"><span>' + t + '</span><span>Newest first</span></div>'; }
+
+var heroSigned = '<div class="hring">' + ring(7, 12, 30, 9) + '<div><b>7<span>/12</span></b><small>figures got</small></div></div>' +
+  '<p class="hint-s"><span class="k">' + CHECK.replace(/18/g, '12') + '</span>Tap a stamp: got it, want it, clear. The card stamp marks the whole series.</p>';
+
+K.board({
+  dir: 'V2-03 owned / wanted / Direction B',
+  title: 'Rubber stamp',
+  intro: 'One round stamp on each picture. Tap it to cycle: Got it (red), Want it (yellow, dashed), clear. The series card in the hero carries its own bigger stamp for the series mark. Home shows a progress ring in place of the figure-count badge, and the yellow band numbers double as the filter. Fastest to mark a whole shelf (one thumb, one target), but a cycle is less obvious than two named buttons.'
+}, [
+  { title: 'Home, all series', note: 'Ring with owned count per tile; series stamps sit on the card. The band numbers are the filter.', h: 1700, hm: 1300,
+    html: K.home(B, { signedIn: true, bandExtra: band('all'), rule: rule('<b>52</b> series') }) },
+  { title: 'Home, filter "My wanted"', note: 'Active number turns ink; the rule names the filter.', h: 1000, hm: 1300,
+    html: K.home(B, { signedIn: true, bandExtra: band('wanted'), rule: rule('<b>3</b> series with something you want'), ids: ['71051', '71049', '71048'] }) },
+  { title: 'Home, filter empty', note: 'Missing is empty when every series is complete: celebrate, offer the way back.', h: 720, hm: 780,
+    html: K.home(B, { signedIn: true, bandExtra: band('missing', [52, 3, 0]), rule: rule('<b>0</b> series missing figures'),
+      empty: '<span class="demo">' + '<button class="stamp s-owned"><i class="ring"></i><span>Got<br>it</span></button></span><strong>Nothing missing. The vault is full.</strong><p>Every figure in every series is stamped Got it.</p><button class="again">Show all series</button>' }) },
+  { title: 'Series page, signed in', note: 'Ring 7/12; series stamp on the card (here: wanted). Figures: got, want, saving, failed, none.', h: 1720, hm: 1700,
+    html: K.series(B, { signedIn: true, heroExtra: heroSigned, stage: '<span class="hstamp">' + stamp('wanted').replace('Want<br>it', 'Series<br>wanted') + '</span>' }) },
+  { title: 'One figure, every state', note: 'None (dashed target), got it, want it, saving (spinner ring, faded), save failed (shake, rolled back, retry).', h: 420, hm: 900,
+    html: K.states(B, ['None', 'Got it', 'Want it', 'Saving', 'Save failed']) },
+  { title: 'Signed out, home', note: 'No numbers to filter, no rings: the band keeps the app\'s normal hero.', h: 900, hm: 900,
+    html: K.home(B, { signedIn: false, bandExtra: '<div class="band-hero bh"><div><h1 class="big">Every <em>minifigure</em> series.</h1></div><div><p class="lede">Sign in to stamp the figures you own and want.</p></div></div>' }) },
+  { title: 'Signed out, series page', note: 'Pictures without stamps.', h: 1120, hm: 1300,
+    html: K.series(B, { signedIn: false }) }
+]);
+</script>
+</body>
+</html>

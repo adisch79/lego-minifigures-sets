@@ -1,0 +1,254 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>V2-03 marks, direction C: Collector sheet</title>
+<link rel="stylesheet" href="../../app/src/index.css">
+<link rel="stylesheet" href="../V2-02/board.css">
+<link rel="stylesheet" href="kit.css">
+<style>
+/* Direction C: the figure card itself is the control. A tap opens a small action sheet (desktop: popover
+   anchored to the card, phone: bottom sheet) with Owned / Wanted / Clear. The card keeps only a corner flag,
+   so the grid stays a clean picture wall. A sticky progress strip on the series page holds the series mark. */
+
+/* Figure card as a button */
+.fig.tap { cursor:pointer; }
+.fig.tap:hover .flag-none { opacity:1; }
+.fig.is-open { border-color:var(--ink); box-shadow:0 0 0 3px var(--lego-yellow), 0 0 0 5px var(--ink); transform:translateY(-3px); z-index:5; }
+
+/* Corner flag: a folded triangle in the top-right corner of the picture */
+.flag { position:absolute; top:0; right:0; z-index:2; width:58px; height:58px; border-top-right-radius:10px; overflow:hidden; pointer-events:none; }
+.flag::before { content:""; position:absolute; inset:0; clip-path:polygon(0 0,100% 0,100% 100%); background:var(--c); }
+.flag svg, .flag .spin { position:absolute; top:9px; right:9px; color:var(--fg); }
+.flag-owned { --c:var(--ink); --fg:var(--lego-yellow); animation:fold .45s var(--ease) both; }
+.flag-wanted { --c:var(--lego-red); --fg:var(--white); animation:fold .45s var(--ease) both; }
+.flag-saving { --c:var(--grey-300); --fg:var(--ink); }
+.flag-failed { --c:repeating-linear-gradient(135deg,var(--lego-red) 0 6px,#B3000E 6px 12px); --fg:var(--white); animation:shake .5s var(--ease) both; }
+.flag-none { --c:var(--grey-100); --fg:var(--grey-500); opacity:.0; transition:opacity .2s; width:44px; height:44px; }
+.flag-none svg { top:7px; right:7px; }
+.spin { width:14px; height:14px; border-radius:50%; border:2.5px solid currentColor; border-right-color:transparent; animation:spin .8s linear infinite; }
+.fig.is-saving .pic img { opacity:.55; }
+.fig.is-owned .pic { background:#FFF4B0; }
+.fig.is-wanted .pic { background:#FFE9EA; }
+.flag-cap { display:flex; align-items:center; gap:6px; margin:auto 2px 2px; font-size:12px; font-weight:800; letter-spacing:.06em; text-transform:uppercase; color:var(--grey-500); }
+.flag-cap.owned { color:var(--ink); }
+.flag-cap.wanted { color:#B3000E; }
+.flag-cap.failed { color:#B3000E; text-transform:none; letter-spacing:0; font-size:12.5px; }
+.flag-cap.failed u { margin-left:auto; color:var(--ink); text-underline-offset:3px; }
+
+/* Action sheet: popover on desktop */
+.sheet { position:absolute; left:calc(100% - 18px); top:36px; z-index:30; width:290px; background:var(--white); border-radius:20px; padding:14px; cursor:default;
+  box-shadow:0 30px 60px -18px rgba(0,0,0,.5), 0 0 0 1px rgba(0,0,0,.06); animation:drop .35s var(--ease) both; }
+.sheet::before { content:""; position:absolute; left:-7px; top:40px; width:16px; height:16px; background:var(--white); transform:rotate(45deg); border-radius:3px; }
+.sh-head { display:flex; align-items:center; gap:12px; padding:4px 4px 12px; border-bottom:1px solid var(--grey-100); margin-bottom:8px; }
+.sh-head img { width:48px; height:48px; object-fit:contain; background:var(--grey-50); border-radius:10px; padding:3px; }
+.sh-head b { display:block; font-size:15px; font-weight:800; letter-spacing:-.01em; line-height:1.2; }
+.sh-head small { font-size:11.5px; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--grey-500); }
+.opt { width:100%; display:flex; align-items:center; gap:12px; height:52px; padding:0 12px; border:0; border-radius:14px; background:none; font:inherit; font-size:15px; font-weight:800; color:var(--ink); cursor:pointer; text-align:left; transition:background .15s; }
+.opt:hover, .opt.hl { background:var(--grey-50); }
+.opt .dot { flex:none; width:32px; height:32px; border-radius:10px; display:grid; place-items:center; }
+.opt-own .dot { background:var(--ink); color:var(--lego-yellow); }
+.opt-want .dot { background:var(--lego-red); color:var(--white); }
+.opt-clr .dot { background:var(--grey-100); color:var(--grey-500); }
+.opt kbd { margin-left:auto; font:inherit; font-size:11px; font-weight:800; color:var(--grey-500); border:1.5px solid var(--grey-100); border-radius:6px; padding:2px 7px; }
+.opt[aria-checked=true] { background:#FFF4B0; }
+.opt[aria-checked=true] kbd { display:none; }
+.opt[aria-checked=true]::after { content:"Current"; margin-left:auto; font-size:11px; font-weight:800; letter-spacing:.1em; text-transform:uppercase; color:var(--ink); }
+.opt[disabled] { color:var(--grey-300); cursor:not-allowed; }
+.opt[disabled] .dot { opacity:.5; }
+.sh-grab { display:none; }
+.sh-cancel { display:none; }
+
+/* Phone copy of the sheet lives at the frame bottom with a scrim (rendered after main) */
+.sheet-phone { display:none; }
+
+/* Sticky progress strip on the series page */
+.strip { position:sticky; top:0; z-index:8; display:flex; align-items:center; gap:22px; padding:14px 18px; margin:0 0 28px; border-radius:18px; background:var(--ink); color:var(--white);
+  box-shadow:0 18px 30px -22px rgba(0,0,0,.7); }
+.strip .num { color:var(--white); letter-spacing:0; font-size:15px; font-weight:800; white-space:nowrap; }
+.strip .num strong { font-size:30px; letter-spacing:-.04em; color:var(--lego-yellow); }
+.strip .num span { opacity:.55; }
+.sbar { flex:1; min-width:120px; display:flex; height:10px; border-radius:999px; background:rgba(255,255,255,.14); overflow:hidden; gap:2px; }
+.sbar i { display:block; height:100%; transform-origin:left; animation:grow .9s var(--ease) both; }
+.sbar .o { background:var(--lego-yellow); }
+.sbar .w { background:var(--lego-red); animation-delay:.15s; }
+.legend { display:flex; gap:14px; font-size:12.5px; font-weight:700; white-space:nowrap; color:#C9C9C4; }
+.legend i { display:inline-block; width:9px; height:9px; border-radius:3px; margin-right:6px; vertical-align:1px; }
+.sm-badge { display:inline-flex; align-items:center; gap:6px; height:30px; padding:0 12px 0 10px; font-size:12px; font-weight:800; white-space:nowrap; border-radius:6px 999px 999px 6px; }
+.sm-badge.wanted { background:var(--lego-red); color:var(--white); }
+.sm-badge.owned { background:var(--lego-yellow); color:var(--ink); }
+.whole { height:40px; padding:0 16px; border:2px solid rgba(255,255,255,.3); border-radius:999px; background:transparent; color:var(--white); font:inherit; font-size:13.5px; font-weight:800; cursor:pointer; white-space:nowrap; display:inline-flex; align-items:center; gap:8px; transition:border-color .2s, background .2s; }
+.whole:hover { border-color:var(--white); background:rgba(255,255,255,.08); }
+.strip-note { margin:-18px 4px 24px; font-size:12.5px; font-weight:600; color:var(--grey-500); }
+
+/* Home tiles: thin progress line along the bottom of the card art, numbers below */
+.art { position:relative; }
+.tbar { position:absolute; left:10px; right:10px; bottom:10px; height:6px; border-radius:999px; background:rgba(255,255,255,.75); display:flex; overflow:hidden; box-shadow:0 2px 6px rgba(0,0,0,.2); }
+.tbar i { display:block; height:100%; transform-origin:left; animation:grow .9s var(--ease) both; }
+.tbar .o { background:var(--ink); }
+.tbar .w { background:var(--lego-red); }
+.tmeta { display:flex; gap:12px; margin:-4px 0 0; font-size:13px; font-weight:700; color:var(--grey-500); font-variant-numeric:tabular-nums; }
+.tmeta b { color:var(--ink); }
+.tmeta .w { color:#B3000E; }
+.tile.done .tbar .o { background:var(--lego-red); }
+
+/* Home filter: big segmented control inside the yellow band */
+.segrow { display:flex; align-items:center; gap:16px; padding:6px 0 22px; }
+.seg { position:relative; display:inline-grid; grid-template-columns:repeat(3,1fr); padding:5px; background:rgba(0,0,0,.08); border-radius:16px; }
+.seg button { position:relative; z-index:1; height:44px; padding:0 22px; border:0; border-radius:12px; background:transparent; font:inherit; font-size:14.5px; font-weight:800; color:var(--ink); cursor:pointer; white-space:nowrap; transition:color .2s; }
+.seg button em { font-style:normal; font-variant-numeric:tabular-nums; margin-left:6px; opacity:.55; }
+.seg button[aria-pressed=true] { background:var(--white); box-shadow:0 6px 14px -8px rgba(0,0,0,.45); }
+.seg button[aria-pressed=true] em { opacity:1; color:#B3000E; }
+.segrow small { font-size:13px; font-weight:700; opacity:.7; }
+.hint { font-size:14px; font-weight:600; color:var(--grey-500); }
+.hint a { color:var(--ink); font-weight:800; text-underline-offset:3px; }
+
+/* Empty filter */
+.empty .em-ico { width:72px; height:72px; margin:0 auto 18px; position:relative; border-radius:16px; background:var(--white); box-shadow:0 10px 20px -12px rgba(0,0,0,.3); overflow:hidden; }
+.empty .em-ico::after { content:""; position:absolute; top:0; right:0; width:34px; height:34px; clip-path:polygon(0 0,100% 0,100% 100%); background:var(--lego-red); }
+.empty p { margin:0 auto; max-width:44ch; line-height:1.5; }
+
+@keyframes fold { from { clip-path:polygon(100% 0,100% 0,100% 0); } to { clip-path:polygon(0 0,100% 0,100% 100%,0 100%); } }
+@keyframes shake { 20%,60% { transform:translateX(-3px); } 40%,80% { transform:translateX(3px); } }
+@keyframes spin { to { transform:rotate(360deg); } }
+@keyframes grow { from { transform:scaleX(0); } }
+@keyframes sheetup { from { transform:translateY(100%); } }
+
+@media (max-width:640px) {
+  .flag { width:44px; height:44px; }
+  .flag svg, .flag .spin { top:6px; right:6px; }
+  .sheet-in-card { display:none; }
+  .sheet-phone { display:block; position:absolute; inset:0; z-index:40; background:rgba(18,18,17,.45); }
+  .sheet-phone .sheet { position:absolute; left:0; right:0; top:auto; bottom:0; width:auto; border-radius:24px 24px 0 0; padding:10px 16px 22px; animation:sheetup .4s var(--ease) both; }
+  .sheet-phone .sheet::before { display:none; }
+  .sh-grab { display:block; width:44px; height:5px; border-radius:999px; background:var(--grey-300); margin:0 auto 12px; }
+  .opt { height:56px; font-size:16px; }
+  .opt kbd { display:none; }
+  .sh-cancel { display:block; width:100%; height:50px; margin-top:8px; border:0; border-radius:999px; background:var(--grey-50); font:inherit; font-size:15px; font-weight:800; color:var(--ink); }
+  .strip { flex-wrap:wrap; gap:10px 14px; padding:12px 14px; border-radius:14px; }
+  .strip .num strong { font-size:24px; }
+  .sbar { order:3; flex-basis:100%; }
+  .legend { order:4; }
+  .strip .whole { order:2; margin-left:auto; height:36px; padding:0 12px; font-size:12.5px; }
+  .strip .sm-badge { order:5; margin-left:auto; height:26px; }
+  .strip-note { margin-top:-16px; }
+  .segrow { padding:2px 0 16px; }
+  .seg { width:100%; }
+  .seg button { padding:0 6px; font-size:13px; height:42px; }
+  .seg button em { margin-left:4px; }
+  .segrow small { display:none; }
+  .tmeta { flex-direction:column; gap:2px; font-size:12.5px; }
+  .flag-cap.failed u { margin-left:6px; }
+}
+</style>
+</head>
+<body class="board">
+<div id="board"></div>
+<script src="kit.js"></script>
+<script>
+var CHECK = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg>';
+var HEART = '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 21s-7.5-4.6-9.6-9.3C1 8.4 3 4.8 6.6 4.8c2.2 0 3.6 1.2 4.4 2.5.8-1.3 2.2-2.5 4.4-2.5 3.6 0 5.6 3.6 4.2 6.9C19.5 16.4 12 21 12 21Z"/></svg>';
+var PLUS = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>';
+var BANG = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" aria-hidden="true"><path d="M12 5v9m0 5h.01"/></svg>';
+var XX = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>';
+var STACK = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linejoin="round" aria-hidden="true"><path d="m12 3 9 5-9 5-9-5 9-5Z"/><path d="m3 13 9 5 9-5"/></svg>';
+
+// The figure whose sheet is shown open in section 4 (the unmarked one, so all three options are live)
+var OPEN_NO = 6;
+
+function flag(st) {
+  var inner = { owned: CHECK, wanted: HEART, saving: '<i class="spin"></i>', failed: BANG, none: PLUS }[st];
+  return '<span class="flag flag-' + st + '" aria-hidden="true">' + inner + '</span>';
+}
+function cap(st) {
+  if (st === 'owned') return '<p class="flag-cap owned">Owned</p>';
+  if (st === 'wanted') return '<p class="flag-cap wanted">Wanted</p>';
+  if (st === 'saving') return '<p class="flag-cap" aria-live="polite">Saving owned...</p>';
+  if (st === 'failed') return '<p class="flag-cap failed" role="alert">Wanted not saved <u>Retry</u></p>';
+  return '';
+}
+function sheet(f, st, extraCls) {
+  var cur = st === 'owned' ? 'own' : st === 'wanted' ? 'want' : '';
+  return '<div class="sheet ' + (extraCls || '') + '" role="menu" aria-label="Mark ' + f.name + '">' +
+    '<span class="sh-grab" aria-hidden="true"></span>' +
+    '<div class="sh-head"><img src="' + f.img + '" alt=""><div><small>No. ' + f.no + ' / Series 27</small><b>' + f.name + '</b></div></div>' +
+    '<button class="opt opt-own hl" role="menuitemradio" aria-checked="' + (cur === 'own') + '"><span class="dot">' + CHECK + '</span>I own it<kbd>O</kbd></button>' +
+    '<button class="opt opt-want" role="menuitemradio" aria-checked="' + (cur === 'want') + '"><span class="dot">' + HEART + '</span>I want it<kbd>W</kbd></button>' +
+    '<button class="opt opt-clr" role="menuitem"' + (cur ? '' : ' disabled') + '><span class="dot">' + XX + '</span>Clear mark<kbd>C</kbd></button>' +
+    '<button class="sh-cancel">Cancel</button></div>';
+}
+
+var C = {
+  figClass: function (st) { return 'tap is-' + st; },
+  figPic: function (st) { return flag(st); },
+  figFoot: function (st, f) {
+    var open = f && f.open ? '<div class="sheet-in-card">' + sheet(f, st) + '</div>' : '';
+    return cap(st) + open;
+  },
+  tileBadge: function (s) {
+    if (s.mark === 'owned') return '<span class="sm-badge owned">' + STACK + 'Series owned</span>';
+    if (s.mark === 'wanted') return '<span class="sm-badge wanted">' + STACK + 'Series wanted</span>';
+    return '<span class="count-badge">' + s.n + ' figures</span>';
+  },
+  tileArt: function (s) {
+    var o = s.own / s.n * 100, w = s.want / s.n * 100;
+    return '<span class="tbar" role="img" aria-label="' + s.own + ' of ' + s.n + ' owned, ' + s.want + ' wanted"><i class="o" style="width:' + o + '%"></i><i class="w" style="width:' + w + '%"></i></span>';
+  },
+  tileClass: function (s) { return s.own === s.n ? 'done' : ''; },
+  tileMeta: function (s) {
+    return '<p class="tmeta"><span><b>' + s.own + '</b>/' + s.n + ' owned</span>' + (s.want ? '<span class="w">' + s.want + ' wanted</span>' : '') +
+      (s.own < s.n ? '<span>' + (s.n - s.own) + ' missing</span>' : '<span><b>Complete</b></span>') + '</p>';
+  }
+};
+
+// Mark figure 6 as the one with an open sheet in section 4
+K.FIGS.forEach(function (f) { f.open = f.no === OPEN_NO; });
+
+function seg(active, wantN) {
+  var items = [['all', 'All', 6], ['wanted', 'My wanted', wantN === undefined ? 3 : wantN], ['missing', 'Missing', 5]];
+  return '<div class="segrow"><div class="seg" role="group" aria-label="Filter series">' + items.map(function (it) {
+    return '<button aria-pressed="' + (it[0] === active) + '">' + it[1] + '<em>' + it[2] + '</em></button>';
+  }).join('') + '</div><small>Counts use figure marks only</small></div>';
+}
+
+var strip =
+  '<div class="strip" role="region" aria-label="Series progress">' +
+  '<span class="num"><strong>7</strong><span>/12</span> owned</span>' +
+  '<span class="sbar" role="img" aria-label="7 owned, 2 wanted, 3 missing"><i class="o" style="width:58.3%"></i><i class="w" style="width:16.7%"></i></span>' +
+  '<span class="legend"><span><i style="background:var(--lego-yellow)"></i>Owned 7</span><span><i style="background:var(--lego-red)"></i>Wanted 2</span><span><i style="background:rgba(255,255,255,.3)"></i>Missing 3</span></span>' +
+  '<span class="sm-badge wanted">' + STACK + 'Series wanted</span>' +
+  '<button class="whole" aria-haspopup="menu">' + STACK + 'Mark whole series</button></div>' +
+  '<p class="strip-note">The strip stays on top while you scroll. The series badge is separate: it never ticks figures.</p>';
+
+// Section 4 has the sheet open on figure 6 (desktop: popover in the card, phone: bottom sheet over a scrim)
+var phoneSheet = '<div class="sheet-phone">' + sheet(K.FIGS[OPEN_NO - 1], 'none') + '</div>';
+function noOpen(fn) { K.FIGS.forEach(function (f) { f.open = false; }); var r = fn(); K.FIGS.forEach(function (f) { f.open = f.no === OPEN_NO; }); return r; }
+// The open card gets a yellow focus ring
+var seriesSigned = K.series(C, { signedIn: true, before: strip, after: phoneSheet })
+  .replace('<li class="fig tap is-none">', '<li class="fig tap is-none is-open">');
+
+K.board({
+  dir: 'V2-03 owned / wanted / Direction C',
+  title: 'Collector sheet',
+  intro: 'The card is the button. Tap any figure and a small sheet asks: I own it, I want it, or Clear (a popover beside the card on desktop with O / W / C keys, a bottom sheet on the phone). The grid keeps only a folded corner flag, so the pictures stay the hero. A dark sticky strip on the series page carries progress, the separate series badge and "Mark whole series". Home tiles get a thin bar on the card and a segmented filter in the yellow band.'
+}, [
+  { title: 'Home, all series', note: 'Thin owned + wanted bar on each card; numbers under the title. Series marks are their own badge.', h: 1560, hm: 1240,
+    html: K.home(C, { signedIn: true, bandExtra: seg('all'), rule: '<div class="rule"><span><b>52</b> series</span><span>Newest first</span></div>' }) },
+  { title: 'Home, filter "My wanted"', note: 'Series with a wanted figure or a wanted series badge.', h: 860, hm: 1240,
+    html: K.home(C, { signedIn: true, bandExtra: seg('wanted'), rule: '<div class="rule"><span><b>3</b> series with wanted figures</span><span>Newest first</span></div>', ids: ['71051', '71049', '71048'] }) },
+  { title: 'Home, filter empty', note: 'Nothing wanted yet: show the corner flag they will look for, offer the way back.', h: 640, hm: 680,
+    html: K.home(C, { signedIn: true, bandExtra: seg('wanted', 0), rule: '<div class="rule"><span><b>0</b> series</span><span>My wanted</span></div>',
+      empty: '<div class="em-ico"></div><strong>No wanted figures yet</strong><p>Tap any figure, choose <b>I want it</b>, and a red corner flag marks it. Its series then shows up here.</p><button class="again">Show all series</button>' }) },
+  { title: 'Series page, signed in', note: 'Sticky strip: 7/12, wanted bar, series badge, Mark whole series. Sheet open on No. 6; flags show owned, wanted, saving, failed.', h: 1900, hm: 1780,
+    html: seriesSigned },
+  { title: 'One figure, every state', note: 'None (flag only on hover), owned, wanted, saving (grey flag spins, picture dims), save failed (striped flag shakes, rolled back, Retry).', h: 420, hm: 880,
+    html: noOpen(function () { return K.states(C, ['None', 'Owned', 'Wanted', 'Saving', 'Save failed']); }).replace('flag-none"', 'flag-none" style="opacity:1"') },
+  { title: 'Signed out, home', note: 'No filter, no bars, no flags. One quiet line on the rule.', h: 760, hm: 760,
+    html: K.home(C, { signedIn: false, rule: '<div class="rule"><span><b>52</b> series</span><span class="hint"><a href="#">Sign in</a> to keep a collector sheet</span></div>' }) },
+  { title: 'Signed out, series page', note: 'Figures only, exactly as today. Tapping a card does nothing new.', h: 1120, hm: 1300,
+    html: K.series(C, { signedIn: false }) }
+]);
+</script>
+</body>
+</html>
