@@ -20,3 +20,8 @@ secure_password_change = true
 
 [auth.sms]
 enable_signup = false
+
+# V2-04: the database trigger calls this function with no user JWT; the shared secret
+# ALERT_HOOK_SECRET is the gate (constant-time compare inside the function).
+[functions.telegram-alert]
+verify_jwt = false
