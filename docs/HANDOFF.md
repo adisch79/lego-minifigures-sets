@@ -8,7 +8,8 @@
 - **Context-cost hook:** built, registered, 9 of 9 acceptance cases pass (2026-11-03); fired live at 171k context (2026-11-04). Cost measurements: [context-cost.md](context-cost.md).
 
 ## Next step
-**V2-03 mark owned / wanted** on `feature/V2-03-marks`. Owner picked direction A, twin chips (`mockups/V2-03/a.html`). Next: data layer `app/src/marks.ts`, then the UI. Project is `minifigures-app`; the second project in the org is not this app.
+**V2-03 mark owned / wanted** on `feature/V2-03-marks`. Owner picked direction A, twin chips (`mockups/V2-03/a.html`). Data layer done: `app/src/marks.ts` (loadMarks, setMark insert-then-update, cap errcode 54000, useMarks optimistic with rollback and retry, seriesProgress, filterSeries), 116 tests pass (2026-11-05). Next: senior-frontend-dev builds direction A into Home and SeriesPage using `useMarks`; then code review, security review, QA, PR into dev. Open: quick taps on one figure send overlapping saves (no per-key queue yet); `marks.test.ts` relies on transitive `@types/node`. Project is `minifigures-app`; the second project in the org is not this app.
+- PR #22 (docs) merged into dev as `5ff82a3`.
 - After the master release: live sign-in check on the site (pill, link, signed-in chip, sign out). Real Supabase error codes for unlisted addresses are untested; the UI maps them to the same answer.
 - Smoke test: `node scripts/smoke_auth.mjs` sends no mail. `send <email>`, then `verify-link '<link>' <other-email>`: copy the link without opening it. Built-in mail allows 2 per hour and the full run uses both.
 
