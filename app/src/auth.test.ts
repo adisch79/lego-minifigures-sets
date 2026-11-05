@@ -1,13 +1,21 @@
+import { renderHook, waitFor, act } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 const signInWithOtp = vi.fn()
+const initialize = vi.fn()
+const getSession = vi.fn()
+let authListener: ((event: string, session: unknown) => void) | null = null
 vi.mock('@supabase/supabase-js', () => ({
   createClient: vi.fn(() => ({
     auth: {
       signInWithOtp,
       signOut: vi.fn(),
-      getSession: vi.fn(async () => ({ data: { session: null }, error: null })),
-      onAuthStateChange: vi.fn(() => ({ data: { subscription: { unsubscribe: vi.fn() } } })),
+      initialize: () => initialize(),
+      getSession: () => getSession(),
+      onAuthStateChange: vi.fn((cb: (event: string, session: unknown) => void) => {
+        authListener = cb
+        return { data: { subscription: { unsubscribe: vi.fn() } } }
+      }),
     },
   })),
 }))
@@ -26,6 +34,9 @@ async function load(withEnv: boolean) {
 
 beforeEach(() => {
   signInWithOtp.mockReset()
+  initialize.mockReset().mockResolvedValue({ error: null })
+  getSession.mockReset().mockResolvedValue({ data: { session: null }, error: null })
+  authListener = null
   window.history.replaceState(null, '', '/app/')
 })
 afterEach(() => vi.unstubAllEnvs())
@@ -122,10 +133,71 @@ describe('link errors', () => {
     const a = await load(false)
     expect(a.cleanLinkUrl('https://x.io/app/?q=1#error=access_denied&error_code=otp_expired', false)).toBe('/app/?q=1')
   })
+  it('cleanup drops implicit-flow tokens from the hash but keeps route hashes', async () => {
+    const a = await load(false)
+    expect(a.cleanLinkUrl('https://x.io/app/?q=1#access_token=a&refresh_token=b&token_type=bearer', false)).toBe('/app/?q=1')
+    expect(a.cleanLinkUrl('https://x.io/app/#token_type=bearer', false)).toBe('/app/')
+    expect(a.cleanLinkUrl('https://x.io/app/#series/71019', false)).toBe('/app/#series/71019')
+  })
   it('module clears URL error params at load', async () => {
     window.history.replaceState(null, '', '/app/?q=bat#error=access_denied&error_code=otp_expired')
     await load(true)
     expect(window.location.search).toBe('?q=bat')
     expect(window.location.hash).toBe('')
+  })
+})
+
+describe('useAuth', () => {
+  const OTHER = 'Open the sign-in link in the same browser where you asked for it, or ask for a new one.'
+  const session = { data: { session: { user: { email: 'a@b.co' } } }, error: null }
+
+  it('shows the exchange error returned by initialize', async () => {
+    const a = await load(true)
+    initialize.mockResolvedValue({ error: { code: 'flow_state_not_found', message: 'PKCE code verifier not found' } })
+    const { result } = renderHook(() => a.useAuth())
+    await waitFor(() => expect(result.current.status).toBe('signed-out'))
+    expect(result.current.linkError).toBe(OTHER)
+  })
+  it('clears linkError once signed in so it does not return after sign-out', async () => {
+    const a = await load(true)
+    initialize.mockResolvedValue({ error: { code: 'x', message: 'bad' } })
+    const { result } = renderHook(() => a.useAuth())
+    await waitFor(() => expect(result.current.linkError).toBe(OTHER))
+    act(() => authListener?.('SIGNED_IN', { user: { email: 'a@b.co' } }))
+    expect(result.current.status).toBe('signed-in')
+    expect(result.current.linkError).toBeUndefined()
+    act(() => authListener?.('SIGNED_OUT', null))
+    expect(result.current.status).toBe('signed-out')
+    expect(result.current.linkError).toBeUndefined()
+  })
+  it('strips ?code= only when the page loaded with one', async () => {
+    window.history.replaceState(null, '', '/app/?code=abc&q=1')
+    const a = await load(true)
+    getSession.mockResolvedValue(session)
+    const { result } = renderHook(() => a.useAuth())
+    await waitFor(() => expect(result.current.status).toBe('signed-in'))
+    expect(window.location.search).toBe('?q=1')
+  })
+  it('leaves a later ?code= alone when the load had none', async () => {
+    const a = await load(true)
+    window.history.replaceState(null, '', '/app/?code=zzz')
+    const { result } = renderHook(() => a.useAuth())
+    await waitFor(() => expect(result.current.status).toBe('signed-out'))
+    expect(window.location.search).toBe('?code=zzz')
+  })
+  it('clears implicit-flow tokens from the hash', async () => {
+    window.history.replaceState(null, '', '/app/#access_token=a&refresh_token=b&token_type=bearer')
+    const a = await load(true)
+    const { result } = renderHook(() => a.useAuth())
+    await waitFor(() => expect(result.current.status).toBe('signed-out'))
+    expect(window.location.hash).toBe('')
+  })
+})
+
+describe('requestLink loose match', () => {
+  it('does not treat an unrelated "not allowed" message as the same answer', async () => {
+    const a = await load(true)
+    signInWithOtp.mockResolvedValue({ error: { status: 400, message: 'Origin not allowed' } })
+    expect(await a.requestLink('a@b.co')).toEqual({ ok: false, reason: 'network' })
   })
 })

@@ -6,6 +6,8 @@ const MSG_OTHER =
   'Open the sign-in link in the same browser where you asked for it, or ask for a new one.'
 
 const LINK_PARAMS = ['error', 'error_code', 'error_description']
+// Implicit-flow tokens that must not stay in the address bar.
+const TOKEN_PARAMS = ['access_token', 'refresh_token', 'token_type']
 
 export type LinkResult =
   | { ok: true }
@@ -45,7 +47,7 @@ export function cleanLinkUrl(href: string, stripCode: boolean): string {
   if (stripCode) url.searchParams.delete('code')
   const hashParams =
     url.hash.startsWith('#') && url.hash.includes('=') ? new URLSearchParams(url.hash.slice(1)) : null
-  if (hashParams && LINK_PARAMS.some((k) => hashParams.has(k))) url.hash = ''
+  if (hashParams && [...LINK_PARAMS, ...TOKEN_PARAMS].some((k) => hashParams.has(k))) url.hash = ''
   return url.pathname + url.search + url.hash
 }
 
@@ -58,6 +60,10 @@ const initialLinkError: string | null =
 if (initialLinkError !== null) {
   window.history.replaceState(null, '', cleanLinkUrl(window.location.href, false))
 }
+
+// True when the page was opened with a PKCE `?code=`; only then is it stripped after the exchange.
+const initialHadCode: boolean =
+  typeof window === 'undefined' ? false : new URLSearchParams(window.location.search).has('code')
 
 export const authEnabled: boolean = Boolean(url && anonKey)
 
@@ -93,10 +99,9 @@ export async function requestLink(email: string): Promise<LinkResult> {
     const msg = (error.message ?? '').toLowerCase()
     if (
       (error.code && SAME_ANSWER_CODES.includes(error.code)) ||
-      msg.includes('signups not allowed') ||
+      msg === 'signups not allowed for otp' ||
       msg.includes('signup is disabled') ||
-      msg.includes('user not found') ||
-      msg.includes('not allowed')
+      msg.includes('user not found')
     ) {
       return { ok: true }
     }
@@ -108,7 +113,11 @@ export async function requestLink(email: string): Promise<LinkResult> {
 
 export async function signOut(): Promise<void> {
   if (!supabase) return
-  await supabase.auth.signOut({ scope: 'local' })
+  try {
+    await supabase.auth.signOut({ scope: 'local' })
+  } catch {
+    // Local sign-out must not throw out of the click; the stored session is dropped on next load anyway.
+  }
 }
 
 /** Session state for the UI. Safe to call when auth is disabled. */
@@ -125,20 +134,24 @@ export function useAuth(): AuthState {
       setState((prev) => ({
         status: email ? 'signed-in' : 'signed-out',
         email,
-        linkError: linkError ?? prev.linkError,
+        // A session ends the failed-link story, so the strip must not return after a later sign-out.
+        linkError: email ? undefined : (linkError ?? prev.linkError),
       }))
     }
     const { data } = supabase.auth.onAuthStateChange((_event, session) => {
       apply(session?.user.email ?? undefined)
     })
-    void supabase.auth.getSession().then(({ data: s, error }) => {
-      // getSession resolves after the code exchange; a failed exchange comes back as an error.
+    void (async () => {
+      // initialize() runs the PKCE exchange and returns its error; getSession alone would drop it.
+      const { error } = await supabase.auth.initialize()
       const exchangeError = error ? describeLinkError(error.code ?? '', error.message) : undefined
-      if (new URLSearchParams(window.location.search).has('code')) {
-        window.history.replaceState(null, '', cleanLinkUrl(window.location.href, true))
+      const { data: s } = await supabase.auth.getSession()
+      const next = cleanLinkUrl(window.location.href, initialHadCode)
+      if (next !== window.location.pathname + window.location.search + window.location.hash) {
+        window.history.replaceState(null, '', next)
       }
       apply(s.session?.user.email ?? undefined, exchangeError)
-    })
+    })()
     return () => {
       active = false
       data.subscription.unsubscribe()

@@ -245,8 +245,11 @@ function SignedInPanel({ email, onDone }: { email: string; onDone: () => void })
         type="button"
         className="out"
         onClick={async () => {
-          await signOut()
-          onDone()
+          try {
+            await signOut()
+          } finally {
+            onDone()
+          }
         }}
       >
         Sign out
@@ -280,7 +283,7 @@ export function AccountControl() {
       }
     }
     const onPointer = (e: PointerEvent) => {
-      if (rootRef.current && !rootRef.current.contains(e.target as Node)) close(true)
+      if (rootRef.current && !rootRef.current.contains(e.target as Node)) close(false)
     }
     document.addEventListener('keydown', onKey)
     document.addEventListener('pointerdown', onPointer)
@@ -293,7 +296,7 @@ export function AccountControl() {
   if (auth.status === 'disabled') return null
   if (auth.status === 'loading') {
     return (
-      <div className="acct">
+      <div className="acct" role="status" aria-busy="true" aria-label="Loading account">
         <span className="acct-wait" aria-hidden="true" />
       </div>
     )
