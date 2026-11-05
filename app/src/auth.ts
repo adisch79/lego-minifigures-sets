@@ -142,15 +142,20 @@ export function useAuth(): AuthState {
       apply(session?.user.email ?? undefined)
     })
     void (async () => {
-      // initialize() runs the PKCE exchange and returns its error; getSession alone would drop it.
-      const { error } = await supabase.auth.initialize()
-      const exchangeError = error ? describeLinkError(error.code ?? '', error.message) : undefined
-      const { data: s } = await supabase.auth.getSession()
-      const next = cleanLinkUrl(window.location.href, initialHadCode)
-      if (next !== window.location.pathname + window.location.search + window.location.hash) {
-        window.history.replaceState(null, '', next)
+      try {
+        // initialize() runs the PKCE exchange and returns its error; getSession alone would drop it.
+        const { error } = await supabase.auth.initialize()
+        const exchangeError = error ? describeLinkError(error.code ?? '', error.message) : undefined
+        const { data: s } = await supabase.auth.getSession()
+        const next = cleanLinkUrl(window.location.href, initialHadCode)
+        if (next !== window.location.pathname + window.location.search + window.location.hash) {
+          window.history.replaceState(null, '', next)
+        }
+        apply(s.session?.user.email ?? undefined, exchangeError)
+      } catch {
+        // A rejected call must not leave the control on the loading state.
+        apply(undefined)
       }
-      apply(s.session?.user.email ?? undefined, exchangeError)
     })()
     return () => {
       active = false

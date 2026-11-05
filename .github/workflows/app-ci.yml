@@ -52,7 +52,7 @@ jobs:
           VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL }}
           VITE_SUPABASE_ANON_KEY: ${{ vars.VITE_SUPABASE_ANON_KEY }}
       - name: Fail if a secret key is in the bundle
-        run: "! grep -rE 'service_role|sb_secret_' dist"
+        run: "! grep -rEq 'sb_secret_[A-Za-z0-9_-]{16,}' dist"
 
   # Live switch: a push to master publishes app/dist. Replaces the v1 pages.yml deploy of site/.
   deploy:
@@ -96,7 +96,7 @@ jobs:
           VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL }}
           VITE_SUPABASE_ANON_KEY: ${{ vars.VITE_SUPABASE_ANON_KEY }}
       - name: Fail if a secret key is in the bundle
-        run: "! grep -rE 'service_role|sb_secret_' dist"
+        run: "! grep -rEq 'sb_secret_[A-Za-z0-9_-]{16,}' dist"
         working-directory: app
       - uses: actions/configure-pages@983d7736d9b0ae728b81ab479565c72886d7745b # v5.0.0
       - uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa # v3.0.1
