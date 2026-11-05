@@ -67,3 +67,5 @@
 - 2026-11-05 — The Supabase URL and anon key reach the build as GitHub repo variables `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY`, not secrets. Reason: the anon key ships in the bundle by design; RLS protects the data. Without them the site builds with sign-in hidden.
 - 2026-11-05 — Owner picked sign-in direction A (pocket popover, mockups/V2-02/a.html).
 - 2026-11-05 — Owner picked V2-03 direction A (twin chips, mockups/V2-03/a.html).
+- 2026-11-05 — Default (agent): the "Missing" filter counts figure marks only; a series-level "owned" mark does not remove a series from Missing. Reason: the approved mockup states a series mark is its own badge and does not tick the figures. Owner may override.
+- 2026-11-05 — Saves of one mark are serialised per key and coalesced to the latest tap; rollback goes to the last server-confirmed state. Reason: code review found overlapping insert/update/delete calls could leave the server out of step with the UI.
