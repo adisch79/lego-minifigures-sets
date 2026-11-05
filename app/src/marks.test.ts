@@ -91,15 +91,22 @@ describe('setMark', () => {
   })
   it('scopes update by user_id and fails on 0 rows', async () => {
     results.update = { data: [], error: null }
-    expect(await setMark('figure', '71000-1', 'owned', 'wanted')).toEqual({ ok: false, reason: 'network' })
+    expect(await setMark('figure', '71000-1', 'owned')).toEqual({ ok: false, reason: 'network' })
     expect(calls.filter((c) => c.op === 'eq').map((c) => c.args)).toContainEqual(['user_id', 'u1'])
     expect(calls.some((c) => c.op === 'chain-select')).toBe(true)
     expect(calls.some((c) => c.op === 'delete')).toBe(false)
   })
-  it('deletes the fresh row when update fails after an insert', async () => {
+  it('deletes the fresh row when update fails after an insert that created it', async () => {
+    results.upsert = { data: [{}], error: null }
     results.update = { error: { code: '500' } }
-    expect(await setMark('figure', '71000-1', 'owned', null)).toEqual({ ok: false, reason: 'network' })
+    expect(await setMark('figure', '71000-1', 'owned')).toEqual({ ok: false, reason: 'network' })
     expect(calls.filter((c) => !noise(c)).map((c) => c.op)).toEqual(['upsert', 'update', 'delete'])
+  })
+  it('never deletes a row that already existed when the update fails', async () => {
+    results.upsert = { data: [], error: null }
+    results.update = { error: { code: '500' } }
+    expect(await setMark('figure', '71000-1', 'owned')).toEqual({ ok: false, reason: 'network' })
+    expect(calls.filter((c) => !noise(c)).map((c) => c.op)).toEqual(['upsert', 'update'])
   })
   it('rejects invalid input without a network call', async () => {
     expect(await setMark('figure', '71000', 'owned')).toEqual({ ok: false, reason: 'invalid' })
@@ -284,22 +291,27 @@ describe('useMarks races', () => {
     expect(result.current.pending.has('figure:71000-1')).toBe(true)
   })
 
-  it('taps made while loading survive the load result', async () => {
+  it('taps before the snapshot is loaded are ignored', async () => {
     let release: (r?: Res) => void = () => {}
     gate = (op) => (op === 'select' ? new Promise((r) => (release = r)) : Promise.resolve(undefined))
     const { result } = renderHook(() => useMarks('signed-in'))
     await flush()
     act(() => result.current.set('figure', '71000-1', 'owned'))
-    release({
-      data: [
-        { kind: 'figure', target_id: '71000-1', state: 'wanted' },
-        { kind: 'figure', target_id: '71000-2', state: 'owned' },
-      ],
-      error: null,
-    })
+    expect(writeOps()).toEqual([])
+    expect(result.current.pending.size).toBe(0)
+    release({ data: [{ kind: 'figure', target_id: '71000-1', state: 'wanted' }], error: null })
     await waitFor(() => expect(result.current.status).toBe('ready'))
-    expect(result.current.marks.get('figure:71000-1')).toBe('owned')
-    expect(result.current.marks.get('figure:71000-2')).toBe('owned')
+    expect(result.current.marks.get('figure:71000-1')).toBe('wanted')
+  })
+
+  it('taps after a load error are ignored and send nothing', async () => {
+    results.select = { data: null, error: { code: '500' } }
+    const { result } = renderHook(() => useMarks('signed-in'))
+    await waitFor(() => expect(result.current.status).toBe('error'))
+    act(() => result.current.set('figure', '71000-1', 'owned'))
+    await flush()
+    expect(writeOps()).toEqual([])
+    expect(result.current.marks.size).toBe(0)
   })
 })
 

@@ -69,3 +69,5 @@
 - 2026-11-05 — Owner picked V2-03 direction A (twin chips, mockups/V2-03/a.html).
 - 2026-11-05 — Default (agent): the "Missing" filter counts figure marks only; a series-level "owned" mark does not remove a series from Missing. Reason: the approved mockup states a series mark is its own badge and does not tick the figures. Owner may override.
 - 2026-11-05 — Saves of one mark are serialised per key and coalesced to the latest tap; rollback goes to the last server-confirmed state. Reason: code review found overlapping insert/update/delete calls could leave the server out of step with the UI.
+- 2026-11-05 — Marks accept taps only after the server snapshot loads (chips are disabled until then); a failed save deletes a row only if that same call inserted it. Reason: re-review found a failed update could delete a real mark made on another device or before load.
+- 2026-11-05 — Accepted risk: a save still in flight when the user signs out and back in as the same user may land after the new load, so the screen can be one mark stale until reload. Reason: rare, no data loss, ordering fix costs more than it saves.

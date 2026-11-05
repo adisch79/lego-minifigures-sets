@@ -62,8 +62,6 @@ export async function setMark(
   kind: MarkKind,
   id: string,
   state: MarkState | null,
-  /** Last server-confirmed state; null/absent means the insert below may create the row. */
-  previous: MarkState | null = null,
 ): Promise<SetResult> {
   if (!validTarget(kind, id) || (state !== null && !isState(state))) return { ok: false, reason: 'invalid' }
   if (!supabase) return { ok: false, reason: 'network' }
@@ -86,7 +84,10 @@ export async function setMark(
         { user_id: userId, kind, target_id: id, state },
         { onConflict: 'user_id,kind,target_id', ignoreDuplicates: true },
       )
+      // ON CONFLICT DO NOTHING returns only rows it inserted: non-empty means this call created the row.
+      .select()
     if (ins.error) return toResult(ins.error)
+    const created = (ins.data?.length ?? 0) > 0
     const upd = await supabase
       .from('marks')
       .update({ state })
@@ -100,8 +101,9 @@ export async function setMark(
         ? { ok: false, reason: 'network' }
         : null
     if (failure) {
-      if (previous === null) {
-        // The insert may have created this row; remove it so a failed save leaves no stray mark.
+      if (created) {
+        // This call created the row; remove it so a failed save leaves no stray mark.
+        // A row that already existed (other tab or device) is never deleted here.
         try {
           await supabase.from('marks').delete().eq('user_id', userId).eq('kind', kind).eq('target_id', id)
         } catch {
@@ -175,8 +177,8 @@ export function useMarks(authStatus: AuthState['status']): UseMarks {
   // Per-key save queue: at most one call in flight, the latest wanted state waits behind it.
   const inFlight = useRef(new Set<MarkKey>())
   const queued = useRef(new Map<MarkKey, MarkState | null>())
-  // Keys tapped since the current load started, re-applied over the load result.
-  const edited = useRef(new Set<MarkKey>())
+  // Taps are accepted only once the server snapshot is loaded, so `confirmed` is always a true copy.
+  const ready = useRef(false)
 
   /* The effect resets state when the auth state changes; it is the sync point with the external session. */
   /* eslint-disable react-hooks/set-state-in-effect */
@@ -185,7 +187,7 @@ export function useMarks(authStatus: AuthState['status']): UseMarks {
     desired.current.clear()
     inFlight.current.clear()
     queued.current.clear()
-    edited.current.clear()
+    ready.current = false
     confirmed.current = new Map()
     setPending(new Set())
     setFailed(new Set())
@@ -200,16 +202,9 @@ export function useMarks(authStatus: AuthState['status']): UseMarks {
       if (my !== epoch.current) return
       if (m) {
         confirmed.current = new Map(m)
-        // Taps made while loading win over the (older) server snapshot.
-        const merged = new Map(m)
-        for (const key of edited.current) {
-          const v = current.current.get(key)
-          if (v === undefined) merged.delete(key)
-          else merged.set(key, v)
-        }
-        edited.current.clear()
-        current.current = merged
-        setMarks(merged)
+        current.current = new Map(m)
+        ready.current = true
+        setMarks(current.current)
         setStatus('ready')
       } else {
         setStatus('error')
@@ -223,7 +218,7 @@ export function useMarks(authStatus: AuthState['status']): UseMarks {
     const [kind, id] = splitKey(key)
     const run = (state: MarkState | null) => {
       inFlight.current.add(key)
-      void setMark(kind, id, state, confirmed.current.get(key) ?? null).then((res) => {
+      void setMark(kind, id, state).then((res) => {
         if (my !== epoch.current) return
         inFlight.current.delete(key)
         if (res.ok) {
@@ -259,12 +254,13 @@ export function useMarks(authStatus: AuthState['status']): UseMarks {
 
   const set = useCallback(
     (kind: MarkKind, id: string, state: MarkState | null) => {
+      // Ignored while loading, after a load error, or signed out (the chips are disabled then too).
+      if (!ready.current) return
       const key = markKey(kind, id)
       const next = new Map(current.current)
       if (state === null) next.delete(key)
       else next.set(key, state)
       current.current = next
-      edited.current.add(key)
       setMarks(next)
       setFailed((cur) => without(cur, key))
       setPending((cur) => new Set(cur).add(key))
