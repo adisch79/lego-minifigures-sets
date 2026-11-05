@@ -1,4 +1,5 @@
-// Series page from approved mockup D (mockups/d/series.html), without the sign-in features of MVP 2.
+// Series page from approved mockup D (mockups/d/series.html); sign-in control from V2-02 direction A.
+import { AccountControl, LinkErrorStrip } from './Account'
 import { useState } from 'react'
 import type { Figure, Series } from './catalog'
 import { tileArt } from './home'
@@ -43,12 +44,16 @@ export function LoadError({ message, onRetry }: { message: string; onRetry: () =
 
 function BandTop() {
   return (
-    <div className="band-top">
-      <Brand href={HOME_HREF} />
-      <a className="back" href={HOME_HREF}>
-        <span aria-hidden="true">&larr;</span> All series
-      </a>
-    </div>
+    <>
+      <div className="band-top">
+        <Brand href={HOME_HREF} />
+        <a className="back" href={HOME_HREF}>
+          <span aria-hidden="true">&larr;</span> <span className="back-t">All series</span>
+        </a>
+        <AccountControl />
+      </div>
+      <LinkErrorStrip />
+    </>
   )
 }
 

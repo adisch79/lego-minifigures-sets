@@ -30,3 +30,7 @@ If you are developing a production application, we recommend enabling type-aware
 ```
 
 See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+
+## Sign-in settings
+
+Create `app/.env.local` (git-ignored via `*.local`) with the two names `VITE_SUPABASE_URL=` and `VITE_SUPABASE_ANON_KEY=`, and fill both values from the Supabase dashboard, Project Settings, API (project URL and anon key). In CI they are repo variables, not secrets. With either empty the site works without sign-in. The service-role key must never get a `VITE_` name: it would ship in the bundle.

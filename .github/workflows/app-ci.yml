@@ -33,7 +33,26 @@ jobs:
       - run: npm ci
       - run: npm run lint
       - run: npm test
+      - name: Check anon key shape
+        env:
+          VITE_SUPABASE_ANON_KEY: ${{ vars.VITE_SUPABASE_ANON_KEY }}
+        run: |
+          key="$VITE_SUPABASE_ANON_KEY"
+          [ -z "$key" ] && exit 0
+          case "$key" in
+            sb_publishable_*) exit 0 ;;
+          esac
+          role=$(printf '%s' "$key" | cut -d. -f2 | tr '_-' '/+' | { read -r p; while [ $(( ${#p} % 4 )) -ne 0 ]; do p="$p="; done; printf '%s' "$p"; } | base64 -d 2>/dev/null | sed -n 's/.*"role" *: *"\([^"]*\)".*/\1/p')
+          if [ "$role" != "anon" ]; then
+            echo "VITE_SUPABASE_ANON_KEY is not a publishable key or an anon JWT" >&2
+            exit 1
+          fi
       - run: npm run build
+        env:
+          VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ vars.VITE_SUPABASE_ANON_KEY }}
+      - name: Fail if a secret key is in the bundle
+        run: "! grep -rEq 'sb_secret_[A-Za-z0-9_-]{16,}' dist"
 
   # Live switch: a push to master publishes app/dist. Replaces the v1 pages.yml deploy of site/.
   deploy:
@@ -56,8 +75,28 @@ jobs:
           node-version: 24
           cache: npm
           cache-dependency-path: app/package-lock.json
+      - name: Check anon key shape
+        env:
+          VITE_SUPABASE_ANON_KEY: ${{ vars.VITE_SUPABASE_ANON_KEY }}
+        run: |
+          key="$VITE_SUPABASE_ANON_KEY"
+          [ -z "$key" ] && exit 0
+          case "$key" in
+            sb_publishable_*) exit 0 ;;
+          esac
+          role=$(printf '%s' "$key" | cut -d. -f2 | tr '_-' '/+' | { read -r p; while [ $(( ${#p} % 4 )) -ne 0 ]; do p="$p="; done; printf '%s' "$p"; } | base64 -d 2>/dev/null | sed -n 's/.*"role" *: *"\([^"]*\)".*/\1/p')
+          if [ "$role" != "anon" ]; then
+            echo "VITE_SUPABASE_ANON_KEY is not a publishable key or an anon JWT" >&2
+            exit 1
+          fi
       # prebuild copies site/img into the app; fail if the build ships without figure images.
       - run: npm ci && npm run build && test -f dist/img/71019/71019-1.webp
+        working-directory: app
+        env:
+          VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ vars.VITE_SUPABASE_ANON_KEY }}
+      - name: Fail if a secret key is in the bundle
+        run: "! grep -rEq 'sb_secret_[A-Za-z0-9_-]{16,}' dist"
         working-directory: app
       - uses: actions/configure-pages@983d7736d9b0ae728b81ab479565c72886d7745b # v5.0.0
       - uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa # v3.0.1

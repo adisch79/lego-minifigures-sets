@@ -20,6 +20,7 @@ import {
   type SortMode,
 } from './home'
 import { findSeries, parseRoute, type Load } from './series'
+import { AccountControl, AccountProvider, LinkErrorStrip } from './Account'
 import SeriesPage, { Brand, LoadError } from './SeriesPage'
 
 // Vite base is './', so this stays correct under a Pages sub-path.
@@ -159,7 +160,9 @@ function Home({
                 </select>
               </label>
             </div>
+            <AccountControl />
           </div>
+          <LinkErrorStrip />
           <div className="band-hero">
             <h1 className="big">
               Every series.
@@ -315,9 +318,13 @@ export default function App() {
     setAttempt((n) => n + 1)
   }
 
-  return seriesId !== null ? (
-    <SeriesPage id={seriesId} load={load} onRetry={retry} />
-  ) : (
-    <Home load={load} state={state} setState={setState} onRetry={retry} />
+  return (
+    <AccountProvider>
+      {seriesId !== null ? (
+        <SeriesPage id={seriesId} load={load} onRetry={retry} />
+      ) : (
+        <Home load={load} state={state} setState={setState} onRetry={retry} />
+      )}
+    </AccountProvider>
   )
 }

@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>V2-02 sign-in, direction C: Collector ticket</title>
+<link rel="stylesheet" href="../../app/src/index.css">
+<link rel="stylesheet" href="board.css">
+<style>
+/* Direction C: a white minifig-head button in the header opens a "collector ticket":
+   a side sheet on desktop, a bottom sheet on phones, over a dimmed page. */
+.head-btn { display:inline-flex; align-items:center; gap:10px; height:44px; padding:0 16px 0 5px; border:0; border-radius:999px; background:var(--white);
+  font:inherit; font-size:14px; font-weight:700; color:var(--ink); cursor:pointer; box-shadow:0 1px 0 rgba(0,0,0,.06); max-width:250px; transition:transform .15s; }
+.head-btn:active { transform:scale(.97); }
+.head-btn .t { min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.fig-head { flex:none; width:34px; height:34px; display:grid; place-items:center; }
+.fig-head.on svg .face { fill:var(--lego-red); }
+
+.scrim { position:absolute; inset:0; z-index:4; background:rgba(26,26,26,.55); animation:fade .3s both; }
+.sheet { position:absolute; z-index:5; top:16px; right:16px; bottom:16px; width:400px; display:flex; flex-direction:column;
+  filter:drop-shadow(0 30px 40px rgba(0,0,0,.4)); animation:slide .45s var(--ease) both; }
+.stub { position:relative; background:var(--lego-yellow); border-radius:20px 20px 0 0; padding:24px 24px 26px; }
+.stub.red { background:var(--lego-red); color:var(--white); }
+/* Perforated tear line between stub and body */
+.stub::after { content:""; position:absolute; left:14px; right:14px; bottom:-1px; height:2px;
+  background:repeating-linear-gradient(90deg, rgba(26,26,26,.35) 0 8px, transparent 8px 14px); }
+.body { flex:1; background:var(--white); border-radius:0 0 20px 20px; padding:24px; position:relative;
+  -webkit-mask:radial-gradient(circle 12px at 0 0, transparent 12px, #000 12.5px) top left/51% 100% no-repeat, radial-gradient(circle 12px at 100% 0, transparent 12px, #000 12.5px) top right/51% 100% no-repeat;
+          mask:radial-gradient(circle 12px at 0 0, transparent 12px, #000 12.5px) top left/51% 100% no-repeat, radial-gradient(circle 12px at 100% 0, transparent 12px, #000 12.5px) top right/51% 100% no-repeat; }
+.stub .kick { font-size:11.5px; font-weight:800; letter-spacing:.18em; text-transform:uppercase; margin:0 0 8px; opacity:.75; }
+.stub h3 { font-size:34px; line-height:.95; letter-spacing:-.04em; font-weight:800; margin:0; }
+.stub .no { position:absolute; right:22px; top:22px; font-size:12px; font-weight:800; letter-spacing:.1em; font-variant-numeric:tabular-nums; opacity:.6; }
+.x { position:absolute; right:16px; top:48px; width:36px; height:36px; border-radius:50%; border:0; background:rgba(26,26,26,.1); color:inherit; font-size:20px; cursor:pointer; }
+.stub.red .x { background:rgba(255,255,255,.18); }
+.grab { display:none; }
+.body p.lead { font-size:15px; line-height:1.5; margin:0 0 18px; color:var(--grey-500); font-weight:500; }
+.body label { display:block; font-size:11.5px; font-weight:700; letter-spacing:.16em; text-transform:uppercase; margin:0 0 8px; }
+.body input[type=email] { width:100%; font:inherit; font-size:16px; height:50px; border-radius:999px; border:2px solid var(--ink); background:var(--white); padding:0 20px; color:var(--ink); }
+.body input.bad { border-color:var(--lego-red); }
+.cta { width:100%; margin-top:12px; height:52px; border:0; border-radius:999px; background:var(--lego-red); color:var(--white); font:inherit; font-size:16px; font-weight:800; cursor:pointer; }
+.cta.dark { background:var(--ink); color:var(--lego-yellow); }
+.cta[disabled] { background:var(--grey-100); color:var(--grey-500); cursor:not-allowed; }
+.err { margin:10px 4px 0; font-size:14px; font-weight:700; color:#B3000E; line-height:1.4; }
+.band-msg { display:flex; gap:12px; align-items:center; border-radius:14px; padding:12px 14px; margin:0 0 16px; font-size:14px; line-height:1.4; background:var(--grey-50); border-left:5px solid var(--ink); }
+.band-msg.red { border-left-color:var(--lego-red); }
+.band-msg b { display:block; }
+.stamp { display:inline-block; transform:rotate(-8deg); border:3px solid var(--lego-red); color:var(--lego-red); border-radius:10px; padding:4px 12px; font-size:22px; font-weight:800; letter-spacing:.12em; margin:6px 0 18px; animation:stamp .5s var(--ease) both; }
+.sent-p { font-size:17px; line-height:1.5; font-weight:600; margin:0 0 18px; color:var(--ink); }
+.plain { background:none; border:0; padding:0; font:inherit; font-size:14px; font-weight:700; color:var(--ink); text-decoration:underline; text-underline-offset:3px; cursor:pointer; }
+.big-mail { font-size:20px; font-weight:800; letter-spacing:-.02em; overflow-wrap:anywhere; margin:0 0 6px; color:var(--ink); }
+
+@keyframes fade { from { opacity:0; } }
+@keyframes slide { from { opacity:0; transform:translateX(40px); } }
+@keyframes stamp { from { opacity:0; transform:rotate(-8deg) scale(1.6); } }
+
+@media (max-width:640px) {
+  /* Phone: head icon only on the brand row; the ticket rises from the bottom edge */
+  .head-btn { padding:0 5px; width:44px; }
+  .head-btn .t { display:none; }
+  .sheet { top:auto; left:0; right:0; bottom:0; width:auto; animation-name:rise; }
+  .stub { padding-top:30px; }
+  .grab { display:block; position:absolute; left:50%; top:10px; width:40px; height:5px; border-radius:3px; background:rgba(26,26,26,.3); transform:translateX(-50%); }
+  .body { border-radius:0; padding-bottom:30px; }
+  .stub h3 { font-size:30px; }
+  .x { top:22px; }
+  .stub .no { display:none; }
+}
+</style>
+</head>
+<body class="board">
+<div id="board"></div>
+<script src="board.js"></script>
+<script>
+var LONG = 'minifig.collector.longname@example.com';
+// Minifig head: yellow head with stud, eyes and smile; "face" fill turns red when signed in.
+var HEAD = '<svg width="30" height="32" viewBox="0 0 30 32" aria-hidden="true"><rect x="10" y="1" width="10" height="5" rx="1.5" fill="#1A1A1A"/><rect class="face" x="3" y="5" width="24" height="25" rx="8" fill="#FDE01B" stroke="#1A1A1A" stroke-width="2"/><circle cx="11" cy="15" r="2" fill="#1A1A1A"/><circle cx="19" cy="15" r="2" fill="#1A1A1A"/><path d="M10 21q5 4 10 0" fill="none" stroke="#1A1A1A" stroke-width="2" stroke-linecap="round"/></svg>';
+var OUT = '<div class="acct"><button class="head-btn" aria-haspopup="dialog"><span class="fig-head">' + HEAD + '</span><span class="t">Sign in</span></button></div>';
+var IN = '<div class="acct"><button class="head-btn" aria-haspopup="dialog" title="' + LONG + '"><span class="fig-head on">' + HEAD + '</span><span class="t">' + LONG + '</span></button></div>';
+
+function ticket(stub, body, red) {
+  return '<div class="scrim"></div><div class="sheet" role="dialog" aria-modal="true" aria-label="Sign in">' +
+    '<div class="stub' + (red ? ' red' : '') + '"><span class="grab"></span><span class="no">ADMIT ONE</span>' + stub + '<button class="x" aria-label="Close">&times;</button></div>' +
+    '<div class="body">' + body + '</div></div>';
+}
+var STUB = '<p class="kick">Vault members</p><h3>Your key<br>to the vault</h3>';
+function form(value, top, after, o) {
+  o = o || {};
+  return (top || '<p class="lead">We email you a one-time sign-in link. No password.</p>') +
+    '<label for="e">Email address</label><input id="e" type="email" placeholder="you@example.com" value="' + (value || '') + '"' + (o.bad ? ' class="bad" aria-invalid="true"' : '') + '>' +
+    (after || '') + '<button class="cta' + (o.dark ? ' dark' : '') + '"' + (o.off ? ' disabled' : '') + '>' + (o.label || 'Email me a sign-in link') + '</button>';
+}
+
+renderBoard({
+  dir: 'V2-02 sign-in / Direction C',
+  title: 'Collector ticket',
+  intro: 'A white button with a minifig head joins the header pills. It opens a "collector ticket" over a dimmed page: a yellow stub with a perforated tear line above a white form. On desktop the ticket slides in from the right; on a phone it rises as a bottom sheet within thumb reach. Signing in turns the head red.'
+}, [
+  { title: 'Signed out', note: 'Head button after sort. Phone: head only, on the brand row.', h: 330, hm: 380, control: OUT },
+  { title: 'Email entry', note: 'Ticket over a dimmed page; focus is trapped inside.', h: 560, hm: 640, control: OUT,
+    overlay: ticket(STUB, form('')) },
+  { title: 'Sent', note: 'Red SENT stamp; same wording for every address.', h: 560, hm: 640, control: OUT,
+    overlay: ticket(STUB, '<span class="stamp">SENT</span><p class="sent-p">If this address is invited, a sign-in link is on its way. Open it in this browser.</p><button class="plain">Use a different address</button>') },
+  { title: 'Error: bad address', note: 'Red field and a plain message under it.', h: 580, hm: 660, control: OUT,
+    overlay: ticket(STUB, form('lego fan@gmail', '', '<p class="err" id="err">That does not look like an email address.</p>', { bad: true })) },
+  { title: 'Error: rate limit', note: 'Notice replaces the lead line; button disabled.', h: 580, hm: 660, control: OUT,
+    overlay: ticket(STUB, form(LONG, '<div class="band-msg"><span><b>Too many requests.</b>Try again in an hour.</span></div>', '', { off: true, label: 'Try again later' })) },
+  { title: 'Error: network failure', note: 'Address kept; one tap retries.', h: 580, hm: 660, control: OUT,
+    overlay: ticket(STUB, form(LONG, '<div class="band-msg red"><span><b>Could not reach the server.</b>Check your connection and try again.</span></div>', '', { label: 'Try again' })) },
+  { title: 'Error: expired link', note: 'After a bad link the ticket opens itself with a red stub as the banner.', h: 560, hm: 640, control: OUT,
+    overlay: ticket('<p class="kick">Sign-in link</p><h3 role="alert">That sign-in link has expired.</h3>', form('', '<p class="lead">Ask for a new one: enter your address again.</p>', '', { label: 'Send a new link' }), true) },
+  { title: 'Signed in', note: 'Head turns red; email cut with an ellipsis. Phone: head only.', h: 330, hm: 380, control: IN },
+  { title: 'Signed in, ticket open', note: 'Full address and Sign out.', h: 520, hm: 560, control: IN,
+    overlay: ticket('<p class="kick">Signed in</p><h3>Welcome back</h3>', '<p class="lead" style="margin-bottom:6px">Signed in as</p><p class="big-mail">' + LONG + '</p><button class="cta dark" style="margin-top:22px">Sign out</button>') }
+]);
+</script>
+</body>
+</html>

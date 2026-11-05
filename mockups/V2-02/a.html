@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>V2-02 sign-in, direction A: Pocket popover</title>
+<link rel="stylesheet" href="../../app/src/index.css">
+<link rel="stylesheet" href="board.css">
+<style>
+/* Direction A: an ink pill at the end of the header opens a white popover anchored under it. */
+.pill-in { display:inline-flex; align-items:center; gap:8px; height:44px; padding:0 18px 0 14px; border:0; border-radius:999px;
+  background:var(--ink); color:var(--lego-yellow); font:inherit; font-size:14px; font-weight:700; cursor:pointer; transition:transform .15s; }
+.pill-in:active { transform:scale(.97); }
+.pill-in.open { box-shadow:0 0 0 3px var(--white), 0 0 0 5px var(--ink); }
+
+.me { display:inline-flex; align-items:center; gap:10px; height:44px; padding:0 14px 0 5px; border-radius:999px; background:var(--white);
+  border:2px solid transparent; font:inherit; font-size:14px; font-weight:700; color:var(--ink); cursor:pointer; max-width:240px; }
+.me.open { border-color:var(--ink); }
+.av { flex:none; width:34px; height:34px; border-radius:50%; background:var(--lego-red); color:var(--lego-yellow); display:grid; place-items:center; font-size:15px; font-weight:800; }
+.me .addr { min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+
+.pop { position:absolute; right:0; top:calc(100% + 14px); z-index:5; width:372px; background:var(--white); border-radius:20px; padding:22px;
+  box-shadow:0 28px 60px -20px rgba(0,0,0,.45), 0 0 0 1px rgba(0,0,0,.05); animation:drop .35s var(--ease) both; }
+.pop::before { content:""; position:absolute; right:30px; top:-7px; width:16px; height:16px; background:var(--white); transform:rotate(45deg); border-radius:3px; }
+.pop h3 { font-size:22px; font-weight:800; letter-spacing:-.03em; margin:0 0 6px; }
+.pop .sub { font-size:14px; line-height:1.45; color:var(--grey-500); margin:0 0 16px; }
+.pop label.f { display:block; font-size:12px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; margin:0 0 6px; }
+.pop input[type=email] { width:100%; font:inherit; font-size:15px; height:46px; border-radius:999px; border:2px solid var(--grey-100); background:var(--grey-50); padding:0 18px; color:var(--ink); }
+.pop input[type=email]:focus { outline:none; border-color:var(--ink); background:var(--white); }
+.pop input.bad { border-color:var(--lego-red); background:#FFF5F5; }
+.send { margin-top:12px; width:100%; height:46px; border:0; border-radius:999px; background:var(--lego-red); color:var(--white); font:inherit; font-size:15px; font-weight:800; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; }
+.send[disabled] { background:var(--grey-100); color:var(--grey-500); cursor:not-allowed; }
+.msg { display:flex; gap:10px; align-items:flex-start; margin-top:10px; font-size:13.5px; line-height:1.45; font-weight:600; color:#B3000E; }
+.msg svg { flex:none; margin-top:1px; }
+.callout { display:flex; gap:12px; align-items:flex-start; padding:14px; border-radius:14px; background:var(--grey-50); font-size:14px; line-height:1.45; margin-bottom:14px; }
+.callout b { display:block; font-weight:800; }
+.callout .dot { flex:none; width:32px; height:32px; border-radius:50%; display:grid; place-items:center; background:var(--ink); color:var(--lego-yellow); }
+.callout.red .dot { background:var(--lego-red); color:var(--white); }
+.sent { text-align:left; }
+.sent .env { width:56px; height:56px; border-radius:16px; background:var(--lego-yellow); display:grid; place-items:center; margin-bottom:14px; animation:pop .6s var(--ease) both; }
+.sent p { font-size:15px; line-height:1.5; margin:0 0 16px; font-weight:500; }
+.linkish { background:none; border:0; padding:0; font:inherit; font-size:14px; font-weight:700; color:var(--ink); text-decoration:underline; text-underline-offset:3px; cursor:pointer; }
+.who { font-size:12px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--grey-500); margin:0 0 4px; }
+.full { font-size:16px; font-weight:800; overflow-wrap:anywhere; margin:0 0 16px; }
+.out { width:100%; height:44px; border-radius:999px; border:2px solid var(--ink); background:var(--white); font:inherit; font-size:14px; font-weight:800; cursor:pointer; }
+
+/* Link error banner: a red strip directly under the header band */
+.linkbar { background:var(--lego-red); color:var(--white); }
+.linkbar .wrap { display:flex; align-items:center; gap:14px; min-height:56px; font-size:15px; font-weight:700; }
+.linkbar .wrap span { flex:1; }
+.linkbar button { flex:none; height:36px; padding:0 16px; border-radius:999px; border:0; background:var(--white); color:var(--ink); font:inherit; font-size:13.5px; font-weight:800; cursor:pointer; }
+.linkbar .x { background:transparent; color:var(--white); width:36px; padding:0; font-size:20px; }
+
+@keyframes drop { from { opacity:0; transform:translateY(-8px) scale(.98); } }
+
+@media (max-width:640px) {
+  /* Phone: label collapses to a 44px circle on the brand row; popover spans the screen under the header */
+  .pill-in { width:44px; padding:0; justify-content:center; }
+  .pill-in .t { position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); }
+  .me { padding:0 5px; width:44px; }
+  .me .addr, .me .chev { display:none; }
+  .acct { position:static; }
+  .pop { left:12px; right:12px; width:auto; top:76px; }
+  .pop::before { right:26px; }
+  .pop input[type=email] { font-size:16px; }
+  .linkbar .wrap { flex-wrap:wrap; gap:8px 12px; padding-top:12px; padding-bottom:12px; font-size:14px; }
+  .linkbar .wrap span { flex-basis:calc(100% - 50px); }
+}
+</style>
+</head>
+<body class="board">
+<div id="board"></div>
+<script src="board.js"></script>
+<script>
+var KEY = '<svg class="ico" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><circle cx="8" cy="15" r="4"/><path d="m11 12 8-8m-3 3 3 3m-6 0 2 2"/></svg>';
+var WARN = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v6m0 4h.01"/></svg>';
+var CLOCK = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>';
+var WIFI = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M2 2l20 20M8.5 16.4a5 5 0 0 1 7 0M5 12.8a10 10 0 0 1 5-2.6M19 12.8a10 10 0 0 0-2.4-1.7M12 20h.01"/></svg>';
+var ENV = '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#1A1A1A" stroke-width="2.2" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>';
+var LONG = 'minifig.collector.longname@example.com';
+
+function btn(open) { return '<button class="pill-in' + (open ? ' open' : '') + '" aria-expanded="' + !!open + '">' + KEY + '<span class="t">Sign in</span></button>'; }
+function form(value, extra, opts) {
+  opts = opts || {};
+  return '<h3>Sign in</h3><p class="sub">We email you a one-time link. No password.</p>' + (opts.top || '') +
+    '<label class="f" for="e">Email address</label><input id="e" type="email" value="' + (value || '') + '" placeholder="you@example.com"' + (opts.bad ? ' class="bad" aria-invalid="true"' : '') + '>' +
+    (extra || '') + '<button class="send"' + (opts.off ? ' disabled' : '') + '>' + (opts.label || 'Email me a sign-in link') + '</button>';
+}
+function pop(inner) { return '<div class="pop" role="dialog" aria-label="Sign in">' + inner + '</div>'; }
+function acct(inner) { return '<div class="acct">' + inner + '</div>'; }
+
+renderBoard({
+  dir: 'V2-02 sign-in / Direction A',
+  title: 'Pocket popover',
+  intro: 'An ink "Sign in" pill closes the header row, like the other dark action buttons in the app. It opens a small white popover anchored under it, so the page never moves. On a phone the pill shrinks to a 44px key button on the brand row, leaving search and sort their full width.'
+}, [
+  { title: 'Signed out', note: 'Ink pill after sort. Phone: key icon on the brand row.', h: 330, hm: 360,
+    control: acct(btn(false)) },
+  { title: 'Email entry', note: 'Popover anchored to the pill; focus lands in the field.', h: 470, hm: 520,
+    control: acct(btn(true) + pop(form('', ''))) },
+  { title: 'Sent', note: 'Same wording for every address, invited or not.', h: 450, hm: 500,
+    control: acct(btn(true) + pop('<div class="sent"><div class="env">' + ENV + '</div><h3>Check your email</h3><p>If this address is invited, a sign-in link is on its way. Open it in this browser.</p><button class="linkish">Use a different address</button></div>')) },
+  { title: 'Error: bad address', note: 'Field turns red; message under it, linked by aria-describedby.', h: 500, hm: 550,
+    control: acct(btn(true) + pop(form('lego fan@gmail', '<p class="msg" id="err">' + WARN + 'That does not look like an email address.</p>', { bad: true }))) },
+  { title: 'Error: rate limit', note: 'Send button disabled; the reason sits above the field.', h: 560, hm: 600,
+    control: acct(btn(true) + pop(form(LONG, '', { off: true, label: 'Try again later', top: '<div class="callout">' + '<span class="dot">' + CLOCK + '</span><span><b>Too many requests.</b>Try again in an hour.</span></div>' }))) },
+  { title: 'Error: network failure', note: 'Address is kept; one tap retries.', h: 560, hm: 600,
+    control: acct(btn(true) + pop(form(LONG, '', { label: 'Try again', top: '<div class="callout red"><span class="dot">' + WIFI + '</span><span><b>Could not reach the server.</b>Check your connection and try again.</span></div>' }))) },
+  { title: 'Error: expired link', note: 'Red strip under the header after a bad link; the button reopens the popover.', h: 400, hm: 470,
+    control: acct(btn(false)), after: '<div class="linkbar" role="alert"><div class="wrap"><span>That sign-in link has expired. Ask for a new one.</span><button>Send a new link</button><button class="x" aria-label="Dismiss">&times;</button></div></div>' },
+  { title: 'Signed in', note: 'White chip: avatar initial and email, cut with an ellipsis. Phone: avatar only.', h: 330, hm: 360,
+    control: acct('<button class="me" aria-expanded="false" title="' + LONG + '"><span class="av">M</span><span class="addr">' + LONG + '</span><svg class="chev" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button>') },
+  { title: 'Signed in, menu open', note: 'Full address and Sign out.', h: 420, hm: 470,
+    control: acct('<button class="me open" aria-expanded="true"><span class="av">M</span><span class="addr">' + LONG + '</span><svg class="chev" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" aria-hidden="true"><path d="m18 15-6-6-6 6"/></svg></button>' + pop('<p class="who">Signed in as</p><p class="full">' + LONG + '</p><button class="out">Sign out</button>')) }
+]);
+</script>
+</body>
+</html>

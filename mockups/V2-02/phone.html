@@ -1,0 +1,7 @@
+<!doctype html>
+<!-- Screenshot helper: renders a mockup inside a 390px-wide iframe, because headless Chrome will not open a window that narrow. Usage: phone.html?a.html&5300 -->
+<html><head><meta charset="utf-8"><style>html,body{margin:0;background:#121211}iframe{display:block;border:0;width:390px}</style></head>
+<body><script>
+var q = location.search.slice(1).split('&');
+document.write('<iframe src="' + q[0] + '" style="height:' + q[1] + 'px"></iframe>');
+</script></body></html>

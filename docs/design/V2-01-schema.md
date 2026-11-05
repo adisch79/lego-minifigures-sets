@@ -66,6 +66,8 @@ Stored separately from figure marks; expanding them would send one alert per fig
 - `updateUser({ email })` is refused, but Auth sends the mail before the write the trigger aborts, so a signed-in user can spend the mail quota and mail any address. Only invited users can do this. Set a low email rate limit before V2-02; run that smoke test only against an address the owner controls. SOURCE: supabase/auth `internal/api/mail.go`, read 2026-11-02.
 - A user at the row cap gets the cap error even on `on conflict do nothing`, because the trigger fires first. V2-03 handles it.
 - Service-role key never gets a `VITE_` name.
+- CSP is a meta tag, so `frame-ancestors` cannot be set on GitHub Pages, and `style-src` needs 'unsafe-inline' for React inline styles.
+- The Supabase redirect allowlist and Site URL must stay the exact Pages URL, never an `https://adisch79.github.io/**` wildcard, because other repos share the origin.
 
 ## Migrations and tests
 `supabase/migrations/`. Tests prove:
