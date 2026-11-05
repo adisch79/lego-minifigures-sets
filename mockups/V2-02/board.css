@@ -1,0 +1,35 @@
+/* Shared presentation board for the V2-02 sign-in mockups.
+   Each state is a framed copy of the real header (app/src/index.css) plus a peek of the grid. */
+body.board { background:#121211; color:#F6F6F4; }
+.board-head { max-width:1200px; margin:0 auto; padding:48px 32px 8px; }
+.board-head .dir { font-size:12px; font-weight:700; letter-spacing:.2em; text-transform:uppercase; color:var(--lego-yellow); margin:0 0 10px; }
+.board-head h1 { font-size:clamp(34px,5vw,56px); line-height:.95; letter-spacing:-.045em; font-weight:800; margin:0 0 14px; }
+.board-head p { font-size:16px; line-height:1.5; max-width:62ch; margin:0; color:#C9C9C4; }
+
+.state { max-width:1264px; margin:0 auto; padding:40px 32px 0; }
+.state:last-child { padding-bottom:72px; }
+.state-label { display:flex; gap:14px; align-items:baseline; margin:0 0 14px; }
+.state-label .no { font-size:12px; font-weight:800; letter-spacing:.12em; color:#121211; background:var(--lego-yellow); border-radius:999px; padding:4px 10px; font-variant-numeric:tabular-nums; }
+.state-label h2 { font-size:20px; font-weight:800; letter-spacing:-.02em; margin:0; }
+.state-label p { font-size:13.5px; color:#9A9A94; margin:0; }
+
+.frame { position:relative; height:var(--h,460px); overflow:hidden; background:var(--white); color:var(--ink); border-radius:20px; box-shadow:0 30px 60px -30px rgba(0,0,0,.8); }
+.frame .band-top { position:relative; }
+.peek { list-style:none; margin:0; padding:32px 0; display:grid; grid-template-columns:repeat(4,1fr); gap:32px; }
+.peek img { width:100%; aspect-ratio:3/4; object-fit:cover; display:block; border-radius:var(--radius); }
+
+/* The account control sits after search/sort on desktop and on the brand row on phones */
+.acct { position:relative; flex:none; }
+.ico { display:block; }
+
+@media (max-width:640px) {
+  .board-head { padding:32px 18px 4px; }
+  .state { padding:32px 12px 0; }
+  .state-label { flex-wrap:wrap; gap:6px 10px; }
+  .state-label p { width:100%; }
+  .frame { height:var(--hm,620px); border-radius:16px; }
+  .band-top > .brand { order:0; }
+  .band-top > .acct { order:1; margin-left:auto; }
+  .band-top > .controls { order:2; }
+  .peek { grid-template-columns:repeat(2,1fr); gap:12px; padding:18px 0; }
+}

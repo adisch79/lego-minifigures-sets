@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>V2-02 sign-in, direction B: Vault strip</title>
+<link rel="stylesheet" href="../../app/src/index.css">
+<link rel="stylesheet" href="board.css">
+<style>
+/* Direction B: a thin ink strip above the yellow band. It owns the account; opening it unrolls a
+   full-width ink panel that pushes the page down. The yellow header itself is never touched. */
+.strip { background:var(--ink); color:var(--white); }
+.strip-row { display:flex; align-items:center; gap:12px; height:40px; font-size:13px; }
+.strip-row .tag { font-size:11px; font-weight:700; letter-spacing:.18em; text-transform:uppercase; color:#9A9A94; white-space:nowrap; }
+.strip-row .tag i { display:inline-block; width:7px; height:7px; border-radius:50%; background:var(--lego-yellow); margin-right:8px; vertical-align:1px; }
+.strip-row .end { margin-left:auto; display:flex; align-items:center; gap:14px; min-width:0; }
+.strip-btn { background:none; border:0; padding:0 2px; height:40px; font:inherit; font-size:13.5px; font-weight:800; color:var(--lego-yellow); cursor:pointer; display:inline-flex; align-items:center; gap:6px; white-space:nowrap; }
+.strip-btn.mute { color:var(--white); }
+.as { min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:#C9C9C4; max-width:300px; }
+.as b { color:var(--white); font-weight:700; }
+
+.panel { background:var(--ink); color:var(--white); border-top:1px solid rgba(255,255,255,.1); }
+.panel-in { display:grid; grid-template-columns:1fr 470px; gap:48px; align-items:center; padding:30px 0 34px; animation:unroll .45s var(--ease) both; }
+.panel h3 { font-size:44px; line-height:.95; letter-spacing:-.045em; font-weight:800; margin:0 0 10px; }
+.panel h3 em { font-style:normal; color:var(--lego-yellow); }
+.panel .sub { font-size:15px; line-height:1.5; color:#C9C9C4; margin:0; max-width:40ch; }
+.row { display:flex; gap:8px; }
+.panel input[type=email] { flex:1; min-width:0; font:inherit; font-size:15px; height:50px; border-radius:999px; border:2px solid transparent; background:var(--white); padding:0 20px; color:var(--ink); }
+.panel input.bad { border-color:#FF5A66; box-shadow:0 0 0 3px rgba(255,90,102,.3); }
+.go { flex:none; height:50px; padding:0 22px; border:0; border-radius:999px; background:var(--lego-yellow); color:var(--ink); font:inherit; font-size:15px; font-weight:800; cursor:pointer; white-space:nowrap; }
+.go[disabled] { background:#3A3A37; color:#9A9A94; cursor:not-allowed; }
+.lab { display:block; font-size:11.5px; font-weight:700; letter-spacing:.16em; text-transform:uppercase; color:#9A9A94; margin:0 0 8px; }
+.note { display:flex; gap:10px; align-items:center; margin-top:12px; font-size:14px; font-weight:600; line-height:1.4; }
+.note .chip { flex:none; font-size:11px; font-weight:800; letter-spacing:.1em; text-transform:uppercase; padding:4px 9px; border-radius:999px; background:#FF5A66; color:var(--ink); }
+.note .chip.y { background:var(--lego-yellow); }
+.close { position:absolute; right:0; top:18px; width:36px; height:36px; border-radius:50%; border:0; background:rgba(255,255,255,.1); color:var(--white); font-size:20px; cursor:pointer; }
+.panel .wrap { position:relative; }
+.done { display:flex; gap:20px; align-items:center; }
+.tick { flex:none; width:64px; height:64px; border-radius:50%; background:var(--lego-yellow); display:grid; place-items:center; animation:pop .6s var(--ease) both; }
+.done p { font-size:17px; line-height:1.5; margin:0 0 8px; font-weight:600; }
+.done button { background:none; border:0; padding:0; font:inherit; font-size:14px; font-weight:700; color:var(--lego-yellow); text-decoration:underline; text-underline-offset:3px; cursor:pointer; }
+
+/* Expired link: the strip itself turns red */
+.strip.alert { background:var(--lego-red); }
+.strip.alert .strip-row { height:auto; min-height:48px; font-size:14.5px; font-weight:700; }
+.strip.alert .msg { flex:1; }
+.strip.alert .ask { flex:none; height:32px; padding:0 14px; border-radius:999px; border:0; background:var(--white); color:var(--ink); font:inherit; font-size:13px; font-weight:800; cursor:pointer; }
+
+@keyframes unroll { from { opacity:0; transform:translateY(-14px); } }
+
+@media (max-width:640px) {
+  .strip-row .tag .long { display:none; }
+  .as { max-width:150px; }
+  .panel-in { grid-template-columns:1fr; gap:18px; padding:22px 0 24px; }
+  .panel h3 { font-size:34px; padding-right:40px; }
+  .row { flex-direction:column; }
+  .panel input[type=email] { flex:none; font-size:16px; }
+  .go { width:100%; }
+  .close { top:16px; }
+  .done { align-items:flex-start; }
+  .tick { width:48px; height:48px; }
+  .strip.alert .strip-row { flex-wrap:wrap; padding-top:10px; padding-bottom:10px; gap:8px; }
+}
+</style>
+</head>
+<body class="board">
+<div id="board"></div>
+<script src="board.js"></script>
+<script>
+var LONG = 'minifig.collector.longname@example.com';
+var ARROW = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"/></svg>';
+var TICK = '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#1A1A1A" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg>';
+var TAG = '<span class="tag"><i></i>Vault<span class="long"> members</span></span>';
+
+function strip(end) { return '<div class="strip"><div class="wrap strip-row">' + TAG + '<div class="end">' + end + '</div></div></div>'; }
+var OUT = strip('<button class="strip-btn" aria-expanded="false">Sign in ' + ARROW + '</button>');
+var OPEN = strip('<span class="tag">Signing in</span>');
+function panel(right) {
+  return '<div class="panel" role="region" aria-label="Sign in"><div class="wrap"><div class="panel-in">' +
+    '<div><h3>Open the <em>vault.</em></h3><p class="sub">Members sign in with a one-time link sent by email. No password to remember.</p></div>' +
+    '<div>' + right + '</div></div><button class="close" aria-label="Close">&times;</button></div></div>';
+}
+function form(value, note, o) {
+  o = o || {};
+  return '<label class="lab" for="e">Email address</label><div class="row"><input id="e" type="email" placeholder="you@example.com" value="' + (value || '') + '"' + (o.bad ? ' class="bad" aria-invalid="true"' : '') + '>' +
+    '<button class="go"' + (o.off ? ' disabled' : '') + '>' + (o.label || 'Email me a link') + '</button></div>' + (note || '');
+}
+
+renderBoard({
+  dir: 'V2-02 sign-in / Direction B',
+  title: 'Vault strip',
+  intro: 'A thin ink strip sits above the yellow band and owns everything about the account. "Sign in" unrolls it into a full-width ink panel that pushes the page down, with a big heading in the app\'s hero voice. Search and sort are never touched, on any screen size.'
+}, [
+  { title: 'Signed out', note: 'Strip above the band; header row unchanged.', h: 360, hm: 400, before: OUT },
+  { title: 'Email entry', note: 'Panel unrolls above the band and pushes the page down.', h: 520, hm: 640, before: OPEN + panel(form('')) },
+  { title: 'Sent', note: 'Same wording for every address, invited or not.', h: 520, hm: 640,
+    before: OPEN + panel('<div class="done"><span class="tick">' + TICK + '</span><div><p>If this address is invited, a sign-in link is on its way. Open it in this browser.</p><button>Use a different address</button></div></div>') },
+  { title: 'Error: bad address', note: 'Red ring on the field, message under it.', h: 540, hm: 680,
+    before: OPEN + panel(form('lego fan@gmail', '<p class="note" id="err"><span class="chip">Check</span>That does not look like an email address.</p>', { bad: true })) },
+  { title: 'Error: rate limit', note: 'Button disabled until the hour is up.', h: 540, hm: 680,
+    before: OPEN + panel(form(LONG, '<p class="note"><span class="chip y">Wait</span>Too many requests. Try again in an hour.</p>', { off: true, label: 'Try later' })) },
+  { title: 'Error: network failure', note: 'Address kept; the button becomes Try again.', h: 540, hm: 680,
+    before: OPEN + panel(form(LONG, '<p class="note"><span class="chip">Offline</span>Could not reach the server. Check your connection.</p>', { label: 'Try again' })) },
+  { title: 'Error: expired link', note: 'The strip itself turns red after a bad link; the button unrolls the panel.', h: 380, hm: 440,
+    before: '<div class="strip alert" role="alert"><div class="wrap strip-row"><span class="msg">That sign-in link has expired. Ask for a new one.</span><button class="ask">Send a new link</button></div></div>' },
+  { title: 'Signed in', note: 'Email in the strip, cut with an ellipsis, then Sign out.', h: 360, hm: 400,
+    before: strip('<span class="as" title="' + LONG + '">Signed in as <b>' + LONG + '</b></span><button class="strip-btn">Sign out</button>') }
+]);
+</script>
+</body>
+</html>
