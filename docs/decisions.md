@@ -66,3 +66,4 @@
 - 2026-11-05 — V2-02 sign-in is link only, PKCE, until custom SMTP exists. Code entry through `verifyOtp` waits for SMTP, since built-in mail templates cannot carry `{{ .Token }}`. A link opened in another browser shows "open it in the same browser". Default; owner can change.
 - 2026-11-05 — The Supabase URL and anon key reach the build as GitHub repo variables `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY`, not secrets. Reason: the anon key ships in the bundle by design; RLS protects the data. Without them the site builds with sign-in hidden.
 - 2026-11-05 — Owner picked sign-in direction A (pocket popover, mockups/V2-02/a.html).
+- 2026-11-05 — Owner picked V2-03 direction A (twin chips, mockups/V2-03/a.html).

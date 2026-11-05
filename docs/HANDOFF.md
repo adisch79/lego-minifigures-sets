@@ -8,7 +8,7 @@
 - **Context-cost hook:** built, registered, 9 of 9 acceptance cases pass (2026-11-03); fired live at 171k context (2026-11-04). Cost measurements: [context-cost.md](context-cost.md).
 
 ## Next step
-**V2-03 mark owned / wanted** (UI: 3 mockups first), branch from `dev`. Project is `minifigures-app`; the second project in the org is not this app.
+**V2-03 mark owned / wanted** on `feature/V2-03-marks`. Owner picked direction A, twin chips (`mockups/V2-03/a.html`). Next: data layer `app/src/marks.ts`, then the UI. Project is `minifigures-app`; the second project in the org is not this app.
 - After the master release: live sign-in check on the site (pill, link, signed-in chip, sign out). Real Supabase error codes for unlisted addresses are untested; the UI maps them to the same answer.
 - Smoke test: `node scripts/smoke_auth.mjs` sends no mail. `send <email>`, then `verify-link '<link>' <other-email>`: copy the link without opening it. Built-in mail allows 2 per hour and the full run uses both.
 
