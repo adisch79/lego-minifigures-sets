@@ -141,6 +141,59 @@ h1[tabindex]:focus { outline:none; }
 .back-home { display:inline-flex; align-items:center; height:48px; padding:0 22px; border-radius:999px; background:var(--ink); color:var(--lego-yellow); font-size:15px; font-weight:700; text-decoration:none; transition:transform .15s; }
 .back-home:active { transform:scale(.97); }
 
+/* Sign-in, approved V2-02 direction A "Pocket popover" (mockups/V2-02/a.html) */
+.acct { position:relative; flex:none; }
+.acct-wait { display:block; width:104px; height:44px; border-radius:999px; background:rgba(255,255,255,.55); animation:breathe 1.4s ease-in-out infinite; }
+.pill-in { display:inline-flex; align-items:center; gap:8px; height:44px; padding:0 18px 0 14px; border:0; border-radius:999px;
+  background:var(--ink); color:var(--lego-yellow); font:inherit; font-size:14px; font-weight:700; cursor:pointer; transition:transform .15s, box-shadow .2s; }
+.pill-in:active, .me:active { transform:scale(.97); }
+.pill-in.open { box-shadow:0 0 0 3px var(--white), 0 0 0 5px var(--ink); }
+.me { display:inline-flex; align-items:center; gap:10px; height:44px; max-width:240px; padding:0 14px 0 5px; border-radius:999px; background:var(--white);
+  border:2px solid transparent; font:inherit; font-size:14px; font-weight:700; color:var(--ink); cursor:pointer; transition:transform .15s, border-color .2s; }
+.me:hover, .me.open { border-color:var(--ink); }
+.av { flex:none; width:34px; height:34px; border-radius:50%; background:var(--lego-red); color:var(--lego-yellow); display:grid; place-items:center; font-size:15px; font-weight:800; }
+.me .addr { min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.me .chev { flex:none; }
+
+.pop { position:absolute; right:0; top:calc(100% + 14px); z-index:20; width:372px; background:var(--white); border-radius:20px; padding:22px; text-align:left;
+  box-shadow:0 28px 60px -20px rgba(0,0,0,.45), 0 0 0 1px rgba(0,0,0,.05); animation:drop .35s var(--ease) both; }
+.pop::before { content:""; position:absolute; right:30px; top:-7px; width:16px; height:16px; background:var(--white); transform:rotate(45deg); border-radius:3px; }
+.pop-me::before { right:22px; }
+.pop h3 { font-size:22px; font-weight:800; letter-spacing:-.03em; margin:0 0 6px; }
+.pop h3:focus { outline:none; }
+.pop .sub { font-size:14px; line-height:1.45; color:var(--grey-500); margin:0 0 16px; }
+.pop label.f { display:block; font-size:12px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; margin:0 0 6px; }
+.pop input[type=email] { width:100%; font:inherit; font-size:15px; height:46px; border-radius:999px; border:2px solid var(--grey-100); background:var(--grey-50); padding:0 18px; color:var(--ink); transition:border-color .2s, background .2s; }
+.pop input[type=email]:focus { outline:none; border-color:var(--ink); background:var(--white); }
+.pop input.bad, .pop input.bad:focus { border-color:var(--lego-red); background:#FFF5F5; }
+.send { margin-top:12px; width:100%; height:46px; border:0; border-radius:999px; background:var(--lego-red); color:var(--white); font:inherit; font-size:15px; font-weight:800; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; transition:transform .15s, background .2s; }
+.send:active { transform:scale(.98); }
+.send[disabled] { background:var(--grey-100); color:var(--grey-500); cursor:not-allowed; transform:none; }
+.msg { display:flex; gap:10px; align-items:flex-start; margin:10px 0 0; font-size:13.5px; line-height:1.45; font-weight:600; color:#B3000E; }
+.msg svg { flex:none; margin-top:1px; }
+.callout { display:flex; gap:12px; align-items:flex-start; padding:14px; border-radius:14px; background:var(--grey-50); font-size:14px; line-height:1.45; margin-bottom:14px; animation:drop .35s var(--ease) both; }
+.callout b { display:block; font-weight:800; }
+.callout .dot { flex:none; width:32px; height:32px; border-radius:50%; display:grid; place-items:center; background:var(--ink); color:var(--lego-yellow); }
+.callout.red .dot { background:var(--lego-red); color:var(--white); }
+.sent .env { width:56px; height:56px; border-radius:16px; background:var(--lego-yellow); color:var(--ink); display:grid; place-items:center; margin-bottom:14px; animation:stamp .6s var(--ease) both; }
+.sent p { font-size:15px; line-height:1.5; margin:0 0 16px; font-weight:500; }
+.linkish { background:none; border:0; padding:0; font:inherit; font-size:14px; font-weight:700; color:var(--ink); text-decoration:underline; text-underline-offset:3px; cursor:pointer; }
+.who { font-size:12px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--grey-500); margin:0 0 4px; }
+.full { font-size:16px; font-weight:800; overflow-wrap:anywhere; margin:0 0 16px; }
+.out { width:100%; height:44px; border-radius:999px; border:2px solid var(--ink); background:var(--white); color:var(--ink); font:inherit; font-size:14px; font-weight:800; cursor:pointer; transition:background .2s, color .2s; }
+.out:hover { background:var(--ink); color:var(--lego-yellow); }
+
+/* Link error: a full-bleed red strip directly under the header row (the band clips the x overflow) */
+.linkbar { margin:0 calc(50% - 50vw); background:var(--lego-red); color:var(--white); animation:drop .35s var(--ease) both; }
+.linkbar .wrap { display:flex; align-items:center; gap:14px; min-height:56px; font-size:15px; font-weight:700; }
+.linkbar .wrap span { flex:1; }
+.linkbar button { flex:none; height:36px; padding:0 16px; border-radius:999px; border:0; background:var(--white); color:var(--ink); font:inherit; font-size:13.5px; font-weight:800; cursor:pointer; }
+.linkbar .x { background:transparent; color:var(--white); width:36px; padding:0; font-size:20px; }
+.linkbar :focus-visible { outline-color:var(--white); }
+
+@keyframes drop { from { opacity:0; transform:translateY(-8px) scale(.98); } }
+@keyframes stamp { from { opacity:0; transform:scale(.4) rotate(-12deg); } }
+
 @keyframes rise { from { opacity:0; transform:translateY(20px); } }
 @keyframes breathe { 50% { background:var(--grey-100); } }
 @keyframes pop { from { opacity:0; transform:translate(-100px,40px) rotate(-30deg) scale(.4); } }
@@ -177,6 +230,24 @@ h1[tabindex]:focus { outline:none; }
   .fig-no { top:8px; left:8px; min-width:36px; height:36px; font-size:19px; }
   .fig h3 { font-size:13.5px; margin:10px 2px 2px; }
   .wrap-pad { padding-top:28px; padding-bottom:64px; }
+  /* Sign-in: the pill becomes a 44px key button on the brand row; the popover spans the screen */
+  .band-top { position:relative; }
+  .band-top > .acct { order:1; margin-left:auto; position:static; }
+  .band-top > .controls { order:2; }
+  .back + .acct { margin-left:0; }
+  /* With the account button on the brand row, the back link shrinks to a 44px arrow */
+  .back:has(+ .acct) { width:44px; height:44px; padding:0; justify-content:center; font-size:18px; }
+  .back:has(+ .acct) .back-t { position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; }
+  .pill-in { width:44px; padding:0; justify-content:center; }
+  .pill-in .t { position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; }
+  .me { width:44px; padding:0 3px; }
+  .me .addr, .me .chev { display:none; }
+  .acct-wait { width:44px; }
+  .pop { left:-6px; right:-6px; width:auto; top:70px; }
+  .pop::before, .pop-me::before { right:20px; }
+  .pop input[type=email] { font-size:16px; }
+  .linkbar .wrap { flex-wrap:wrap; gap:8px 12px; padding-top:12px; padding-bottom:12px; font-size:14px; }
+  .linkbar .wrap span { flex-basis:calc(100% - 50px); }
 }
 @media (prefers-reduced-motion:reduce) {
   *, *::before, *::after { animation:none !important; transition:none !important; }
