@@ -1,19 +1,20 @@
 # HANDOFF
 
-## Current state (updated 2026-11-04)
-- **Live:** MVP 1 at https://adisch79.github.io/lego-minifigures-sets/ (release PR #16). 14 of 23 stories done ([backlog](backlog.md)).
+## Current state (updated 2026-11-05)
+- **Live:** MVP 1 at https://adisch79.github.io/lego-minifigures-sets/ (release PR #16). 16 of 23 stories done (V2-01, V2-02 on dev only) ([backlog](backlog.md)).
 - **V1-07 card redesign:** owner signed off 2026-11-04; review and QA passed; released: PR #18 into dev, PR #19 into master, deploy success, live card verified 2026-11-03. Cards in `app/public/cards/`, built by `scripts/build_cards.py`; group images in `mockups/assets/group/` (SOURCES.md).
 - **V2-01:** PR #17 merged into dev (2026-11-02). Migration applied to the live project by the owner in the SQL Editor (2026-11-04, "Success. No rows returned"). First admin created. Signups switched off in the dashboard. `node scripts/smoke_auth.mjs`: all 9 checks pass (2026-11-04). Live sign-in smoke test passes 5 of 5 (2026-11-04). V2-01 done: smoke script reviewed, QA passed, PR #20 into dev.
+- **V2-02 sign-in:** PR #21 merged into dev as `b84c942` (2026-11-05). Link only, PKCE; direction A pill and popover (`mockups/V2-02/a.html`, owner pick). Code review, security review and QA passed; vitest 107. Repo variables `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` set. Not yet live: needs the master release.
 - **Context-cost hook:** built, registered, 9 of 9 acceptance cases pass (2026-11-03); fired live at 171k context (2026-11-04). Cost measurements: [context-cost.md](context-cost.md).
 
 ## Next step
-This checkout is `feature/V2-01-smoke`, one docs commit ahead of `dev` (PR #20 merged as `a8e8783`). Branch V2-02 from here so the commit carries over.
-**V2-02 invite-only sign-in**, from `dev`. Project is `minifigures-app`; the second project in the org is not this app.
-- **Resolve first:** `docs/design/V2-01-schema.md` plans code entry through `verifyOtp`, which needs `{{ .Token }}` in the template, so it needs custom SMTP. Without SMTP, sign-in is link only (owner, 2026-11-04: the email has a link and no code; templates cannot be edited).
+**V2-03 mark owned / wanted** (UI: 3 mockups first), branch from `dev`. Project is `minifigures-app`; the second project in the org is not this app.
+- After the master release: live sign-in check on the site (pill, link, signed-in chip, sign out). Real Supabase error codes for unlisted addresses are untested; the UI maps them to the same answer.
 - Smoke test: `node scripts/smoke_auth.mjs` sends no mail. `send <email>`, then `verify-link '<link>' <other-email>`: copy the link without opening it. Built-in mail allows 2 per hour and the full run uses both.
 
 ## Owner-needed
-- Merge to master: owner only. Dev is ahead of master by scripts and docs only, so no site change waits on it.
+- Merge to master: owner only. Dev now carries V2-02 sign-in, a site change.
+- Check Supabase Authentication > URL Configuration: Site URL and redirect list exactly `https://adisch79.github.io/lego-minifigures-sets/`, no wildcard (security review 2026-11-05).
 - MVP 2: custom SMTP account before anyone but the owner can sign in.
 - Supabase keys are in `.env` (2026-10-31); a database password or access token may also be needed for migrations. Telegram bot token and chat id: repo-root `.env` and a NAS copy. Key names unverified: a deny rule blocks reading `.env`.
 
