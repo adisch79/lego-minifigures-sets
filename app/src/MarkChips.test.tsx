@@ -15,7 +15,10 @@ function builder(op: string, args: unknown[]) {
     calls.push({ op: 'eq', args: a })
     return b
   }
-  b.then = (res: (v: unknown) => unknown) => Promise.resolve(results[op] ?? { data: [], error: null }).then(res)
+  b.select = () => b
+  // An update must return the touched row, or setMark treats it as a failed save.
+  const dflt = op === 'update' ? { data: [{}], error: null } : { data: [], error: null }
+  b.then = (res: (v: unknown) => unknown) => Promise.resolve(results[op] ?? dflt).then(res)
   return b
 }
 

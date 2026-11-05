@@ -3,7 +3,7 @@
 // production build, so DEMO is false there and none of this runs or reaches the bundle's logic.
 import { useCallback, useRef, useState } from 'react'
 import type { AuthState } from './auth'
-import { markKey, type MarkKey, type MarkKind, type MarkMap, type MarkState, type UseMarks } from './marks'
+import { markKey, without, type MarkKey, type MarkKind, type MarkMap, type MarkState, type UseMarks } from './marks'
 
 export const DEMO: boolean =
   import.meta.env.DEV && typeof window !== 'undefined' && new URLSearchParams(window.location.search).has('demo')
@@ -29,11 +29,6 @@ const DELAY_MS = 900
 // Saving a mark on this figure always fails, so the rollback and Retry states can be seen.
 const FAILING: MarkKey = 'figure:71048-4'
 
-function without<T>(s: Set<T>, v: T): Set<T> {
-  const n = new Set(s)
-  n.delete(v)
-  return n
-}
 
 /** Same contract as useMarks, kept in memory. */
 export function useDemoMarks(): UseMarks {
