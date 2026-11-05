@@ -34,6 +34,9 @@ jobs:
       - run: npm run lint
       - run: npm test
       - run: npm run build
+        env:
+          VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ vars.VITE_SUPABASE_ANON_KEY }}
 
   # Live switch: a push to master publishes app/dist. Replaces the v1 pages.yml deploy of site/.
   deploy:
@@ -59,6 +62,9 @@ jobs:
       # prebuild copies site/img into the app; fail if the build ships without figure images.
       - run: npm ci && npm run build && test -f dist/img/71019/71019-1.webp
         working-directory: app
+        env:
+          VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ vars.VITE_SUPABASE_ANON_KEY }}
       - uses: actions/configure-pages@983d7736d9b0ae728b81ab479565c72886d7745b # v5.0.0
       - uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa # v3.0.1
         with:
