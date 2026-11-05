@@ -1,7 +1,10 @@
-// Series page from approved mockup D (mockups/d/series.html), without the sign-in features of MVP 2.
+// Series page from approved mockup D (mockups/d/series.html); sign-in control from V2-02 direction A;
+// owned / wanted chips and progress from V2-03 direction A (mockups/V2-03/a.html).
+import { AccountControl, LinkErrorStrip } from './Account'
 import { useState } from 'react'
 import type { Figure, Series } from './catalog'
 import { tileArt } from './home'
+import { MarkChips, SeriesHeroMarks, useMark, useMarksUi } from './MarkChips'
 import { figuresInOrder, findSeries, spillFigures, type Load, type SpillFigure } from './series'
 
 // Vite base is './', so this stays correct under a Pages sub-path.
@@ -43,12 +46,16 @@ export function LoadError({ message, onRetry }: { message: string; onRetry: () =
 
 function BandTop() {
   return (
-    <div className="band-top">
-      <Brand href={HOME_HREF} />
-      <a className="back" href={HOME_HREF}>
-        <span aria-hidden="true">&larr;</span> All series
-      </a>
-    </div>
+    <>
+      <div className="band-top">
+        <Brand href={HOME_HREF} />
+        <a className="back" href={HOME_HREF}>
+          <span aria-hidden="true">&larr;</span> <span className="back-t">All series</span>
+        </a>
+        <AccountControl />
+      </div>
+      <LinkErrorStrip />
+    </>
   )
 }
 
@@ -95,8 +102,12 @@ function FigureTile({ figure, index }: { figure: Figure; index: number }) {
   const [failed, setFailed] = useState(false)
   const src = failed ? null : figure.img
   const delay = STAGGER_START_MS + Math.min(index, STAGGER_MAX_TILES) * STAGGER_MS
+  const { active } = useMarksUi()
+  const mark = useMark('figure', figure.id)
+  // The tile tint follows the mark, so a scan of the grid reads without the chips.
+  const cls = mark === 'owned' ? 'fig is-owned' : mark === 'wanted' ? 'fig is-wanted' : 'fig'
   return (
-    <li className="fig" style={{ animationDelay: `${delay}ms` }}>
+    <li className={cls} style={{ animationDelay: `${delay}ms` }}>
       <span className="fig-no" aria-hidden="true">
         {figure.no}
       </span>
@@ -116,6 +127,15 @@ function FigureTile({ figure, index }: { figure: Figure; index: number }) {
         <span className="sr">Figure {figure.no}: </span>
         {figure.name}
       </h3>
+      {active && (
+        <MarkChips
+          kind="figure"
+          id={figure.id}
+          group={`Mark ${figure.name}`}
+          labels={{ owned: 'Owned', wanted: 'Want' }}
+          className="mk"
+        />
+      )}
     </li>
   )
 }
@@ -145,6 +165,7 @@ function SeriesView({ series }: { series: Series }) {
                 <span className="fact">{series.year}</span>
                 <span className="fact">{series.figureCount} to collect</span>
               </div>
+              <SeriesHeroMarks series={series} />
             </div>
           </section>
         </div>

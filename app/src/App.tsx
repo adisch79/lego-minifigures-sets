@@ -20,6 +20,9 @@ import {
   type SortMode,
 } from './home'
 import { findSeries, parseRoute, type Load } from './series'
+import { AccountControl, AccountProvider, LinkErrorStrip, useAccount } from './Account'
+import { filterSeries, type SeriesFilter } from './marks'
+import { FilterBar, HeartOutlineIcon, MarksProvider, TileBadge, TileProgress, TrophyIcon, useMarksUi } from './MarkChips'
 import SeriesPage, { Brand, LoadError } from './SeriesPage'
 
 // Vite base is './', so this stays correct under a Pages sub-path.
@@ -56,15 +59,14 @@ function Tile({ series, index, query }: { series: Series; index: number; query: 
           <span className="num">
             No. {series.id} &middot; {series.year}
           </span>
-          <span className="count-badge">
-            {figures}
-          </span>
+          <TileBadge series={series} figures={figures} />
         </div>
         <h2>
           <a href={href} tabIndex={-1}>
             {series.name}
           </a>
         </h2>
+        <TileProgress series={series} />
         {hits.length > 0 && <p className="hit">Includes {hits.join(', ')}</p>}
       </div>
     </li>
@@ -93,24 +95,101 @@ function Stats({ series }: { series: Series[] }) {
   )
 }
 
+/** Right side of the section rule: what the signed-out or failed-marks visitor can do. */
+function RuleHint() {
+  const { auth, openSignIn } = useAccount()
+  const { active, status } = useMarksUi()
+  if (auth.status === 'signed-out') {
+    return (
+      <span className="hint">
+        <button type="button" className="linkish" onClick={openSignIn}>
+          Sign in
+        </button>{' '}
+        to track what you own
+      </span>
+    )
+  }
+  if (active && status === 'error') {
+    return (
+      <span className="hint hint-bad" role="alert">
+        Your marks could not be loaded.{' '}
+        <button type="button" className="linkish" onClick={() => window.location.reload()}>
+          Reload
+        </button>
+      </span>
+    )
+  }
+  return null
+}
+
+/** Empty grid after a filter: say how to fill it, offer the way back. */
+function FilterEmpty({ filter, query, onAll }: { filter: SeriesFilter; query: string; onAll: () => void }) {
+  const wanted = filter === 'wanted'
+  return (
+    <li className="empty">
+      <div className={wanted ? 'em-ico' : 'em-ico em-win'} aria-hidden="true">
+        {wanted ? <HeartOutlineIcon size={30} /> : <TrophyIcon />}
+      </div>
+      <strong>
+        {query
+          ? `No ${wanted ? 'wanted' : 'missing'} series match "${query}"`
+          : wanted
+            ? 'Your wanted list is empty'
+            : 'Nothing missing'}
+      </strong>
+      <p>
+        {wanted ? (
+          <>
+            Tap <b>Want</b> under any figure and its series shows up here.
+          </>
+        ) : (
+          'You own every figure of every series shown. A complete vault.'
+        )}
+      </p>
+      <button type="button" className="again" onClick={onAll}>
+        Show all series
+      </button>
+    </li>
+  )
+}
+
 function Home({
   load,
   state,
   setState,
+  filter: chosenFilter,
+  setFilter,
   onRetry,
 }: {
   load: Load
   state: HomeState
   setState: Dispatch<SetStateAction<HomeState>>
+  filter: SeriesFilter
+  setFilter: (f: SeriesFilter) => void
   onRetry: () => void
 }) {
-  const visible = useMemo(
+  const { marks, ready } = useMarksUi()
+  // Filters need loaded marks; without them every series is shown.
+  const filter: SeriesFilter = ready ? chosenFilter : 'all'
+
+  const searched = useMemo(
     () =>
       load.status === 'ready'
         ? sortSeries(searchSeries(load.series, state.q), state.sort)
         : [],
     [load, state.q, state.sort],
   )
+
+  const counts = useMemo(
+    () => ({
+      all: searched.length,
+      wanted: ready ? filterSeries(searched, marks, 'wanted').length : 0,
+      missing: ready ? filterSeries(searched, marks, 'missing').length : 0,
+    }),
+    [searched, marks, ready],
+  )
+
+  const visible = useMemo(() => filterSeries(searched, marks, filter), [searched, marks, filter])
 
   const query = state.q.trim()
 
@@ -159,7 +238,9 @@ function Home({
                 </select>
               </label>
             </div>
+            <AccountControl />
           </div>
+          <LinkErrorStrip />
           <div className="band-hero">
             <h1 className="big">
               Every series.
@@ -180,8 +261,11 @@ function Home({
       </header>
 
       <main className="wrap">
-        <div className="rule" aria-live="polite">
-          <span>
+        <div className={ready && load.status === 'ready' ? 'rule rule-f' : 'rule'}>
+          {ready && load.status === 'ready' && (
+            <FilterBar value={filter} counts={counts} onChange={setFilter} />
+          )}
+          <span aria-live="polite">
             {load.status === 'ready' && (
               <>
                 <b>{visible.length}</b> of {load.series.length} series
@@ -189,6 +273,7 @@ function Home({
             )}
             {load.status === 'loading' && 'Loading series'}
           </span>
+          {!ready && <RuleHint />}
         </div>
 
         {load.status === 'error' && <LoadError message={load.message} onRetry={onRetry} />}
@@ -207,7 +292,9 @@ function Home({
 
         {load.status === 'ready' && (
           <ul className="grid">
-            {visible.length === 0 && !query.trim() ? (
+            {visible.length === 0 && filter !== 'all' ? (
+              <FilterEmpty filter={filter} query={query} onAll={() => setFilter('all')} />
+            ) : visible.length === 0 && !query.trim() ? (
               <li className="empty">
                 <strong>No series in the catalog</strong>
               </li>
@@ -238,6 +325,8 @@ export default function App() {
   const [attempt, setAttempt] = useState(0)
   const [state, setState] = useState<HomeState>(() => readState(window.location.search))
   const [route, setRoute] = useState(() => parseRoute(window.location.hash))
+  // Kept here, not in Home, so the filter survives a visit to a series page.
+  const [filter, setFilter] = useState<SeriesFilter>('all')
   const seriesId = route.page === 'series' ? route.id : null
 
   // Last committed route, and how far down home was when it was left.
@@ -315,9 +404,22 @@ export default function App() {
     setAttempt((n) => n + 1)
   }
 
-  return seriesId !== null ? (
-    <SeriesPage id={seriesId} load={load} onRetry={retry} />
-  ) : (
-    <Home load={load} state={state} setState={setState} onRetry={retry} />
+  return (
+    <AccountProvider>
+      <MarksProvider>
+        {seriesId !== null ? (
+          <SeriesPage id={seriesId} load={load} onRetry={retry} />
+        ) : (
+          <Home
+            load={load}
+            state={state}
+            setState={setState}
+            filter={filter}
+            setFilter={setFilter}
+            onRetry={retry}
+          />
+        )}
+      </MarksProvider>
+    </AccountProvider>
   )
 }
