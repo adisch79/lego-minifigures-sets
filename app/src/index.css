@@ -252,3 +252,92 @@ h1[tabindex]:focus { outline:none; }
 @media (prefers-reduced-motion:reduce) {
   *, *::before, *::after { animation:none !important; transition:none !important; }
 }
+
+/* V2-03 owned / wanted, approved direction A "Twin chips" (mockups/V2-03/a.html) */
+
+/* Figure chips: two plain toggles under every figure */
+.mk { display:flex; gap:6px; margin-top:auto; padding-top:6px; }
+.chip { flex:1; min-width:0; display:inline-flex; align-items:center; justify-content:center; gap:6px; height:38px; padding:0 8px; border-radius:999px;
+  border:2px solid var(--grey-100); background:var(--white); color:var(--ink); font:inherit; font-size:13px; font-weight:800; cursor:pointer;
+  transition:background .2s, border-color .2s, color .2s, transform .15s; }
+.chip > span { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.chip:hover { border-color:var(--ink); }
+.chip:active { transform:scale(.96); }
+.chip:disabled { cursor:wait; opacity:.5; }
+.chip:disabled:hover { border-color:var(--grey-100); }
+.chip svg { flex:none; }
+.chip.own[aria-pressed=true] { background:var(--ink); border-color:var(--ink); color:var(--lego-yellow); animation:snap .35s var(--ease); }
+.chip.want[aria-pressed=true] { background:var(--lego-red); border-color:var(--lego-red); color:var(--white); animation:snap .35s var(--ease); }
+.chip.busy { opacity:.75; cursor:progress; }
+.chip .spin { flex:none; width:13px; height:13px; border-radius:50%; border:2px solid currentColor; border-right-color:transparent; animation:spin .8s linear infinite; }
+.chip.bad { border-color:var(--lego-red); color:#B3000E; background:#FFF5F5; }
+.err { display:flex; align-items:center; gap:6px; margin:6px 2px 0; font-size:12.5px; font-weight:700; color:#B3000E; }
+.err button { margin-left:auto; border:0; background:none; font:inherit; font-weight:800; color:var(--ink); text-decoration:underline; text-underline-offset:3px; cursor:pointer; padding:0; }
+/* Tile tint follows the mark, so a scan of the grid reads without the chips */
+.fig.is-owned { border-color:var(--ink); }
+.fig.is-owned .pic { background:#FFF4B0; }
+.fig.is-wanted .pic { box-shadow:inset 0 0 0 2px var(--lego-red); }
+.pic { transition:background .3s, box-shadow .3s; }
+
+/* Home tiles: progress bar and numbers under the title */
+.prog { display:flex; align-items:center; gap:10px; margin-top:-4px; }
+.prog-wait { height:20px; border-radius:999px; background:var(--grey-50); animation:breathe 1.4s ease-in-out infinite; }
+.bar { flex:1; height:8px; border-radius:999px; background:var(--grey-100); overflow:hidden; }
+.bar i { display:block; height:100%; border-radius:999px; background:var(--ink); transform-origin:left; animation:grow .9s var(--ease) both; transition:width .5s var(--ease); }
+.bar.done i { background:var(--lego-red); }
+.prog b { font-size:14px; font-weight:800; font-variant-numeric:tabular-nums; white-space:nowrap; }
+.prog b span { color:var(--grey-500); font-weight:700; }
+.wantn { font-size:12.5px; font-weight:700; color:#B3000E; margin:8px 0 0; }
+.wantn + .hit { margin-top:6px; }
+.prog + .hit { margin-top:8px; }
+.smark { font-size:12px; font-weight:800; border-radius:999px; padding:4px 10px; white-space:nowrap; display:inline-flex; gap:5px; align-items:center; }
+.smark.owned { background:var(--ink); color:var(--lego-yellow); }
+.smark.wanted { background:var(--lego-red); color:var(--white); }
+
+/* Home filter: a segmented control on the section rule */
+.rule-f { align-items:center; padding-top:28px; }
+.seg { display:inline-flex; padding:4px; gap:2px; background:var(--grey-50); border-radius:999px; border:2px solid var(--grey-100); }
+.seg button { height:36px; padding:0 16px; border:0; border-radius:999px; background:transparent; font:inherit; font-size:14px; font-weight:700; color:var(--grey-500); cursor:pointer; white-space:nowrap; transition:background .2s, color .2s; }
+.seg button:hover { color:var(--ink); }
+.seg button em { font-style:normal; font-variant-numeric:tabular-nums; margin-left:6px; font-size:12px; padding:2px 7px; border-radius:999px; background:var(--grey-100); color:var(--ink); }
+.seg button[aria-pressed=true] { background:var(--ink); color:var(--white); }
+.seg button[aria-pressed=true] em { background:var(--lego-yellow); }
+.hint { font-size:14px; font-weight:600; color:var(--grey-500); }
+.hint-bad { color:#B3000E; }
+.linkish { border:0; background:none; padding:0; font:inherit; font-weight:800; color:var(--ink); text-decoration:underline; text-underline-offset:3px; cursor:pointer; }
+
+/* Series hero: progress plus the series-level mark */
+.sp { margin-top:22px; max-width:440px; }
+.sp-num { display:flex; align-items:baseline; gap:10px; margin-bottom:10px; }
+.sp-num strong { font-size:44px; line-height:1; font-weight:800; letter-spacing:-.04em; font-variant-numeric:tabular-nums; }
+.sp-num strong span { opacity:.4; }
+.sp-num small { font-size:12px; font-weight:800; letter-spacing:.12em; text-transform:uppercase; }
+.sp .bar { height:12px; background:rgba(255,255,255,.7); }
+.sp-wait .bar { animation:breathe 1.4s ease-in-out infinite; }
+.smk { display:flex; align-items:center; gap:10px; margin-top:16px; flex-wrap:wrap; }
+.smk > span { font-size:12px; font-weight:800; letter-spacing:.12em; text-transform:uppercase; }
+.smk .chip { flex:none; height:40px; padding:0 16px; border-color:transparent; }
+.smk .chip:hover { border-color:var(--ink); }
+.sp .note { font-size:12.5px; font-weight:600; opacity:.75; margin:10px 0 0; }
+.sp .err { margin-top:10px; }
+
+/* Empty filter result */
+.empty .em-ico { width:64px; height:64px; margin:0 auto 16px; border-radius:20px; background:var(--white); display:grid; place-items:center; color:var(--lego-red); box-shadow:0 10px 20px -12px rgba(0,0,0,.3); animation:snap .5s var(--ease); }
+.empty .em-win { background:var(--lego-yellow); color:var(--ink); }
+.empty p { margin:0 auto; max-width:42ch; line-height:1.5; }
+
+@keyframes snap { 40% { transform:scale(1.08); } }
+@keyframes spin { to { transform:rotate(360deg); } }
+@keyframes grow { from { transform:scaleX(0); } }
+
+@media (max-width:640px) {
+  .rule-f { flex-direction:column; align-items:stretch; gap:10px; }
+  .seg { width:100%; }
+  .rule-f > span { display:none; }
+  .seg button { flex:1; padding:0 6px; font-size:13px; }
+  .seg button em { margin-left:4px; }
+  .chip { height:40px; font-size:12px; gap:4px; padding:0 4px; }
+  .sp-num strong { font-size:34px; }
+  .smk .chip { flex:1; }
+  .rule:not(.rule-f) { flex-wrap:wrap; gap:6px 12px; }
+}

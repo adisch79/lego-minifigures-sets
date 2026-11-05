@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>V2-03 marks, direction A: Twin chips</title>
+<link rel="stylesheet" href="../../app/src/index.css">
+<link rel="stylesheet" href="../V2-02/board.css">
+<link rel="stylesheet" href="kit.css">
+<style>
+/* Direction A: two explicit toggle chips under every figure (Owned / Want). One tap, no hidden gestures. */
+
+/* Figure chips */
+.mk { display:flex; gap:6px; margin-top:auto; padding-top:6px; }
+.chip { flex:1; min-width:0; display:inline-flex; align-items:center; justify-content:center; gap:6px; height:38px; padding:0 8px; border-radius:999px;
+  border:2px solid var(--grey-100); background:var(--white); color:var(--ink); font:inherit; font-size:13px; font-weight:800; cursor:pointer;
+  transition:background .2s, border-color .2s, color .2s, transform .15s; }
+.chip:hover { border-color:var(--ink); }
+.chip:active { transform:scale(.96); }
+.chip svg { flex:none; }
+.chip.own[aria-pressed=true] { background:var(--ink); border-color:var(--ink); color:var(--lego-yellow); animation:snap .35s var(--ease); }
+.chip.want[aria-pressed=true] { background:var(--lego-red); border-color:var(--lego-red); color:var(--white); animation:snap .35s var(--ease); }
+.chip.busy { opacity:.75; cursor:progress; }
+.chip.busy .spin { width:13px; height:13px; border-radius:50%; border:2px solid currentColor; border-right-color:transparent; animation:spin .8s linear infinite; }
+.chip.bad { border-color:var(--lego-red); color:#B3000E; background:#FFF5F5; }
+.err { display:flex; align-items:center; gap:6px; margin:6px 2px 0; font-size:12.5px; font-weight:700; color:#B3000E; }
+.err button { margin-left:auto; border:0; background:none; font:inherit; font-weight:800; color:var(--ink); text-decoration:underline; text-underline-offset:3px; cursor:pointer; padding:0; }
+/* Tile tint follows the mark, so a scan of the grid reads without the chips */
+.fig.is-owned { border-color:var(--ink); }
+.fig.is-owned .pic { background:#FFF4B0; }
+.fig.is-wanted .pic { box-shadow:inset 0 0 0 2px var(--lego-red); }
+
+/* Home tiles: progress bar and numbers under the title */
+.prog { display:flex; align-items:center; gap:10px; margin-top:-4px; }
+.bar { flex:1; height:8px; border-radius:999px; background:var(--grey-100); overflow:hidden; }
+.bar i { display:block; height:100%; border-radius:999px; background:var(--ink); transform-origin:left; animation:grow .9s var(--ease) both; }
+.bar.done i { background:var(--lego-red); }
+.prog b { font-size:14px; font-weight:800; font-variant-numeric:tabular-nums; white-space:nowrap; }
+.prog b span { color:var(--grey-500); font-weight:700; }
+.wantn { font-size:12.5px; font-weight:700; color:#B3000E; margin:8px 0 0; }
+.smark { font-size:12px; font-weight:800; border-radius:999px; padding:4px 10px; white-space:nowrap; display:inline-flex; gap:5px; align-items:center; }
+.smark.owned { background:var(--ink); color:var(--lego-yellow); }
+.smark.wanted { background:var(--lego-red); color:var(--white); }
+
+/* Home filter: a segmented control on the section rule */
+.rule-f { align-items:center; padding-top:28px; }
+.seg { display:inline-flex; padding:4px; gap:2px; background:var(--grey-50); border-radius:999px; border:2px solid var(--grey-100); }
+.seg button { height:36px; padding:0 16px; border:0; border-radius:999px; background:transparent; font:inherit; font-size:14px; font-weight:700; color:var(--grey-500); cursor:pointer; white-space:nowrap; transition:background .2s, color .2s; }
+.seg button em { font-style:normal; font-variant-numeric:tabular-nums; margin-left:6px; font-size:12px; padding:2px 7px; border-radius:999px; background:var(--grey-100); color:var(--ink); }
+.seg button[aria-pressed=true] { background:var(--ink); color:var(--white); }
+.seg button[aria-pressed=true] em { background:var(--lego-yellow); }
+.hint { font-size:14px; font-weight:600; color:var(--grey-500); }
+.hint a { color:var(--ink); font-weight:800; text-underline-offset:3px; }
+
+/* Series hero: progress plus the series-level mark */
+.sp { margin-top:22px; max-width:440px; }
+.sp-num { display:flex; align-items:baseline; gap:10px; margin-bottom:10px; }
+.sp-num strong { font-size:44px; line-height:1; font-weight:800; letter-spacing:-.04em; font-variant-numeric:tabular-nums; }
+.sp-num strong span { opacity:.4; }
+.sp-num small { font-size:12px; font-weight:800; letter-spacing:.12em; text-transform:uppercase; }
+.sp .bar { height:12px; background:rgba(255,255,255,.7); }
+.smk { display:flex; align-items:center; gap:10px; margin-top:16px; flex-wrap:wrap; }
+.smk > span { font-size:12px; font-weight:800; letter-spacing:.12em; text-transform:uppercase; }
+.smk .chip { flex:none; height:40px; padding:0 16px; border-color:transparent; }
+.smk .note { font-size:12.5px; font-weight:600; opacity:.75; width:100%; }
+
+/* Empty filter result */
+.empty .em-ico { width:64px; height:64px; margin:0 auto 16px; border-radius:20px; background:var(--white); display:grid; place-items:center; color:var(--lego-red); box-shadow:0 10px 20px -12px rgba(0,0,0,.3); }
+.empty p { margin:0 auto; max-width:42ch; line-height:1.5; }
+
+@keyframes snap { 40% { transform:scale(1.08); } }
+@keyframes spin { to { transform:rotate(360deg); } }
+@keyframes grow { from { transform:scaleX(0); } }
+
+@media (max-width:640px) {
+  .rule-f { flex-direction:column; align-items:stretch; gap:10px; }
+  .seg { width:100%; }
+  .rule-f > span { display:none; }
+  .seg button { flex:1; padding:0 6px; font-size:13px; }
+  .seg button em { margin-left:4px; }
+  .chip { height:40px; font-size:12px; gap:4px; padding:0 4px; }
+  .chip .lbl-long { display:none; }
+  .sp-num strong { font-size:34px; }
+  .smk .chip { flex:1; }
+}
+</style>
+</head>
+<body class="board">
+<div id="board"></div>
+<script src="kit.js"></script>
+<script>
+var CHECK = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg>';
+var HEART = '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 21s-7.5-4.6-9.6-9.3C1 8.4 3 4.8 6.6 4.8c2.2 0 3.6 1.2 4.4 2.5.8-1.3 2.2-2.5 4.4-2.5 3.6 0 5.6 3.6 4.2 6.9C19.5 16.4 12 21 12 21Z"/></svg>';
+var HEART_O = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="M12 20s-7-4.3-9-8.7C1.7 8.3 3.6 5 6.8 5c2 0 3.3 1.1 4.2 2.4C11.9 6.1 13.2 5 15.2 5c3.2 0 5.1 3.3 3.8 6.3C17 15.7 12 20 12 20Z"/></svg>';
+var PLUS = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>';
+var WARN = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v6m0 4h.01"/></svg>';
+
+function chips(st) {
+  // saving: the tapped chip (Owned) spins; failed: the Want tap rolled back and is flagged red
+  var own = st === 'owned', want = st === 'wanted';
+  var o = st === 'saving'
+    ? '<button class="chip own busy" aria-pressed="true" aria-busy="true"><i class="spin"></i>Saving</button>'
+    : '<button class="chip own" aria-pressed="' + own + '">' + (own ? CHECK : PLUS) + 'Owned</button>';
+  var w = st === 'failed'
+    ? '<button class="chip want bad" aria-pressed="false">' + WARN + 'Want</button>'
+    : '<button class="chip want" aria-pressed="' + want + '">' + (want ? HEART : HEART_O) + 'Want</button>';
+  return '<div class="mk" role="group" aria-label="Mark this figure">' + o + w + '</div>' +
+    (st === 'failed' ? '<p class="err" role="alert">Not saved<button>Retry</button></p>' : '');
+}
+
+var A = {
+  figClass: function (st) { return st === 'owned' || st === 'saving' ? 'is-owned' : st === 'wanted' ? 'is-wanted' : ''; },
+  figFoot: function (st) { return chips(st); },
+  tileBadge: function (s) {
+    if (s.mark === 'owned') return '<span class="smark owned">' + CHECK + 'Series owned</span>';
+    if (s.mark === 'wanted') return '<span class="smark wanted">' + HEART + 'Series wanted</span>';
+    return '<span class="count-badge">' + s.n + ' figures</span>';
+  },
+  tileMeta: function (s) {
+    var pct = Math.round(s.own / s.n * 100);
+    return '<div class="prog"><div class="bar' + (s.own === s.n ? ' done' : '') + '"><i style="width:' + Math.max(pct, 0) + '%"></i></div><b>' + s.own + '<span>/' + s.n + ' owned</span></b></div>' +
+      (s.want ? '<p class="wantn">' + s.want + ' figures wanted</p>' : '');
+  }
+};
+
+function seg(active) {
+  var items = [['all', 'All', 52], ['wanted', 'My wanted', 3], ['missing', 'Missing', 51]];
+  return '<div class="seg" role="group" aria-label="Filter series">' + items.map(function (it) {
+    return '<button aria-pressed="' + (it[0] === active) + '">' + it[1] + '<em>' + it[2] + '</em></button>';
+  }).join('') + '</div>';
+}
+function rule(active, right) { return '<div class="rule rule-f">' + seg(active) + '<span>' + (right || 'Newest first') + '</span></div>'; }
+
+var heroSigned =
+  '<div class="sp"><div class="sp-num"><strong>7<span>/12</span></strong><small>figures owned</small></div><div class="bar"><i style="width:58%"></i></div>' +
+  '<div class="smk" role="group" aria-label="Mark the whole series"><span>Series</span>' +
+  '<button class="chip own" aria-pressed="false">' + PLUS + 'Own it</button><button class="chip want" aria-pressed="true">' + HEART + 'Want it</button>' +
+  '<p class="note">A series mark is its own badge. It does not tick the figures.</p></div></div>';
+
+K.board({
+  dir: 'V2-03 owned / wanted / Direction A',
+  title: 'Twin chips',
+  intro: 'Every figure gets two plain toggle chips: Owned and Want. One tap sets a mark, a second tap clears it, both can never be on at once. Nothing is hidden behind a gesture, so it is the easiest to learn and the most accessible (real buttons with aria-pressed). Progress is a bar under each home tile and a large count in the series hero; the home filter is a segmented control on the section rule.'
+}, [
+  { title: 'Home, all series', note: 'Progress bar and owned count on every tile; series marks replace the figure-count badge.', h: 1470, hm: 1180,
+    html: K.home(A, { signedIn: true, rule: rule('all') }) },
+  { title: 'Home, filter "My wanted"', note: 'Series with a wanted figure or a wanted series mark.', h: 800, hm: 1180,
+    html: K.home(A, { signedIn: true, rule: rule('wanted'), ids: ['71051', '71049', '71048'] }) },
+  { title: 'Home, filter empty', note: 'No wanted marks yet: say how to add one, offer the way back.', h: 560, hm: 600,
+    html: K.home(A, { signedIn: true, rule: rule('wanted').replace('<em>3</em>', '<em>0</em>'),
+      empty: '<div class="em-ico">' + HEART_O.replace(/14/g, '30') + '</div><strong>Your wanted list is empty</strong><p>Tap <b>Want</b> under any figure and its series shows up here.</p><button class="again">Show all series</button>' }) },
+  { title: 'Series page, signed in', note: 'Hero: 7/12 owned and the series mark. Grid: owned (tinted), wanted (red ring), saving, failed, none.', h: 1640, hm: 1640,
+    html: K.series(A, { signedIn: true, heroExtra: heroSigned }) },
+  { title: 'One figure, every state', note: 'None, owned, wanted, saving (spinner in the tapped chip), save failed (rolled back, red chip, Retry).', h: 400, hm: 940,
+    html: K.states(A, ['None', 'Owned', 'Wanted', 'Saving', 'Save failed']) },
+  { title: 'Signed out, home', note: 'No filter, no progress, no chips. One quiet line on the rule.', h: 760, hm: 760,
+    html: K.home(A, { signedIn: false, rule: '<div class="rule"><span><b>52</b> series</span><span class="hint"><a href="#">Sign in</a> to track what you own</span></div>' }) },
+  { title: 'Signed out, series page', note: 'Figures only, exactly as today.', h: 1120, hm: 1300,
+    html: K.series(A, { signedIn: false }) }
+]);
+</script>
+</body>
+</html>

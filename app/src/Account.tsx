@@ -14,6 +14,7 @@ import {
   type RefObject,
 } from 'react'
 import { requestLink, signOut, useAuth, type AuthState } from './auth'
+import { DEMO, DEMO_AUTH } from './demo'
 
 type AccountUi = {
   auth: AuthState
@@ -28,7 +29,9 @@ const AccountContext = createContext<AccountUi | null>(null)
 
 /** Holds the one auth subscription and the popover state shared by the pill and the strip. */
 export function AccountProvider({ children }: { children: ReactNode }) {
-  const auth = useAuth()
+  const real = useAuth()
+  // Dev-only: ?demo shows a signed-in collector without a session (see ./demo).
+  const auth = DEMO ? DEMO_AUTH : real
   const [open, setOpen] = useState(false)
   const [stripDismissed, setStripDismissed] = useState(false)
   const pillRef = useRef<HTMLButtonElement | null>(null)
@@ -46,6 +49,13 @@ function useAccountUi(): AccountUi {
   const ui = useContext(AccountContext)
   if (!ui) throw new Error('Account components need an AccountProvider')
   return ui
+}
+
+/** Auth state and a way to open the sign-in popover, for pages that react to the session. */
+export function useAccount(): { auth: AuthState; openSignIn: () => void } {
+  const { auth, setOpen } = useAccountUi()
+  const openSignIn = useCallback(() => setOpen(true), [setOpen])
+  return { auth, openSignIn }
 }
 
 function KeyIcon() {

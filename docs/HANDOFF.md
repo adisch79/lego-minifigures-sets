@@ -8,7 +8,8 @@
 - **Context-cost hook:** built, registered, 9 of 9 acceptance cases pass (2026-11-03); fired live at 171k context (2026-11-04). Cost measurements: [context-cost.md](context-cost.md).
 
 ## Next step
-**V2-03 mark owned / wanted** (UI: 3 mockups first), branch from `dev`. Project is `minifigures-app`; the second project in the org is not this app.
+**V2-03 done on `feature/V2-03-marks`, PR into dev** (2026-11-05). Twin chips (direction A) on Home and SeriesPage, filter pills All / My wanted / Missing, per-key save queue, writes scoped to user_id. vitest 138 pass; code review (3 passes), security review, QA pass. Screenshots `mockups/V2-03/build-*.png` (phone shots: `python mockups/V2-03/shoot390.py` with dev server on 5179). Dev-only `?demo` shows a fake signed-in collection. Next: V2-04 per backlog; owner live check of marks after the master release. Project is `minifigures-app`; the second project in the org is not this app.
+- PR #22 (docs) merged into dev as `5ff82a3`.
 - After the master release: live sign-in check on the site (pill, link, signed-in chip, sign out). Real Supabase error codes for unlisted addresses are untested; the UI maps them to the same answer.
 - Smoke test: `node scripts/smoke_auth.mjs` sends no mail. `send <email>`, then `verify-link '<link>' <other-email>`: copy the link without opening it. Built-in mail allows 2 per hour and the full run uses both.
 

@@ -55,7 +55,7 @@ Legend: **UI** = needs approved direction first. **Owner** = needs something onl
 |---|---|---|---|---|---|---|
 | V2-01 | Supabase project + schema | Tables: allowlist, profiles, marks (user, figure_id or series_id, owned/wanted); RLS: users see/write only their own marks; migrations in repo | M | opus design + security review | Owner (create free Supabase account) | Done: migration live, sign-in smoke test 5 of 5 (2026-11-04) |
 | V2-02 | Invite-only sign-in | Email magic link; addresses not on the allowlist are refused; sign-out | M | sonnet | | Done |
-| V2-03 | Mark owned / wanted | Per figure and per whole series; progress (e.g. 12/20 owned); filter "my wanted" / "missing" | M | sonnet + senior-frontend-dev | UI | Ready |
+| V2-03 | Mark owned / wanted | Per figure and per whole series; progress (e.g. 12/20 owned); filter "my wanted" / "missing" | M | sonnet + senior-frontend-dev | UI | Done (PR into dev) |
 | V2-04 | Telegram alert on wanted | New wanted mark → one Telegram message (who, what, link) within 1 min; repeat clicks not re-sent; token only in Supabase secrets | S | sonnet + security review | Owner (bot token) | Ready |
 | V2-05 | Admin page | Owner manages the allowlist and sees all wanted items | S | sonnet | UI | Ready |
 
