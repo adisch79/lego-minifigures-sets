@@ -8,9 +8,9 @@
 - **Context-cost hook:** built, registered, 9 of 9 acceptance cases pass (2026-11-03); fired live at 171k context (2026-11-04). Cost measurements: [context-cost.md](context-cost.md).
 
 ## Next step
-**Released 2026-11-06:** PR #24 dev into master (`3b37a30`), deploy success, live site loads with the Sign in pill and 52 series, no console errors. V2-02 sign-in and V2-03 owned/wanted marks are live. Owner confirmed Supabase Site URL. Next owner step: live sign-in and mark test on the site. Next story: V2-04 Telegram alert (needs the bot token as a Supabase secret). Project is `minifigures-app`; the second project in the org is not this app.
+**Released 2026-11-06:** PR #24 dev into master (`3b37a30`), deploy success, live site loads with the Sign in pill and 52 series, no console errors. V2-02 sign-in and V2-03 owned/wanted marks are live. Owner confirmed Supabase Site URL. Owner live test passed 2026-11-06: sign-in by link, Owned and Want marks, marks kept after reload. Next story: V2-04 Telegram alert (needs the bot token as a Supabase secret). Project is `minifigures-app`; the second project in the org is not this app.
 - PR #22 (docs) merged into dev as `5ff82a3`.
-- After the master release: live sign-in check on the site (pill, link, signed-in chip, sign out). Real Supabase error codes for unlisted addresses are untested; the UI maps them to the same answer.
+- Real Supabase error codes for unlisted addresses are untested; the UI maps them to the same answer.
 - Smoke test: `node scripts/smoke_auth.mjs` sends no mail. `send <email>`, then `verify-link '<link>' <other-email>`: copy the link without opening it. Built-in mail allows 2 per hour and the full run uses both.
 
 ## Owner-needed
