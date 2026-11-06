@@ -45,6 +45,13 @@ describe('parseRoute', () => {
     expect(parseRoute('#series/')).toEqual({ page: 'series', id: '' })
   })
 
+  it('reads the admin route', () => {
+    expect(parseRoute('#admin')).toEqual({ page: 'admin' })
+    expect(parseRoute('#admin/')).toEqual({ page: 'admin' })
+    expect(parseRoute('#administrator')).toEqual({ page: 'home' })
+    expect(parseRoute('#series/admin')).toEqual({ page: 'series', id: 'admin' })
+  })
+
   it('sends any other hash home', () => {
     expect(parseRoute('#about')).toEqual({ page: 'home' })
     expect(parseRoute('#seriesfoo/71019')).toEqual({ page: 'home' })

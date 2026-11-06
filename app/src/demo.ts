@@ -8,7 +8,14 @@ import { markKey, without, type MarkKey, type MarkKind, type MarkMap, type MarkS
 export const DEMO: boolean =
   import.meta.env.DEV && typeof window !== 'undefined' && new URLSearchParams(window.location.search).has('demo')
 
-export const DEMO_AUTH: AuthState = { status: 'signed-in', email: 'minifig.collector.longname@example.com' }
+// ?demo=admin signs the demo in as the owner and serves the admin page from ./adminDemo (story V2-05).
+// ?demo=admin&allow also opens the allowlist panel on load, for screenshots.
+export const DEMO_ADMIN: boolean = DEMO && new URLSearchParams(window.location.search).get('demo') === 'admin'
+
+export const DEMO_AUTH: AuthState = {
+  status: 'signed-in',
+  email: DEMO_ADMIN ? 'owner@example.com' : 'minifig.collector.longname@example.com',
+}
 
 // Invented marks over real catalog ids, matching the approved mockup (mockups/V2-03/kit.js).
 const SEED: [MarkKind, string, MarkState][] = [
