@@ -37,6 +37,9 @@ Message: `<display name or "user <8 chars of id>"> wants <figure|series> <id>` p
 
    Both extensions must be listed. On Supabase hosted the second query returns true, true: the `net` grants are made by `supabase_admin`, so the revoke in the migration (run as `postgres`) cannot remove them (checked live 2026-11-06). That is accepted because `net` is not an exposed schema. The real check is Project Settings > Data API > Exposed schemas: only `public` and `graphql_public`, never `net`. The revoke in the migration and `supabase/scripts/revoke_net_access.sql` still apply where `postgres` made the grants (local or self-hosted).
 
+## Troubleshooting
+No message: in the SQL editor read `public.wanted_alerts` (row, `sent_at`) and `net._http_response` (status). 401 means Vault `alert_hook_secret` differs from function secret `ALERT_HOOK_SECRET`: compare `encode(sha256(convert_to(decrypted_secret,'UTF8')),'hex')` with the digest from `npx supabase secrets list`. 502 means Telegram refused (chat id, or the bot was never messaged). 404 means a wrong `alert_hook_url`.
+
 ## Known limits
 - Accepted narrow race: call 1 claims, call 2 sees the claim and answers 200, call 1 then fails and releases. The alert stays unsent until the next re-mark.
 - At-least-once delivery: if Telegram delivers but the response is lost or times out (8 s), the claim is released and a re-mark sends a duplicate.
