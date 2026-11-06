@@ -50,3 +50,9 @@ test('secretsMatch', async () => {
   assert.equal(await secretsMatch(null, 'abc'), false);
   assert.equal(await secretsMatch('', ''), false);
 });
+
+test('who: bidi and zero-width chars are stripped', () => {
+  assert.equal(whoLabel('A\u202eB\u200bC\u2066D\u2069E\ufeffF\u200f', U), 'ABCDEF');
+  assert.equal(whoLabel('\u202e\u200b', U), 'user 12345678');
+  assert.ok(!buildMessage('Eve\u202e', { user_id: U, kind: 'series', target_id: '71053' }).includes('\u202e'));
+});

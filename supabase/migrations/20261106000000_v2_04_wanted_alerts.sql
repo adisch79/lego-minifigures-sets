@@ -85,7 +85,10 @@ begin
   end if;
   insert into public.wanted_alerts (user_id, kind, target_id)
   values (new.user_id, new.kind, new.target_id)
-  on conflict do nothing;
+  on conflict (user_id, kind, target_id) do update
+    set created_at = public.wanted_alerts.created_at
+    where public.wanted_alerts.sent_at is null;
+  -- row_count is 1 for a new row or an unsent row (retry); 0 for an already sent row.
   get diagnostics inserted = row_count;
   if inserted = 1 then
     perform private.dispatch_wanted_alert(new.user_id, new.kind, new.target_id);
@@ -106,3 +109,14 @@ create trigger marks_wanted_alert_update
   after update of state on public.marks
   for each row when (new.state = 'wanted' and old.state is distinct from new.state)
   execute function private.on_wanted_mark();
+
+-- Clients must not reach pg_net (it could call arbitrary URLs from the database).
+-- Guarded: the net schema is absent in the local test db.
+do $$
+begin
+  if exists (select 1 from pg_namespace where nspname = 'net') then
+    revoke usage on schema net from anon, authenticated;
+    revoke execute on all functions in schema net from anon, authenticated;
+  end if;
+end;
+$$;

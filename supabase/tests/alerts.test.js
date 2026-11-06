@@ -57,6 +57,7 @@ test('owned -> wanted on update alerts; wanted -> owned -> wanted does not repea
   await mark(A, 'series', '71053', 'owned');
   await q("update public.marks set state='wanted' where user_id=$1", [A]);
   assert.equal((await sent()).length, 1);
+  await q('update public.wanted_alerts set sent_at = now()'); // function claimed and sent it
   await q("update public.marks set state='owned' where user_id=$1", [A]);
   await q("update public.marks set state='wanted' where user_id=$1", [A]);
   assert.equal((await sent()).length, 1);
@@ -64,6 +65,7 @@ test('owned -> wanted on update alerts; wanted -> owned -> wanted does not repea
 
 test('delete then re-add sends nothing; other user still alerts', async () => {
   await mark(A, 'series', '71053', 'wanted');
+  await q('update public.wanted_alerts set sent_at = now()');
   await q('delete from public.marks where user_id=$1', [A]);
   await mark(A, 'series', '71053', 'wanted');
   assert.equal((await sent()).length, 1);
@@ -114,4 +116,25 @@ test('trigger functions are not executable by clients', async () => {
       and has_function_privilege('${role}', p.oid, 'execute')`);
     assert.deepEqual(r.rows, [], role);
   }
+});
+
+test('re-mark retries an unsent alert; a sent alert is not re-sent', async () => {
+  await mark(A, 'series', '71053', 'wanted');
+  assert.equal((await sent()).length, 1);
+  // Unsent (Telegram failed, claim cleared): unmark and re-mark dispatches again.
+  await q("update public.marks set state='owned' where user_id=$1", [A]);
+  await q("update public.marks set state='wanted' where user_id=$1", [A]);
+  assert.equal((await sent()).length, 2);
+  // Sent: no further dispatch.
+  await q('update public.wanted_alerts set sent_at = now()');
+  await q("update public.marks set state='owned' where user_id=$1", [A]);
+  await q("update public.marks set state='wanted' where user_id=$1", [A]);
+  assert.equal((await sent()).length, 2);
+});
+
+test('net revoke block is guarded and runs without a net schema', async () => {
+  const sql = readFileSync(path.join(migDir, '20261106000000_v2_04_wanted_alerts.sql'), 'utf8');
+  const m = sql.match(/do \$\$\s*begin\s*if exists \(select 1 from pg_namespace where nspname = 'net'\)[\s\S]*?\$\$;/);
+  assert.ok(m, 'revoke block present');
+  await db.exec(m[0]);
 });

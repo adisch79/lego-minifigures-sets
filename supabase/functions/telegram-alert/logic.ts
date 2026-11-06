@@ -39,7 +39,11 @@ export function linkFor(targetId: string): string {
 
 // Name by display_name, else a short id. Never the email.
 export function whoLabel(displayName: string | null | undefined, userId: string): string {
-  const clean = (displayName ?? '').replace(/[\u0000-\u001f\u007f-\u009f]/g, ' ').trim().slice(0, 50);
+  // Bidi and zero-width chars are removed (they can spoof the text); control chars become spaces.
+  const clean = (displayName ?? '')
+    .replace(/[\u200b-\u200f\u202a-\u202e\u2066-\u2069\ufeff]/g, '')
+    .replace(/[\u0000-\u001f\u007f-\u009f]/g, ' ')
+    .trim().slice(0, 50);
   return clean !== '' ? clean : `user ${userId.slice(0, 8)}`;
 }
 

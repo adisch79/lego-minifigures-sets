@@ -13,18 +13,23 @@ const json = (status: number, body: Record<string, unknown>) =>
 Deno.serve(async (req: Request) => {
   if (req.method !== 'POST') return json(405, { error: 'method' });
 
-  const token = Deno.env.get('TELEGRAM_BOT_TOKEN');
-  const chatId = Deno.env.get('TELEGRAM_CHAT_ID');
+  // Shared secret first: an unauthenticated caller learns nothing about configuration.
   const hookSecret = Deno.env.get('ALERT_HOOK_SECRET');
-  const supaUrl = Deno.env.get('SUPABASE_URL');
-  const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
-  if (!token || !chatId || !hookSecret || !supaUrl || !serviceKey) {
+  if (!hookSecret) {
     console.error('telegram-alert: missing configuration');
     return json(500, { error: 'config' });
   }
-
   if (!(await secretsMatch(req.headers.get('x-alert-secret'), hookSecret))) {
     return json(401, { error: 'unauthorized' });
+  }
+
+  const token = Deno.env.get('TELEGRAM_BOT_TOKEN');
+  const chatId = Deno.env.get('TELEGRAM_CHAT_ID');
+  const supaUrl = Deno.env.get('SUPABASE_URL');
+  const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+  if (!token || !chatId || !supaUrl || !serviceKey) {
+    console.error('telegram-alert: missing configuration');
+    return json(500, { error: 'config' });
   }
 
   let key;
@@ -37,21 +42,29 @@ Deno.serve(async (req: Request) => {
 
   const db = createClient(supaUrl, serviceKey, { auth: { persistSession: false } });
 
-  // Re-read: the alert row must exist and be unsent. The body is never trusted for content.
-  const { data: alert, error: aErr } = await db
-    .from('wanted_alerts')
-    .select('sent_at')
+  // Claim first: only one caller can flip sent_at from null, so no double send.
+  // If Telegram then fails, the claim is released so a re-mark can retry.
+  const { data: claimed, error: cErr } = await db
+    .from('wanted_alerts').update({ sent_at: new Date().toISOString() })
     .eq('user_id', key.user_id).eq('kind', key.kind).eq('target_id', key.target_id)
-    .maybeSingle();
-  if (aErr) { console.error('telegram-alert: alert read failed'); return json(500, { error: 'db' }); }
-  if (!alert) return json(404, { error: 'no alert' });
-  if (alert.sent_at) return json(200, { status: 'already sent' });
+    .is('sent_at', null)
+    .select('user_id');
+  if (cErr) { console.error('telegram-alert: claim failed'); return json(500, { error: 'db' }); }
+  if (!claimed || claimed.length === 0) return json(200, { status: 'already sent or no alert' });
+
+  const release = async () => {
+    const { error } = await db
+      .from('wanted_alerts').update({ sent_at: null })
+      .eq('user_id', key.user_id).eq('kind', key.kind).eq('target_id', key.target_id);
+    if (error) console.error('telegram-alert: could not clear claim');
+    return error;
+  };
 
   const { data: profile } = await db
     .from('profiles').select('display_name').eq('user_id', key.user_id).maybeSingle();
 
   // No parse_mode: plain text. The token is part of the URL, so errors never log the URL.
-  let res: Response;
+  let res: Response | null = null;
   try {
     res = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
       method: 'POST',
@@ -61,21 +74,15 @@ Deno.serve(async (req: Request) => {
         text: buildMessage(profile?.display_name, key),
         disable_web_page_preview: true,
       }),
+      signal: AbortSignal.timeout(8000),
     });
   } catch {
     console.error('telegram-alert: telegram request failed');
-    return json(502, { error: 'telegram' });
   }
-  if (!res.ok) {
-    console.error(`telegram-alert: telegram answered ${res.status}`);
-    return json(502, { error: 'telegram' });
+  if (!res || !res.ok) {
+    if (res) console.error(`telegram-alert: telegram answered ${res.status}`);
+    const relErr = await release();
+    return relErr ? json(500, { error: 'db' }) : json(502, { error: 'telegram' });
   }
-
-  // Only a sent message is marked; the update is guarded so a repeat call stays a no-op.
-  const { error: uErr } = await db
-    .from('wanted_alerts').update({ sent_at: new Date().toISOString() })
-    .eq('user_id', key.user_id).eq('kind', key.kind).eq('target_id', key.target_id)
-    .is('sent_at', null);
-  if (uErr) console.error('telegram-alert: could not mark sent');
   return json(200, { status: 'sent' });
 });
