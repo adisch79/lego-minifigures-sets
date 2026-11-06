@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>V2-05 admin, direction A: Two-tab console</title>
+<link rel="stylesheet" href="../../app/src/index.css">
+<link rel="stylesheet" href="admin.css">
+<style>
+/* Direction A: the yellow band carries the headline and two big tabs; each tab is one clean ledger. */
+.ahero { padding:28px 0 0; display:flex; justify-content:space-between; align-items:flex-end; gap:32px; flex-wrap:wrap; }
+.ahero h1 { font-size:clamp(38px,5.4vw,64px); line-height:.95; letter-spacing:-.045em; font-weight:800; margin:0; }
+.ahero h1 em { font-style:normal; color:var(--lego-red); }
+.tabs { display:flex; gap:6px; margin-top:30px; }
+.tab { position:relative; display:flex; align-items:center; gap:10px; height:58px; padding:0 26px; border:0; border-radius:18px 18px 0 0; background:transparent; font:inherit; font-size:17px; font-weight:800; color:var(--ink); cursor:pointer; transition:background .2s; }
+.tab:hover { background:rgba(255,255,255,.35); }
+.tab[aria-selected=true] { background:var(--grey-50); }
+.tab .n { font-size:12.5px; font-variant-numeric:tabular-nums; background:var(--ink); color:var(--lego-yellow); border-radius:999px; padding:3px 9px; }
+.tab[aria-selected=false] .n { background:rgba(0,0,0,.12); color:var(--ink); }
+.stats div { animation:none; }
+
+main.wrap { padding-top:36px; padding-bottom:96px; }
+.tools { display:flex; gap:12px; align-items:center; margin-bottom:22px; flex-wrap:wrap; }
+.tools .mail { flex:1; max-width:440px; }
+.tools .hint { font-size:13.5px; color:var(--grey-500); font-weight:600; margin-left:auto; }
+.flt { display:flex; gap:6px;  }
+.flt button { height:38px; padding:0 15px; border-radius:999px; border:2px solid var(--grey-300); background:var(--white); font:inherit; font-size:13.5px; font-weight:800; color:var(--ink); cursor:pointer; }
+.flt button[aria-pressed=true] { background:var(--ink); border-color:var(--ink); color:var(--white); }
+
+.ledger { list-style:none; margin:0; padding:6px; background:var(--white); border-radius:22px; box-shadow:0 1px 0 rgba(0,0,0,.04), 0 24px 48px -32px rgba(0,0,0,.25); }
+.row { display:grid; align-items:center; gap:18px; padding:14px 16px; border-radius:16px; animation:rise .5s var(--ease) both; transition:background .2s; }
+.row + .row { box-shadow:0 -1px 0 var(--grey-100); }
+.row:hover { background:var(--grey-50); box-shadow:none; }
+.row:hover + .row { box-shadow:none; }
+.p-row { grid-template-columns:auto minmax(0,1.6fr) 1.1fr 90px 110px 36px; }
+.pw b { display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:16px; font-weight:800; letter-spacing:-.01em; }
+.pw span { display:block; font-size:13.5px; color:var(--grey-500); font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.pw .you { display:inline-block !important;  font-size:10.5px; letter-spacing:.14em; font-weight:800; text-transform:uppercase; background:var(--lego-red); color:var(--white); border-radius:999px; padding:2px 7px; margin-left:6px; vertical-align:2px; }
+.when { font-size:13px; color:var(--grey-500); font-weight:600; }
+.when b { display:block; color:var(--ink); font-size:13.5px; font-weight:700; }
+.cnt { font-size:22px; font-weight:800; letter-spacing:-.03em; font-variant-numeric:tabular-nums; }
+.cnt small { display:block; font-size:10.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--grey-500); font-weight:800; }
+.colhead { display:grid; gap:18px; padding:0 22px 10px; }
+.colhead span { font-size:11px; font-weight:800; letter-spacing:.16em; text-transform:uppercase; color:var(--grey-500); }
+
+.w-row { grid-template-columns:64px minmax(0,1.4fr) minmax(0,1fr) 120px 110px; }
+.thumb { width:64px; height:64px; border-radius:14px; background:var(--grey-50); display:grid; place-items:center; overflow:hidden; }
+.thumb img { width:100%; height:100%; object-fit:contain; padding:6px; transition:transform .4s var(--ease); }
+.thumb.card img { object-fit:cover; padding:0; }
+.row:hover .thumb img { transform:translateY(-3px) scale(1.06); }
+.fw b { display:block; font-size:16px; font-weight:800; letter-spacing:-.01em; }
+.fw span { font-size:12.5px; color:var(--grey-500); font-weight:700; letter-spacing:.08em; font-variant-numeric:tabular-nums; }
+.by { display:flex; align-items:center; gap:10px; min-width:0; font-size:14px; font-weight:700; }
+.by .av { width:28px; height:28px; font-size:12.5px; }
+.panel[hidden] { display:none; }
+
+@media (max-width:900px) {
+  .p-row { grid-template-columns:auto minmax(0,1fr) auto 36px; }
+  .p-row .when.added, .p-row .cnt { display:none; }
+  .w-row { grid-template-columns:56px minmax(0,1fr) auto; }
+  .w-row .when { display:none; }
+  .w-row .by { grid-column:2 / 4; grid-row:2; margin-top:-8px; }
+  .colhead { display:none; }
+}
+@media (max-width:640px) {
+  .ahero { padding-top:18px; }
+  .ahero .stats { gap:20px; }
+  .stats strong { font-size:24px; }
+  .tabs { margin-top:20px; }
+  .tab { flex:1; justify-content:center; padding:0 10px; font-size:15px; height:52px; }
+  .tools .mail { max-width:none; flex-basis:100%; }
+  .tools .btn { flex:1; }
+  .tools .hint { margin-left:0; }
+  .flt { flex-basis:100%; overflow-x:auto; scrollbar-width:none; margin:0 -16px; padding:0 16px; }
+  .flt button { flex:none; }
+  .p-row { gap:12px; padding:12px 10px; }
+  .p-row { grid-template-columns:auto minmax(0,1fr) 36px; }
+  .p-row > :nth-child(3) { grid-column:2; grid-row:2; justify-self:start; margin-top:-8px; }
+  .p-row > :last-child { grid-row:1 / 3; grid-column:3; }
+  .p-row > :first-child { grid-row:1 / 3; }
+  .thumb { width:56px; height:56px; }
+  .w-row { gap:12px; padding:12px 10px; }
+}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script src="data.js"></script>
+<script>
+/* Tab choice from the query string so both tabs can be screenshotted: a.html?tab=wanted */
+var tab = /tab=wanted/.test(location.search) ? 'wanted' : 'people';
+var signed = PEOPLE.filter(function (p) { return p.signedIn; }).length;
+var sent = WANTED.filter(function (w) { return w.alert === 'sent'; }).length;
+
+function wantedCount(email) { return WANTED.filter(function (w) { return w.who === email; }).length; }
+
+function peopleRows() {
+  return PEOPLE.map(function (p, i) {
+    var status = p.signedIn
+      ? '<span class="when"><b>Last seen ' + ago(p.last) + '</b>First sign-in ' + stamp(p.signedIn) + '</span>'
+      : '<span><span class="st wait">Invited, not signed in</span></span>';
+    return '<li class="row p-row" style="animation-delay:' + (i * 40) + 'ms">' + avatar(p, i) +
+      '<span class="pw"><b>' + esc(label(p)) + (p.admin ? '<span class="you">You</span>' : '') + '</b><span title="' + esc(p.email) + '">' + esc(p.email) + '</span></span>' +
+      status +
+      '<span class="cnt">' + wantedCount(p.email) + '<small>Wanted</small></span>' +
+      '<span class="when added"><b>Added</b>' + stamp(p.added) + '</span>' +
+      (p.admin ? '<span></span>' : '<button class="icon-btn" aria-label="Remove ' + esc(p.email) + '" title="Remove from allowlist">' + X_ICON + '</button>') +
+      '</li>';
+  }).join('');
+}
+
+function wantedRows() {
+  return WANTED.map(function (w, i) {
+    var p = person(w.who);
+    var sub = w.kind === 'series' ? 'Whole series &middot; ' + w.id : SERIES[seriesOf(w)] + ' &middot; ' + w.id;
+    return '<li class="row w-row" style="animation-delay:' + (i * 30) + 'ms">' +
+      '<span class="thumb' + (w.kind === 'series' ? ' card' : '') + '"><img src="' + art(w) + '" alt=""></span>' +
+      '<span class="fw"><b>' + esc(w.name) + '</b><span>' + sub + '</span></span>' +
+      '<span class="by">' + avatar(p, PEOPLE.indexOf(p)) + '<span class="addr">' + esc(label(p)) + '</span></span>' +
+      '<span class="when"><b>' + ago(w.at) + '</b>' + stamp(w.at) + '</span>' +
+      '<span><span class="st ' + w.alert + '">' + ALERT_TXT[w.alert] + '</span></span></li>';
+  }).join('');
+}
+
+var hero = '<div class="wrap"><div class="ahero"><h1>Who is in,<br><em>what is wanted.</em></h1>' +
+  '<div class="stats"><div><strong>' + PEOPLE.length + '</strong>Invited</div><div><strong>' + signed + '<span>/' + PEOPLE.length + '</span></strong>Signed in</div>' +
+  '<div><strong>' + WANTED.length + '</strong>Wanted</div><div><strong>' + sent + '<span>/' + WANTED.length + '</span></strong>Alerts sent</div></div></div>' +
+  '<div class="tabs" role="tablist"><button class="tab" role="tab" aria-selected="' + (tab === 'people') + '" data-t="people">Collectors <span class="n">' + PEOPLE.length + '</span></button>' +
+  '<button class="tab" role="tab" aria-selected="' + (tab === 'wanted') + '" data-t="wanted">Wanted <span class="n">' + WANTED.length + '</span></button></div></div>';
+
+var people = '<section class="panel" id="people"' + (tab === 'people' ? '' : ' hidden') + '>' +
+  '<form class="tools" onsubmit="return false"><label class="sr" for="m">Email to invite</label><input id="m" class="mail" type="email" placeholder="collector@example.com">' +
+  '<button class="btn">' + PLUS_ICON + 'Add to allowlist</button><span class="hint">They can sign in with a link once added.</span></form>' +
+  '<div class="colhead p-row"><span style="width:34px"></span><span>Collector</span><span>Sign-in</span><span>Marks</span><span>Allowlist</span><span></span></div>' +
+  '<ul class="ledger">' + peopleRows() + '</ul></section>';
+
+var wanted = '<section class="panel" id="wanted"' + (tab === 'wanted' ? '' : ' hidden') + '>' +
+  '<div class="tools"><div class="flt" role="group" aria-label="Alert filter"><button aria-pressed="true">All ' + WANTED.length + '</button><button aria-pressed="false">Sent ' + sent + '</button><button aria-pressed="false">Queued 1</button><button aria-pressed="false">Not sent 1</button></div>' +
+  '<span class="hint">Newest first &middot; Telegram alert per wanted mark</span></div>' +
+  '<div class="colhead w-row"><span></span><span>Minifigure or series</span><span>Wanted by</span><span>When</span><span>Alert</span></div>' +
+  '<ul class="ledger">' + wantedRows() + '</ul></section>';
+
+document.getElementById('app').innerHTML = header(hero) + '<main class="wrap">' + people + wanted + '</main>';
+
+/* Tab switching */
+Array.prototype.forEach.call(document.querySelectorAll('.tab'), function (b) {
+  b.addEventListener('click', function () {
+    Array.prototype.forEach.call(document.querySelectorAll('.tab'), function (o) { o.setAttribute('aria-selected', o === b); });
+    document.getElementById('people').hidden = b.dataset.t !== 'people';
+    document.getElementById('wanted').hidden = b.dataset.t !== 'wanted';
+  });
+});
+</script>
+</body>
+</html>
