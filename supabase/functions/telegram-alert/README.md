@@ -40,6 +40,8 @@ Message: `<display name or "user <8 chars of id>"> wants <figure|series> <id>` p
 
 ## Known limits
 - Accepted narrow race: call 1 claims, call 2 sees the claim and answers 200, call 1 then fails and releases. The alert stays unsent until the next re-mark.
+- At-least-once delivery: if Telegram delivers but the response is lost or times out (8 s), the claim is released and a re-mark sends a duplicate.
+- The migration includes the `net` revoke. A database where it was applied before that change, or where pg_net was later re-enabled or upgraded, needs `supabase/scripts/revoke_net_access.sql` run once.
 - `index.ts` is covered by the live check only (Deno is not installed here); `logic.ts` is unit-tested.
 
 ## Telegram chat id

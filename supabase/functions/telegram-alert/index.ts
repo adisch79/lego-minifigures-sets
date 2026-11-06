@@ -71,6 +71,7 @@ Deno.serve(async (req: Request) => {
 
   let sent = false;
   let status = 500;
+  let errorCode = 'internal';
   try {
     const { data: profile } = await db
       .from('profiles').select('display_name').eq('user_id', key.user_id).maybeSingle();
@@ -96,15 +97,16 @@ Deno.serve(async (req: Request) => {
     } else {
       if (res) console.error(`telegram-alert: telegram answered ${res.status}`);
       status = 502;
+      errorCode = 'telegram';
     }
   } catch {
     console.error('telegram-alert: unexpected failure');
   } finally {
     if (!sent) {
       const relErr = await release();
-      if (relErr) status = 500;
+      if (relErr) { status = 500; errorCode = 'db'; }
     }
   }
   if (sent) return json(200, { status: 'sent' });
-  return status === 502 ? json(502, { error: 'telegram' }) : json(500, { error: 'db' });
+  return json(status, { error: errorCode });
 });
