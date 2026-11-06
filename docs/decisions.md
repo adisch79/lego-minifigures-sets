@@ -73,3 +73,6 @@
 - 2026-11-05 — Accepted risk: a save still in flight when the user signs out and back in as the same user may land after the new load, so the screen can be one mark stale until reload. Reason: rare, no data loss, ordering fix costs more than it saves.
 - 2026-11-05 — Accepted: the 2000-row cap trigger fires before ON CONFLICT, so a user at the cap cannot change an existing mark; unreachable (catalog has about 839 ids). If a failed save's cleanup delete also fails offline, a stray mark can remain; rare, user can clear it.
 - 2026-11-06 — V2-02 and V2-03 accepted by the owner on the live site (sign-in, marks, reload).
+- 2026-11-06 — Default (agent): wanted alerts capped at 20 per user per hour; extra alerts are dropped, the mark still saves. Owner may change the number.
+- 2026-11-06 — Default (agent): the Telegram message names the user and the target id with a link to the series page, not the figure name. Reason: names would need a catalog fetch in the function; the link shows the figure.
+- 2026-11-06 — V2-04 alert validates id format only; the catalog lives in static JSON, not the database. Accepted risk: any signed-in user can trigger up to 20 alerts per hour with fake ids of valid shape.
