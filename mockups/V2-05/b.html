@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>V2-05 admin, direction B: Control room</title>
+<link rel="stylesheet" href="../../app/src/index.css">
+<link rel="stylesheet" href="admin.css">
+<style>
+/* Direction B: one dashboard. An ink allowlist rail on the left, a live wanted feed grouped by day on the right. */
+.b-main { display:grid; grid-template-columns:360px minmax(0,1fr); gap:36px; padding-top:36px; padding-bottom:96px; align-items:start; }
+
+/* Allowlist rail */
+.b-rail { position:sticky; top:20px; background:var(--ink); color:var(--white); border-radius:26px; padding:24px; box-shadow:0 30px 60px -30px rgba(0,0,0,.5); animation:rise .6s var(--ease) both; }
+.b-rail h2 { font-size:26px; font-weight:800; letter-spacing:-.035em; margin:6px 0 4px; }
+.b-rail .eyebrow { color:var(--lego-yellow); }
+.b-rail .sub { font-size:13.5px; line-height:1.45; color:#B9B9B4; margin:0 0 18px; font-weight:500; }
+.b-meter { display:flex; height:10px; border-radius:999px; overflow:hidden; background:#33332F; margin:0 0 8px; }
+.b-meter i { background:var(--lego-yellow); }
+.b-meter-l { display:flex; justify-content:space-between; font-size:12px; font-weight:700; color:#B9B9B4; margin-bottom:20px; }
+.b-meter-l b { color:var(--white); }
+.b-add { display:flex; gap:8px; margin-bottom:18px; }
+.b-add .mail { flex:1; background:#262624; border-color:#33332F; color:var(--white); }
+.b-add .mail::placeholder { color:#8A8A85; }
+.b-add .mail:focus { border-color:var(--lego-yellow); }
+.b-add .btn { width:46px; padding:0; background:var(--lego-yellow); color:var(--ink); }
+.b-people { list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:4px; }
+.b-p { display:flex; align-items:center; gap:12px; padding:10px; margin:0 -10px; border-radius:16px; transition:background .2s; }
+.b-p:hover { background:#262624; }
+.b-p .av.ink { background:#3A3A36; color:var(--lego-yellow); }
+.b-p .av.ghost { border-color:#55554F; color:#8A8A85; }
+.b-p .t { min-width:0; flex:1; }
+.b-p b { display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:15px; font-weight:800; }
+.b-p b em { display:inline-block; margin-left:6px; vertical-align:2px; font-style:normal; font-size:10px; letter-spacing:.14em; text-transform:uppercase; background:var(--lego-red); border-radius:999px; padding:2px 7px; }
+.b-p small { display:block; font-size:12.5px; color:#9A9A95; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-weight:600; }
+.b-p .state { font-size:11.5px; font-weight:800; color:var(--lego-yellow); white-space:nowrap; }
+.b-p .state.off { color:#8A8A85; }
+.b-p .icon-btn { color:#8A8A85; opacity:0; }
+.b-p:hover .icon-btn, .b-p .icon-btn:focus-visible { opacity:1; }
+.b-p .icon-btn:hover { background:var(--lego-red); color:var(--white); }
+
+/* KPI tiles */
+.b-kpis { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:34px; }
+.b-kpi { background:var(--white); border-radius:20px; padding:18px 20px; animation:rise .6s var(--ease) both; }
+.b-kpi strong { display:block; font-size:38px; font-weight:800; letter-spacing:-.04em; line-height:1; font-variant-numeric:tabular-nums; }
+.b-kpi span { display:block; font-size:12px; font-weight:800; letter-spacing:.12em; text-transform:uppercase; color:var(--grey-500); margin-top:8px; }
+.b-kpi.hot { background:var(--lego-red); color:var(--white); }
+.b-kpi.hot span { color:rgba(255,255,255,.8); }
+.b-kpi.y { background:var(--lego-yellow); }
+.b-kpi.y span { color:var(--ink); opacity:.7; }
+
+/* Wanted feed */
+.b-head { display:flex; justify-content:space-between; align-items:baseline; border-bottom:2px solid var(--ink); padding-bottom:12px; margin-bottom:8px; }
+.b-head h2 { font-size:30px; font-weight:800; letter-spacing:-.04em; margin:0; }
+.b-head span { font-size:13px; color:var(--grey-500); font-weight:600; }
+.b-day { font-size:12px; font-weight:800; letter-spacing:.16em; text-transform:uppercase; color:var(--grey-500); margin:26px 0 12px; display:flex; align-items:center; gap:12px; }
+.b-day::after { content:""; flex:1; height:1px; background:var(--grey-300); }
+.b-feed { list-style:none; margin:0; padding:0; display:grid; grid-template-columns:repeat(auto-fill,minmax(250px,1fr)); gap:14px; }
+.b-item { position:relative; display:flex; gap:14px; background:var(--white); border-radius:20px; padding:12px; animation:rise .55s var(--ease) both; transition:transform .25s var(--ease), box-shadow .25s; }
+.b-item:hover { transform:translateY(-3px); box-shadow:0 20px 34px -22px rgba(0,0,0,.35); }
+.b-pic { flex:none; width:88px; height:104px; border-radius:14px; background:var(--grey-50); overflow:hidden; display:grid; place-items:center; }
+.b-pic img { width:100%; height:100%; object-fit:contain; padding:8px; }
+.b-pic.card img { object-fit:cover; padding:0; }
+.b-body { min-width:0; display:flex; flex-direction:column; gap:3px; padding-top:2px; }
+.b-body .num { font-size:11px; }
+.b-body h3 { margin:0; font-size:16.5px; font-weight:800; letter-spacing:-.02em; line-height:1.15; }
+.b-body .ser { font-size:12.5px; color:var(--grey-500); font-weight:600; }
+.b-foot { margin-top:auto; display:flex; align-items:center; gap:8px; min-width:0; }
+.b-foot .av { width:24px; height:24px; font-size:11px; }
+.b-foot .addr { font-size:12.5px; font-weight:700; flex:1; }
+.b-time { position:absolute; top:12px; right:14px; font-size:11.5px; font-weight:700; color:var(--grey-500); font-variant-numeric:tabular-nums; }
+.b-item.none { box-shadow:inset 0 0 0 2px var(--lego-red); }
+
+@media (max-width:1000px) {
+  .b-main { grid-template-columns:1fr; }
+  .b-rail { position:static; }
+  .b-p .icon-btn { opacity:1; }
+}
+@media (max-width:640px) {
+  .b-main { padding-top:16px; gap:24px; }
+  .b-rail { border-radius:22px; padding:20px; }
+  .b-kpis { grid-template-columns:repeat(2,1fr); gap:10px; }
+  .b-kpi strong { font-size:30px; }
+  .b-feed { grid-template-columns:1fr; }
+  .b-head h2 { font-size:26px; }
+}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script src="data.js"></script>
+<script>
+var signed = PEOPLE.filter(function (p) { return p.signedIn; }).length;
+var sent = WANTED.filter(function (w) { return w.alert === 'sent'; }).length;
+var today = WANTED.filter(function (w) { return w.at.slice(0, 10) === '2026-11-06'; }).length;
+var pending = WANTED.length - sent;
+
+var rail = '<aside class="b-rail" aria-labelledby="al"><p class="eyebrow">Allowlist</p><h2 id="al">Invited collectors</h2>' +
+  '<p class="sub">Only these addresses can get a sign-in link. Removing one signs that collector out.</p>' +
+  '<div class="b-meter" aria-hidden="true"><i style="width:' + Math.round(signed / PEOPLE.length * 100) + '%"></i></div>' +
+  '<div class="b-meter-l"><span><b>' + signed + '</b> signed in</span><span><b>' + (PEOPLE.length - signed) + '</b> waiting</span></div>' +
+  '<form class="b-add" onsubmit="return false"><label class="sr" for="m">Email to invite</label><input id="m" class="mail" type="email" placeholder="Add an email">' +
+  '<button class="btn" aria-label="Add to allowlist">' + PLUS_ICON + '</button></form>' +
+  '<ul class="b-people">' + PEOPLE.map(function (p, i) {
+    return '<li class="b-p">' + avatar(p, i) + '<span class="t"><b>' + esc(label(p)) + (p.admin ? '<em>You</em>' : '') + '</b><small title="' + esc(p.email) + '">' + esc(p.email) + '</small></span>' +
+      (p.signedIn ? '<span class="state">' + ago(p.last) + '</span>' : '<span class="state off">Not yet</span>') +
+      (p.admin ? '' : '<button class="icon-btn" aria-label="Remove ' + esc(p.email) + '">' + X_ICON + '</button>') + '</li>';
+  }).join('') + '</ul></aside>';
+
+var kpis = '<div class="b-kpis">' +
+  '<div class="b-kpi y"><strong>' + WANTED.length + '</strong><span>Wanted marks</span></div>' +
+  '<div class="b-kpi"><strong>' + today + '</strong><span>Today</span></div>' +
+  '<div class="b-kpi"><strong>' + sent + '</strong><span>Alerts sent</span></div>' +
+  '<div class="b-kpi hot"><strong>' + pending + '</strong><span>Need a look</span></div></div>';
+
+/* Group the feed by calendar day */
+var DAY_NAME = { '2026-11-06': 'Today', '2026-11-05': 'Yesterday' };
+var groups = [], cur = null;
+WANTED.forEach(function (w) {
+  var d = w.at.slice(0, 10);
+  if (!cur || cur.d !== d) { cur = { d: d, items: [] }; groups.push(cur); }
+  cur.items.push(w);
+});
+var n = 0;
+var feed = groups.map(function (g) {
+  var title = DAY_NAME[g.d] || new Date(g.d).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'short' });
+  return '<h3 class="b-day">' + title + ' &middot; ' + g.items.length + '</h3><ul class="b-feed">' + g.items.map(function (w) {
+    var p = person(w.who);
+    return '<li class="b-item ' + w.alert + '" style="animation-delay:' + (n++ * 35) + 'ms">' +
+      '<span class="b-pic' + (w.kind === 'series' ? ' card' : '') + '"><img src="' + art(w) + '" alt=""></span>' +
+      '<span class="b-body"><span class="num">' + w.id + '</span><h3>' + esc(w.name) + '</h3><span class="ser">' + (w.kind === 'series' ? 'Whole series' : SERIES[seriesOf(w)]) + '</span>' +
+      '<span class="b-foot">' + avatar(p, PEOPLE.indexOf(p)) + '<span class="addr">' + esc(label(p)) + '</span></span>' +
+      '<span><span class="st ' + w.alert + '">' + ALERT_TXT[w.alert] + '</span></span></span>' +
+      '<span class="b-time">' + w.at.slice(11, 16) + '</span></li>';
+  }).join('') + '</ul>';
+}).join('');
+
+document.getElementById('app').innerHTML = header() +
+  '<main class="wrap b-main">' + rail + '<section aria-labelledby="wf">' + kpis +
+  '<div class="b-head"><h2 id="wf">Wanted feed</h2><span>Newest first, live</span></div>' + feed + '</section></main>';
+</script>
+</body>
+</html>

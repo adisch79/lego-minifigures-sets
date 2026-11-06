@@ -1,0 +1,40 @@
+/* Shared pieces for the V2-05 admin mockups; theme tokens come from app/src/index.css. */
+body { background:var(--grey-50); }
+.adm-tag { font-size:11px; font-weight:800; letter-spacing:.18em; text-transform:uppercase; background:var(--ink); color:var(--lego-yellow); border-radius:999px; padding:6px 11px; }
+.back { font-size:14px; font-weight:700; color:var(--ink); text-decoration:underline; text-underline-offset:4px; align-self:center; white-space:nowrap; }
+.me { display:inline-flex; align-items:center; gap:10px; height:44px; padding:0 14px 0 5px; border-radius:999px; background:var(--white);
+  border:2px solid transparent; font:inherit; font-size:14px; font-weight:700; color:var(--ink); cursor:pointer; max-width:240px; }
+.av { flex:none; width:34px; height:34px; border-radius:50%; background:var(--lego-red); color:var(--lego-yellow); display:grid; place-items:center; font-size:15px; font-weight:800; }
+.av.ink { background:var(--ink); }
+.av.y { background:var(--lego-yellow); color:var(--ink); }
+.av.ghost { background:transparent; border:2px dashed var(--grey-300); color:var(--grey-500); }
+.addr { min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.st { display:inline-flex; align-items:center; gap:6px; height:26px; padding:0 10px; border-radius:999px; font-size:12px; font-weight:800; white-space:nowrap; }
+.st::before { content:""; width:7px; height:7px; border-radius:50%; background:currentColor; }
+.st.sent { background:#E3F4E6; color:#1E6B2C; }
+.st.queued { background:var(--lego-yellow); color:var(--ink); }
+.st.queued::before { animation:blink 1.2s infinite; }
+.st.none { background:#FFF5F5; color:#B3000E; }
+.st.in { background:var(--white); color:var(--ink); box-shadow:inset 0 0 0 2px var(--ink); }
+.st.wait { background:var(--grey-100); color:var(--grey-500); }
+.btn { display:inline-flex; align-items:center; justify-content:center; gap:8px; height:46px; padding:0 20px; border:0; border-radius:999px; font:inherit; font-size:14px; font-weight:800; cursor:pointer; background:var(--lego-red); color:var(--white); white-space:nowrap; transition:transform .15s; }
+.btn:active { transform:scale(.97); }
+.btn.ink { background:var(--ink); color:var(--lego-yellow); }
+.icon-btn { flex:none; width:36px; height:36px; border-radius:50%; border:0; background:transparent; color:var(--grey-500); display:grid; place-items:center; cursor:pointer; transition:background .2s,color .2s; }
+.icon-btn:hover { background:#FFF5F5; color:var(--lego-red); }
+.mail { font-size:15px; height:46px; border-radius:999px; border:2px solid var(--grey-100); background:var(--white); padding:0 18px; color:var(--ink); font-family:inherit; min-width:0; }
+.mail:focus { outline:none; border-color:var(--ink); }
+.eyebrow { font-size:11.5px; font-weight:800; letter-spacing:.16em; text-transform:uppercase; color:var(--grey-500); margin:0; }
+@keyframes rise { from { opacity:0; transform:translateY(14px); } }
+@keyframes blink { 50% { opacity:.25; } }
+@media (max-width:640px) {
+  .wrap { padding:0 16px; }
+  .band-top { gap:10px; padding:14px 0; flex-wrap:nowrap; }
+  .adm-tag { padding:5px 9px; font-size:10px; letter-spacing:.14em; }
+  .brand small { display:none; }
+  .back { display:none; }
+  .controls { margin-left:auto; }
+  .me { padding:0 5px; width:44px; }
+  .me .addr { display:none; }
+  .mail { font-size:16px; }
+}
