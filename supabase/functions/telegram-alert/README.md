@@ -35,13 +35,12 @@ Message: `<display name or "user <8 chars of id>"> wants <figure|series> <id>` p
        select * from pg_extension where extname in ('pg_net','supabase_vault');
        select has_function_privilege('authenticated','net.http_post(text,jsonb,jsonb,jsonb,integer)','execute'), has_schema_privilege('authenticated','net','usage');
 
-   Both extensions must be listed. The second query must return false, false. If true, run `supabase/scripts/revoke_net_access.sql` in the SQL editor (the migration already revokes `net` usage and execute from public, anon and authenticated).
-   After any pg_net enable or upgrade, re-run this privilege check and, if it returns true, run that script again.
+   Both extensions must be listed. On Supabase hosted the second query returns true, true: the `net` grants are made by `supabase_admin`, so the revoke in the migration (run as `postgres`) cannot remove them (checked live 2026-11-06). That is accepted because `net` is not an exposed schema. The real check is Project Settings > Data API > Exposed schemas: only `public` and `graphql_public`, never `net`. The revoke in the migration and `supabase/scripts/revoke_net_access.sql` still apply where `postgres` made the grants (local or self-hosted).
 
 ## Known limits
 - Accepted narrow race: call 1 claims, call 2 sees the claim and answers 200, call 1 then fails and releases. The alert stays unsent until the next re-mark.
 - At-least-once delivery: if Telegram delivers but the response is lost or times out (8 s), the claim is released and a re-mark sends a duplicate.
-- The migration includes the `net` revoke. A database where it was applied before that change, or where pg_net was later re-enabled or upgraded, needs `supabase/scripts/revoke_net_access.sql` run once.
+- On Supabase hosted, `anon` and `authenticated` keep `net` usage and `net.http_post` execute (granted by `supabase_admin`, not revocable as `postgres`). Clients cannot reach `net` while it is not an exposed Data API schema; keep it that way, and never add a `public` function that calls `net` as the invoker.
 - `index.ts` is covered by the live check only (Deno is not installed here); `logic.ts` is unit-tested.
 
 ## Telegram chat id
