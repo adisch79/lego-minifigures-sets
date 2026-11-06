@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Minifigures Collector Vault - project status</title>
+<!--
+  Project status summary and Gantt chart.
+  Data sources (2026-11-06):
+  - Story list and status: docs/backlog.md
+  - Bar start/end: first and last git commit date whose message names the story id (git log --all --grep)
+  - Release state: GitHub PR #24 (merged into master 2026-11-05), PR #26 (V2-04 into dev 2026-11-06)
+  Future stories carry no dates: no estimate is recorded anywhere, so none is shown.
+-->
+<style>
+  :root {
+    --yellow: #ffe01b; --red: #e3000b; --ink: #1b1b1b; --paper: #f5f4f0; --card: #fff;
+    --muted: #6d6a62; --line: #e4e1d8; --green: #1f9d55; --blue: #2563eb; --amber: #f59e0b;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: "Segoe UI", system-ui, -apple-system, sans-serif; background: var(--paper); color: var(--ink); }
+  header { background: var(--yellow); padding: 32px 40px 28px; }
+  .brand { display: flex; align-items: center; gap: 12px; font-weight: 800; }
+  .brand i { width: 36px; height: 36px; border-radius: 9px; background: var(--red); display: grid; place-items: center; }
+  .brand i::after { content: ""; width: 12px; height: 12px; border-radius: 50%; background: var(--yellow); }
+  .brand small { display: block; font-size: 11px; letter-spacing: .14em; font-weight: 700; color: #6b5a00; }
+  h1 { font-size: clamp(34px, 5vw, 60px); line-height: 1; margin: 26px 0 8px; letter-spacing: -.03em; font-weight: 900; }
+  h1 em { color: var(--red); font-style: normal; }
+  .asof { font-size: 13px; font-weight: 600; color: #5c4f00; }
+  .kpis { display: flex; flex-wrap: wrap; gap: 28px; margin-top: 22px; }
+  .kpi b { font-size: 32px; font-weight: 900; display: block; line-height: 1; }
+  .kpi span { font-size: 11px; letter-spacing: .12em; font-weight: 700; text-transform: uppercase; }
+  .progress { height: 10px; border-radius: 99px; background: rgba(0,0,0,.12); margin-top: 22px; overflow: hidden; max-width: 640px; }
+  .progress div { height: 100%; background: var(--ink); border-radius: 99px; }
+  main { padding: 28px 40px 60px; max-width: 1280px; margin: 0 auto; }
+  h2 { font-size: 22px; font-weight: 900; margin: 34px 0 14px; letter-spacing: -.01em; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; }
+  .mvp { background: var(--card); border-radius: 16px; padding: 18px 20px; box-shadow: 0 1px 0 var(--line); }
+  .mvp h3 { margin: 0 0 4px; font-size: 16px; }
+  .mvp p { margin: 0 0 12px; font-size: 13px; color: var(--muted); }
+  .mvp .bar { height: 8px; background: var(--line); border-radius: 99px; overflow: hidden; }
+  .mvp .bar div { height: 100%; background: var(--green); }
+  .mvp .meta { display: flex; justify-content: space-between; font-size: 12px; font-weight: 700; margin-top: 8px; }
+  .pill { display: inline-block; font-size: 11px; font-weight: 800; padding: 3px 9px; border-radius: 99px; letter-spacing: .04em; }
+  .p-live { background: #dcf3e5; color: var(--green); }
+  .p-prog { background: #fff2cc; color: #8a5a00; }
+  .p-next { background: #eceae4; color: var(--muted); }
+  .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  @media (max-width: 820px) { .cols { grid-template-columns: 1fr; } header, main { padding-left: 18px; padding-right: 18px; } }
+  .box { background: var(--card); border-radius: 16px; padding: 18px 20px; }
+  .box h3 { margin: 0 0 10px; font-size: 15px; }
+  .box ul { margin: 0; padding-left: 18px; font-size: 14px; line-height: 1.55; }
+  .box.owner { border: 2px solid var(--red); }
+  code { font-family: Consolas, monospace; font-size: 12.5px; background: #f0eee8; padding: 1px 5px; border-radius: 4px; }
+  /* Gantt */
+  .gantt { background: var(--card); border-radius: 16px; padding: 18px 20px; overflow-x: auto; }
+  .g { display: grid; grid-template-columns: 220px repeat(var(--days), minmax(56px, 1fr)); min-width: 760px; }
+  .g .hd { font-size: 11px; font-weight: 800; color: var(--muted); text-align: center; padding: 0 0 8px; border-bottom: 1px solid var(--line); letter-spacing: .06em; }
+  .g .hd.today { color: var(--red); }
+  .g .grp { grid-column: 1 / -1; font-size: 11px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; padding: 14px 0 6px; color: var(--ink); border-bottom: 1px dashed var(--line); }
+  .g .lbl { font-size: 13px; padding: 6px 8px 6px 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .g .lbl b { font-family: Consolas, monospace; font-size: 12px; margin-right: 6px; }
+  .g .cell { position: relative; border-left: 1px solid #f1efe9; }
+  .g .cell.today { background: rgba(227,0,11,.05); }
+  .g .barx { align-self: center; height: 20px; border-radius: 6px; margin: 4px 2px; font-size: 10.5px; font-weight: 800; color: #fff; padding: 0 7px; display: flex; align-items: center; white-space: nowrap; overflow: hidden; z-index: 1; }
+  .b-done { background: var(--green); }
+  .b-live { background: var(--ink); }
+  .b-prog { background: var(--amber); color: var(--ink) !important; }
+  .b-ui { background: var(--blue); }
+  .legend { display: flex; flex-wrap: wrap; gap: 16px; font-size: 12px; font-weight: 600; margin-top: 14px; color: var(--muted); }
+  .legend i { display: inline-block; width: 14px; height: 10px; border-radius: 3px; margin-right: 6px; vertical-align: middle; }
+  table.q { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+  table.q td { padding: 9px 6px; border-top: 1px solid var(--line); vertical-align: top; }
+  table.q td:first-child { font-family: Consolas, monospace; font-weight: 700; width: 64px; }
+  table.q td:last-child { color: var(--muted); text-align: right; white-space: nowrap; }
+  footer { font-size: 12px; color: var(--muted); margin-top: 30px; line-height: 1.6; }
+</style>
+</head>
+<body>
+<header>
+  <div class="brand"><i></i><div>Minifigures<small>COLLECTOR VAULT</small></div></div>
+  <h1>Project status: <em>MVP 2</em></h1>
+  <div class="asof">As of 2026-11-06 · live at <a href="https://adisch79.github.io/lego-minifigures-sets/">adisch79.github.io/lego-minifigures-sets</a></div>
+  <div class="kpis" id="kpis"></div>
+  <div class="progress"><div id="pbar"></div></div>
+</header>
+
+<main>
+  <h2>MVPs</h2>
+  <div class="grid" id="mvps"></div>
+
+  <h2>Timeline</h2>
+  <div class="gantt">
+    <div class="g" id="gantt"></div>
+    <div class="legend">
+      <span><i class="b-live"></i>Done and live</span>
+      <span><i class="b-done"></i>Done, design or spike</span>
+      <span><i class="b-prog"></i>In progress</span>
+      <span><i class="b-ui"></i>Mockups, waiting for owner pick</span>
+    </div>
+  </div>
+
+  <div class="cols" style="margin-top:14px">
+    <div class="box">
+      <h3>Now</h3>
+      <ul>
+        <li><b>V2-04 Telegram alert:</b> merged into dev (PR #26). Reviews and QA passed: supabase 42/42, app 138/138, pytest 95. Not deployed yet.</li>
+        <li><b>V2-05 Admin page:</b> 3 mockups (A console, B dashboard, C wanted wall) on <code>feature/V2-05-mockups</code>. Waiting for the owner's pick.</li>
+        <li><b>Live:</b> catalog of all series, sign-in, owned / wanted marks (release PR #24, 2026-11-05).</li>
+      </ul>
+    </div>
+    <div class="box owner">
+      <h3>Needs the owner</h3>
+      <ul>
+        <li>Supabase secrets: <code>TELEGRAM_BOT_TOKEN</code>, <code>TELEGRAM_CHAT_ID</code>, <code>ALERT_HOOK_SECRET</code>.</li>
+        <li>V2-04 migration: DB access token, or paste it in the SQL Editor; then "deploy V2-04".</li>
+        <li>Pick V2-05 direction: A, B or C.</li>
+        <li>Check Supabase Auth URL configuration (no wildcard).</li>
+        <li>Custom SMTP before anyone but the owner signs in.</li>
+      </ul>
+    </div>
+  </div>
+
+  <h2>Next demo</h2>
+  <div class="box">
+    Mark a figure wanted on the live site and get a Telegram message on the phone (V2-04).
+    Blocked only on the owner items above. No date: no estimate is recorded.
+  </div>
+
+  <h2>Queue (not scheduled)</h2>
+  <div class="box">
+    <table class="q" id="queue"></table>
+  </div>
+
+  <footer>
+    Sources: story list and status from <code>docs/backlog.md</code>; bar dates are the first and last commit naming each story
+    (<code>git log --all --grep</code>); release state from GitHub PRs #24 and #26. Future stories have no dates because none is recorded.
+  </footer>
+</main>
+
+<script>
+// Story data. start/end: first and last commit date naming the story (git log --all --grep, 2026-11-06).
+const stories = [
+  { mvp: 0, id: 'V0-01', name: 'Image spike', start: '2026-10-31', end: '2026-10-31', st: 'done' },
+  { mvp: 0, id: 'V0-02', name: '3 design directions', start: '2026-10-31', end: '2026-10-31', st: 'done' },
+  { mvp: 0, id: 'V0-03', name: 'Owner picks direction', start: '2026-10-31', end: '2026-10-31', st: 'done' },
+  { mvp: 0, id: 'V0-04', name: 'Series card variants', start: '2026-10-31', end: '2026-10-31', st: 'done' },
+  { mvp: 0, id: 'V0-05', name: 'Card v4', start: '2026-10-31', end: '2026-10-31', st: 'done' },
+  { mvp: 0, id: 'V0-06', name: 'Cards for 6 series', start: '2026-10-31', end: '2026-10-31', st: 'done' },
+  { mvp: 1, id: 'V1-01', name: 'Scaffold app + CI', start: '2026-10-31', end: '2026-11-01', st: 'live' },
+  { mvp: 1, id: 'V1-02', name: 'Catalog contract v2', start: '2026-11-01', end: '2026-11-01', st: 'live' },
+  { mvp: 1, id: 'V1-03', name: 'Images for all series', start: '2026-11-01', end: '2026-11-01', st: 'live' },
+  { mvp: 1, id: 'V1-04', name: 'Home: grid, sort, search', start: '2026-11-01', end: '2026-11-01', st: 'live' },
+  { mvp: 1, id: 'V1-06', name: 'Cards for all series', start: '2026-11-01', end: '2026-11-01', st: 'live' },
+  { mvp: 1, id: 'V1-05', name: 'Series page', start: '2026-11-01', end: '2026-11-02', st: 'live' },
+  { mvp: 1, id: 'V1-07', name: 'Card redesign', start: '2026-11-02', end: '2026-11-04', st: 'live' },
+  { mvp: 2, id: 'V2-01', name: 'Supabase + schema', start: '2026-11-02', end: '2026-11-04', st: 'live' },
+  { mvp: 2, id: 'V2-02', name: 'Invite-only sign-in', start: '2026-11-04', end: '2026-11-06', st: 'live' },
+  { mvp: 2, id: 'V2-03', name: 'Mark owned / wanted', start: '2026-11-05', end: '2026-11-06', st: 'live' },
+  { mvp: 2, id: 'V2-04', name: 'Telegram alert', start: '2026-11-02', end: '2026-11-06', st: 'prog', note: 'merged into dev, deploy pending' },
+  { mvp: 2, id: 'V2-05', name: 'Admin page', start: '2026-11-06', end: '2026-11-06', st: 'ui', note: 'mockups' },
+  { mvp: 3, id: 'V3-01', name: 'Price source spike', st: 'ready' },
+  { mvp: 3, id: 'V3-02', name: 'Scheduled price scraper', st: 'ready' },
+  { mvp: 3, id: 'V3-03', name: 'Currency (Bank of Israel rate)', st: 'ready' },
+  { mvp: 3, id: 'V3-04', name: 'Show lowest price', st: 'ready' },
+  { mvp: 4, id: 'V4-01', name: 'Hebrew + RTL toggle', st: 'ready' },
+];
+const mvps = [
+  { n: 0, name: 'Look and images proven', demo: '3 mockup pages', state: 'Done', cls: 'p-live' },
+  { n: 1, name: 'Read-only catalog, all series', demo: 'live Pages URL', state: 'Live', cls: 'p-live' },
+  { n: 2, name: 'Invited collectors + Telegram', demo: 'sign in, mark wanted, phone pings', state: 'In progress', cls: 'p-prog' },
+  { n: 3, name: 'Lowest prices', demo: 'price chip on every series and figure', state: 'Not started', cls: 'p-next' },
+  { n: 4, name: 'Hebrew', demo: 'RTL toggle', state: 'Not started', cls: 'p-next' },
+];
+const isDone = s => s.st === 'done' || s.st === 'live';
+
+// KPIs
+const done = stories.filter(isDone).length;
+const prog = stories.filter(s => s.st === 'prog' || s.st === 'ui').length;
+const kp = [[done + '/' + stories.length, 'stories done'], [prog, 'in progress'], ['MVP 1', 'live'], ['9', 'calendar days so far']];
+document.getElementById('kpis').innerHTML = kp.map(([b, s]) => `<div class="kpi"><b>${b}</b><span>${s}</span></div>`).join('');
+document.getElementById('pbar').style.width = (100 * done / stories.length).toFixed(0) + '%';
+
+// MVP cards
+document.getElementById('mvps').innerHTML = mvps.map(m => {
+  const ss = stories.filter(s => s.mvp === m.n), d = ss.filter(isDone).length;
+  return `<div class="mvp"><span class="pill ${m.cls}">${m.state}</span>
+    <h3 style="margin-top:10px">MVP ${m.n}: ${m.name}</h3><p>Demo: ${m.demo}</p>
+    <div class="bar"><div style="width:${100 * d / ss.length}%"></div></div>
+    <div class="meta"><span>${d} of ${ss.length} stories</span><span>${Math.round(100 * d / ss.length)}%</span></div></div>`;
+}).join('');
+
+// Gantt: one column per day from the first commit (2026-10-29) to today.
+const first = new Date('2026-10-29'), today = '2026-11-06';
+const days = [];
+for (let d = new Date(first); d <= new Date(today); d.setDate(d.getDate() + 1)) days.push(d.toISOString().slice(0, 10));
+const g = document.getElementById('gantt');
+g.style.setProperty('--days', days.length);
+let html = '<div class="hd"></div>' + days.map(d => {
+  const dt = new Date(d);
+  return `<div class="hd ${d === today ? 'today' : ''}">${dt.toLocaleDateString('en-GB', { weekday: 'short' }).toUpperCase()}<br>${dt.getDate()} ${dt.toLocaleDateString('en-GB', { month: 'short' })}</div>`;
+}).join('');
+let row = 2;
+const clsOf = { done: 'b-done', live: 'b-live', prog: 'b-prog', ui: 'b-ui' };
+for (const m of mvps) {
+  const ss = stories.filter(s => s.mvp === m.n && s.start);
+  if (!ss.length) continue;
+  html += `<div class="grp" style="grid-row:${row++}">MVP ${m.n} · ${m.name}</div>`;
+  for (const s of ss) {
+    const a = days.indexOf(s.start) + 2, b = days.indexOf(s.end) + 3;
+    html += `<div class="lbl" style="grid-row:${row};grid-column:1"><b>${s.id}</b>${s.name}</div>`;
+    html += days.map((d, i) => `<div class="cell ${d === today ? 'today' : ''}" style="grid-row:${row};grid-column:${i + 2}"></div>`).join('');
+    html += `<div class="barx ${clsOf[s.st]}" style="grid-row:${row};grid-column:${a}/${b}" title="${s.id} ${s.start} to ${s.end}">${s.note || ''}</div>`;
+    row++;
+  }
+}
+g.innerHTML = html;
+
+// Queue of stories with no work yet.
+document.getElementById('queue').innerHTML = stories.filter(s => s.st === 'ready')
+  .map(s => `<tr><td>${s.id}</td><td>${s.name}</td><td>MVP ${s.mvp} · Ready</td></tr>`).join('');
+</script>
+</body>
+</html>
