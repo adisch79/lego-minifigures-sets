@@ -56,3 +56,14 @@ test('who: bidi and zero-width chars are stripped', () => {
   assert.equal(whoLabel('\u202e\u200b', U), 'user 12345678');
   assert.ok(!buildMessage('Eve\u202e', { user_id: U, kind: 'series', target_id: '71053' }).includes('\u202e'));
 });
+
+test('who: U+061C, line/paragraph separators and invisible operators are stripped', () => {
+  assert.equal(whoLabel('A؜B C D⁠E⁡F⁤G', U), 'ABCDEFG');
+});
+
+test('who: truncation keeps surrogate pairs whole', () => {
+  const name = '\u{1F600}'.repeat(60);
+  const out = whoLabel(name, U);
+  assert.equal(Array.from(out).length, 50);
+  assert.equal(out, '\u{1F600}'.repeat(50));
+});

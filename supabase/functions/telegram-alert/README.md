@@ -35,7 +35,12 @@ Message: `<display name or "user <8 chars of id>"> wants <figure|series> <id>` p
        select * from pg_extension where extname in ('pg_net','supabase_vault');
        select has_function_privilege('authenticated','net.http_post(text,jsonb,jsonb,jsonb,integer)','execute'), has_schema_privilege('authenticated','net','usage');
 
-   Both extensions must be listed. The second query must return false, false. If true, apply a revoke migration (the shipped migration already revokes `net` usage and execute from anon and authenticated; grants held through other roles need a follow-up).
+   Both extensions must be listed. The second query must return false, false. If true, run `supabase/scripts/revoke_net_access.sql` in the SQL editor (the migration already revokes `net` usage and execute from public, anon and authenticated).
+   After any pg_net enable or upgrade, re-run this privilege check and, if it returns true, run that script again.
+
+## Known limits
+- Accepted narrow race: call 1 claims, call 2 sees the claim and answers 200, call 1 then fails and releases. The alert stays unsent until the next re-mark.
+- `index.ts` is covered by the live check only (Deno is not installed here); `logic.ts` is unit-tested.
 
 ## Telegram chat id
 Create a bot with @BotFather (`/newbot`) to get the token. Send any message to the bot (or add it to the group), then open `https://api.telegram.org/bot<token>/getUpdates` and read `message.chat.id` (negative for groups). Keep the token out of shell history and git.

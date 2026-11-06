@@ -41,10 +41,11 @@ export function linkFor(targetId: string): string {
 export function whoLabel(displayName: string | null | undefined, userId: string): string {
   // Bidi and zero-width chars are removed (they can spoof the text); control chars become spaces.
   const clean = (displayName ?? '')
-    .replace(/[\u200b-\u200f\u202a-\u202e\u2066-\u2069\ufeff]/g, '')
+    .replace(/[\u061c\u200b-\u200f\u2028\u2029\u202a-\u202e\u2060-\u2064\u2066-\u2069\ufeff]/g, '')
     .replace(/[\u0000-\u001f\u007f-\u009f]/g, ' ')
-    .trim().slice(0, 50);
-  return clean !== '' ? clean : `user ${userId.slice(0, 8)}`;
+    .trim();
+  const clipped = Array.from(clean).slice(0, 50).join('');
+  return clipped !== '' ? clipped : `user ${userId.slice(0, 8)}`;
 }
 
 // Plain text only: the sender sets no parse_mode.

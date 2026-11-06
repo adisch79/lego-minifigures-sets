@@ -14,10 +14,11 @@ Deno.serve(async (req: Request) => {
   if (req.method !== 'POST') return json(405, { error: 'method' });
 
   // Shared secret first: an unauthenticated caller learns nothing about configuration.
+  // A missing secret answers 401 like a wrong one; the detail is logged server-side only.
   const hookSecret = Deno.env.get('ALERT_HOOK_SECRET');
   if (!hookSecret) {
-    console.error('telegram-alert: missing configuration');
-    return json(500, { error: 'config' });
+    console.error('telegram-alert: config missing');
+    return json(401, { error: 'unauthorized' });
   }
   if (!(await secretsMatch(req.headers.get('x-alert-secret'), hookSecret))) {
     return json(401, { error: 'unauthorized' });
@@ -43,46 +44,67 @@ Deno.serve(async (req: Request) => {
   const db = createClient(supaUrl, serviceKey, { auth: { persistSession: false } });
 
   // Claim first: only one caller can flip sent_at from null, so no double send.
-  // If Telegram then fails, the claim is released so a re-mark can retry.
+  // If anything then fails, the claim is released so a re-mark can retry.
+  const claimedAt = new Date().toISOString();
   const { data: claimed, error: cErr } = await db
-    .from('wanted_alerts').update({ sent_at: new Date().toISOString() })
+    .from('wanted_alerts').update({ sent_at: claimedAt })
     .eq('user_id', key.user_id).eq('kind', key.kind).eq('target_id', key.target_id)
     .is('sent_at', null)
     .select('user_id');
   if (cErr) { console.error('telegram-alert: claim failed'); return json(500, { error: 'db' }); }
   if (!claimed || claimed.length === 0) return json(200, { status: 'already sent or no alert' });
 
+  // Releases only our own claim: the sent_at must still equal the value we wrote.
   const release = async () => {
-    const { error } = await db
-      .from('wanted_alerts').update({ sent_at: null })
-      .eq('user_id', key.user_id).eq('kind', key.kind).eq('target_id', key.target_id);
-    if (error) console.error('telegram-alert: could not clear claim');
-    return error;
+    try {
+      const { error } = await db
+        .from('wanted_alerts').update({ sent_at: null })
+        .eq('user_id', key.user_id).eq('kind', key.kind).eq('target_id', key.target_id)
+        .eq('sent_at', claimedAt);
+      if (error) console.error('telegram-alert: could not clear claim');
+      return error ?? null;
+    } catch {
+      console.error('telegram-alert: could not clear claim');
+      return true;
+    }
   };
 
-  const { data: profile } = await db
-    .from('profiles').select('display_name').eq('user_id', key.user_id).maybeSingle();
-
-  // No parse_mode: plain text. The token is part of the URL, so errors never log the URL.
-  let res: Response | null = null;
+  let sent = false;
+  let status = 500;
   try {
-    res = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
-      method: 'POST',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({
-        chat_id: chatId,
-        text: buildMessage(profile?.display_name, key),
-        disable_web_page_preview: true,
-      }),
-      signal: AbortSignal.timeout(8000),
-    });
+    const { data: profile } = await db
+      .from('profiles').select('display_name').eq('user_id', key.user_id).maybeSingle();
+
+    // No parse_mode: plain text. The token is part of the URL, so errors never log the URL.
+    let res: Response | null = null;
+    try {
+      res = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          chat_id: chatId,
+          text: buildMessage(profile?.display_name, key),
+          disable_web_page_preview: true,
+        }),
+        signal: AbortSignal.timeout(8000),
+      });
+    } catch {
+      console.error('telegram-alert: telegram request failed');
+    }
+    if (res && res.ok) {
+      sent = true;
+    } else {
+      if (res) console.error(`telegram-alert: telegram answered ${res.status}`);
+      status = 502;
+    }
   } catch {
-    console.error('telegram-alert: telegram request failed');
+    console.error('telegram-alert: unexpected failure');
+  } finally {
+    if (!sent) {
+      const relErr = await release();
+      if (relErr) status = 500;
+    }
   }
-  if (!res || !res.ok) {
-    if (res) console.error(`telegram-alert: telegram answered ${res.status}`);
-    const relErr = await release();
-    return relErr ? json(500, { error: 'db' }) : json(502, { error: 'telegram' });
-  }
-  return json(200, { status: 'sent' });
+  if (sent) return json(200, { status: 'sent' });
+  return status === 502 ? json(502, { error: 'telegram' }) : json(500, { error: 'db' });
 });
