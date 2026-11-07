@@ -35,6 +35,8 @@ jobs:
         run: gh api --paginate --slurp users/adisch79/repos | node scripts/check_pages_origin.mjs
 
   build:
+    # The daily cron runs only the Pages origin guard.
+    if: github.event_name != 'schedule'
     runs-on: ubuntu-latest
     defaults:
       run:
