@@ -5,10 +5,10 @@ on:
     - cron: '17 5 * * *'
   push:
     branches: [dev, master]
-    paths: ['app/**', 'site/img/**', '.github/workflows/app-ci.yml', 'scripts/check_pages_origin*']
+    paths: ['app/**', 'site/img/**', '.github/workflows/app-ci.yml', 'scripts/check_pages_origin*', 'scripts/check_bundle_keys*']
   pull_request:
     branches: [dev, master]
-    paths: ['app/**', 'site/img/**', '.github/workflows/app-ci.yml', 'scripts/check_pages_origin*']
+    paths: ['app/**', 'site/img/**', '.github/workflows/app-ci.yml', 'scripts/check_pages_origin*', 'scripts/check_bundle_keys*']
 
 concurrency:
   group: app-ci-${{ github.ref }}
@@ -124,3 +124,70 @@ jobs:
           path: app/dist
       - id: deployment
         uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e # v4.0.5
+
+  # V2-06: same build, published to Cloudflare Pages. GitHub Pages deploy above stays until the smoke passes.
+  deploy-cloudflare:
+    needs: build
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    environment: cloudflare-pages
+    concurrency:
+      group: cloudflare-pages
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: app/package-lock.json
+      - name: Check anon key shape
+        env:
+          VITE_SUPABASE_ANON_KEY: ${{ vars.VITE_SUPABASE_ANON_KEY }}
+        run: |
+          key="$VITE_SUPABASE_ANON_KEY"
+          [ -z "$key" ] && { echo "VITE_SUPABASE_ANON_KEY is empty"; exit 1; }
+          case "$key" in
+            sb_publishable_*) exit 0 ;;
+          esac
+          role=$(printf '%s' "$key" | cut -d. -f2 | tr '_-' '/+' | { read -r p; while [ $(( ${#p} % 4 )) -ne 0 ]; do p="$p="; done; printf '%s' "$p"; } | base64 -d 2>/dev/null | sed -n 's/.*"role" *: *"\([^"]*\)".*/\1/p')
+          if [ "$role" != "anon" ]; then
+            echo "VITE_SUPABASE_ANON_KEY is not a publishable key or an anon JWT" >&2
+            exit 1
+          fi
+      # prebuild copies site/img into the app; fail if the build ships without figure images or headers.
+      - run: npm ci && npm run build && test -f dist/img/71019/71019-1.webp && test -f dist/_headers
+        working-directory: app
+        env:
+          VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ vars.VITE_SUPABASE_ANON_KEY }}
+      - name: Fail if a secret key is in the bundle
+        run: "! grep -rEq 'sb_secret_[A-Za-z0-9_-]{16,}' dist"
+        working-directory: app
+      # Decodes every JWT in dist and fails on role service_role.
+      - name: Fail if a service_role JWT is in the bundle
+        run: node --test scripts/check_bundle_keys.test.mjs && node scripts/check_bundle_keys.mjs app/dist
+      # The CSP connect-src Supabase host must be the project the bundle was built for.
+      - name: Check _headers Supabase host matches VITE_SUPABASE_URL
+        env:
+          VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL }}
+        run: |
+          node -e '
+            const fs = require("fs");
+            const want = new URL(process.env.VITE_SUPABASE_URL).origin;
+            const line = fs.readFileSync("app/dist/_headers", "utf8").split("\n").find((l) => /^\s+Content-Security-Policy:/.test(l)) || "";
+            const m = line.match(/connect-src ([^;]+)/);
+            const hosts = m ? m[1].trim().split(/\s+/).filter((h) => h.startsWith("https://")) : [];
+            if (hosts.length !== 1 || hosts[0] !== want) { console.error("_headers connect-src hosts " + JSON.stringify(hosts) + " != " + want); process.exit(1); }
+          '
+      # SOURCE: https://github.com/cloudflare/wrangler-action/releases/tag/v4.1.3 (pinned by commit); wrangler 4.158.0 SOURCE: https://www.npmjs.com/package/wrangler (npm view, 2026-11-07)
+      - uses: cloudflare/wrangler-action@953926a2e2182532811c01a25e53647d93bf07c0 # v4.1.3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+          wranglerVersion: '4.158.0'
+          command: pages deploy app/dist --project-name=minifighunt --branch=master

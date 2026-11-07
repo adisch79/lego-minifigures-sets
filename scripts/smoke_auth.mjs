@@ -33,9 +33,9 @@ const UNKNOWN_ADDRESS = "smoke-unlisted@example.invalid";
 // confirmed gets "signup". SOURCE: https://supabase.com/docs/guides/auth/auth-email-templates
 // and supabase/auth internal/api/verify.go
 const LINK_TYPES = ["magiclink", "email", "signup"];
-// The live app. Without a redirect in the request, the link falls back to the project's Site URL.
-// SOURCE: docs/design/V2-01-schema.md and docs/HANDOFF.md (live URL)
-const SITE_URL = "https://adisch79.github.io/lego-minifigures-sets/";
+// The live app (V2-06: Cloudflare Pages custom domain). Without a redirect in the request, the link falls back to the project's Site URL.
+// SOURCE: docs/decisions.md 2026-11-07 (origin minifighunt.com)
+const SITE_URL = "https://minifighunt.com/";
 
 function readEnv(file) {
   const values = {};

@@ -16,7 +16,7 @@ const FAKE_TOKEN = "FAKE-TOKEN-VALUE";
 const FAKE_HASH = "FAKE-HASH-VALUE";
 // Same shape as the emailed link. The host is reserved: opening it would fail the run.
 // SOURCE: https://supabase.com/docs/guides/auth/auth-email-templates
-const linkOf = (type, hash = FAKE_HASH, redirect = "https://adisch79.github.io/lego-minifigures-sets/") =>
+const linkOf = (type, hash = FAKE_HASH, redirect = "https://minifighunt.com/") =>
   `https://project-ref.invalid/auth/v1/verify?token=${hash}&type=${type}&redirect_to=${redirect}`;
 
 // locked = true behaves like a correctly configured project; false like one with signups on.

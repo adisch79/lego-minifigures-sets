@@ -7,14 +7,16 @@ Edge Function (Deno) that adds or removes an invited person (story V2-05). Needs
 - `verify_jwt = true` (`config.toml`). The function also validates the token with `auth.getUser`, then checks `public.admins` live (403 `not_admin`).
 - `add`: inserts the allowlist row, then creates the account (`email_confirm: true`). A create failure other than "already registered" removes the allowlist row again.
 - `remove`: refuses admins and the caller (`is_admin`), hard-deletes the account (profile, marks and alerts cascade), then deletes the allowlist row. The person's marks are lost.
-- CORS: only origin `https://adisch79.github.io`; other origin 403, other method 405.
+- CORS: only the exact origins in `ALLOWED_ORIGINS` (`https://minifighunt.com`, and `https://adisch79.github.io` during the V2-06 cutover; removed at V2-06 step (h)). ACAO echoes the caller with `Vary: Origin`; other origin 403, other method 405.
 - Answers `{"ok": true}` or `{"error": "<code>"}`: `unauthorized` (401), `not_admin` (403), `bad_request` and `bad_email` (400), `is_admin` (409), `internal` (500). Logs never hold emails or tokens.
 
 ## Deploy (owner steps)
 1. SQL Editor: paste `supabase/migrations/20261107000000_v2_05_admin.sql` and run it. Never `db push`.
 2. Deploy (without `--no-verify-jwt`):
 
-       npx supabase functions deploy admin-people --project-ref iagnfgedasxkqqjbsoeg
+       npx --yes supabase functions deploy admin-people --remote=iagnfgedasxkqqjbsoeg --yes
+
+   (`--project-ref` is deprecated; `--yes` is required in agent/`!` mode. Verified 2026-11-07.)
 
    `SUPABASE_URL`, `SUPABASE_ANON_KEY` and `SUPABASE_SERVICE_ROLE_KEY` are injected by the platform; no extra secrets.
 
@@ -22,7 +24,7 @@ Edge Function (Deno) that adds or removes an invited person (story V2-05). Needs
 The admin page (`#admin`) calls it. Manual check with an admin's access token (keep it out of shell history and git):
 
     curl -X POST https://iagnfgedasxkqqjbsoeg.supabase.co/functions/v1/admin-people \
-      -H "Origin: https://adisch79.github.io" -H "Authorization: Bearer <admin access token>" \
+      -H "Origin: https://minifighunt.com" -H "Authorization: Bearer <admin access token>" \
       -H "Content-Type: application/json" -d '{"action":"add","email":"person@example.com"}'
 
 ## Test
