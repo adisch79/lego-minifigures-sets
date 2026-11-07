@@ -29,6 +29,9 @@ describe('public/_headers', () => {
   it('CSP img-src has no external host (all images are bundled)', () => {
     expect(header('Content-Security-Policy')).toMatch(/img-src 'self' data:(;|$)/)
   })
+  it('Permissions-Policy disables unused features', () => {
+    expect(header('Permissions-Policy')).toBe('camera=(), microphone=(), geolocation=(), payment=(), usb=()')
+  })
   it('sets HSTS, nosniff and Referrer-Policy', () => {
     expect(header('Strict-Transport-Security')).toMatch(/^max-age=\d{7,}/)
     expect(header('X-Content-Type-Options')).toBe('nosniff')

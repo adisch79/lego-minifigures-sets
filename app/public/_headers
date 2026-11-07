@@ -12,3 +12,5 @@
   X-Content-Type-Options: nosniff
 # SOURCE: https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Referrer-Policy
   Referrer-Policy: strict-origin-when-cross-origin
+# Disable powerful browser features the app never uses. SOURCE: https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Permissions-Policy
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=()

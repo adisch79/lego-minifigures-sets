@@ -4,6 +4,11 @@
 
 // SOURCE: docs/design/V2-05-admin.md, "CORS": exact origin of the site; SOURCE: docs/decisions.md 2026-11-07 (minifighunt.com, Cloudflare Pages).
 export const ALLOWED_ORIGIN = 'https://minifighunt.com';
+// Cutover: GitHub Pages stays live until the V2-06 smoke passes, so its origin is accepted too (exact match only).
+// TODO: remove the GitHub origin when GitHub Pages is switched off (V2-06 step 7).
+// SOURCE: docs/decisions.md 2026-11-07 (dual origin during cutover).
+export const ALLOWED_ORIGINS: readonly string[] = [ALLOWED_ORIGIN, 'https://adisch79.github.io'];
+export const isAllowedOrigin = (origin: string | null): origin is string => origin !== null && ALLOWED_ORIGINS.includes(origin);
 // SOURCE: docs/design/V2-05-admin.md, "Writes": allowed request headers.
 export const ALLOWED_HEADERS = 'authorization, apikey, content-type, x-client-info';
 // SOURCE: docs/design/V2-05-admin.md, "Writes": body must be at most 1 KB.
@@ -40,21 +45,21 @@ export type Req = {
 
 export type Res = { status: number; headers: Record<string, string>; body: unknown };
 
-function corsHeaders(): Record<string, string> {
+function corsHeaders(origin: string): Record<string, string> {
   return {
-    'access-control-allow-origin': ALLOWED_ORIGIN,
+    'access-control-allow-origin': origin,
     'access-control-allow-headers': ALLOWED_HEADERS,
     'access-control-allow-methods': 'POST, OPTIONS',
     vary: 'Origin',
   };
 }
 
-const reply = (status: number, body: unknown): Res => ({
+const reply = (origin: string, status: number, body: unknown): Res => ({
   status,
-  headers: { ...corsHeaders(), 'content-type': 'application/json' },
+  headers: { ...corsHeaders(origin), 'content-type': 'application/json' },
   body,
 });
-const fail = (status: number, code: ErrorCode): Res => reply(status, { error: code });
+const fail = (origin: string, status: number, code: ErrorCode): Res => reply(origin, status, { error: code });
 
 // Trim, lower-case, then: max length, exactly one @ with text both sides, no whitespace or
 // control characters. Returns null when invalid.
@@ -84,59 +89,60 @@ export function isAlreadyRegistered(err: AuthErr): boolean {
 
 export async function handleRequest(req: Req, deps: Deps): Promise<Res> {
   // Origin first: any other origin (or none) learns nothing.
-  if (req.origin !== ALLOWED_ORIGIN) return { status: 403, headers: { vary: 'Origin' }, body: { error: 'origin' } };
-  if (req.method === 'OPTIONS') return { status: 204, headers: corsHeaders(), body: null };
-  if (req.method !== 'POST') return fail(405, 'bad_request');
+  if (!isAllowedOrigin(req.origin)) return { status: 403, headers: { vary: 'Origin' }, body: { error: 'origin' } };
+  const o: string = req.origin; // exact allowed origin, echoed in ACAO
+  if (req.method === 'OPTIONS') return { status: 204, headers: corsHeaders(o), body: null };
+  if (req.method !== 'POST') return fail(o, 405, 'bad_request');
   // Declared size over the limit: refuse before any auth work or body use.
-  if (typeof req.contentLength === 'number' && req.contentLength > MAX_BODY_BYTES) return fail(413, 'bad_request');
+  if (typeof req.contentLength === 'number' && req.contentLength > MAX_BODY_BYTES) return fail(o, 413, 'bad_request');
 
   const jwt = bearerToken(req.authorization);
-  if (!jwt) return fail(401, 'unauthorized');
+  if (!jwt) return fail(o, 401, 'unauthorized');
   let caller: AuthUser | null = null;
   try {
     caller = await deps.getUser(jwt);
   } catch {
     deps.log('admin-people: token check failed');
   }
-  if (!caller) return fail(401, 'unauthorized');
+  if (!caller) return fail(o, 401, 'unauthorized');
 
   let admin = false;
   try {
     admin = await deps.isAdmin(caller.id);
   } catch {
     deps.log('admin-people: admin check failed');
-    return fail(500, 'internal');
+    return fail(o, 500, 'internal');
   }
-  if (!admin) return fail(403, 'not_admin');
+  if (!admin) return fail(o, 403, 'not_admin');
 
   // Body: JSON object, at most 1 KB, exactly action and email.
-  if (new TextEncoder().encode(req.bodyText).length > MAX_BODY_BYTES) return fail(400, 'bad_request');
+  if (new TextEncoder().encode(req.bodyText).length > MAX_BODY_BYTES) return fail(o, 400, 'bad_request');
   let body: unknown;
   try {
     body = JSON.parse(req.bodyText);
   } catch {
-    return fail(400, 'bad_request');
+    return fail(o, 400, 'bad_request');
   }
-  if (typeof body !== 'object' || body === null || Array.isArray(body)) return fail(400, 'bad_request');
+  if (typeof body !== 'object' || body === null || Array.isArray(body)) return fail(o, 400, 'bad_request');
   const b = body as Record<string, unknown>;
-  if (b.action !== 'add' && b.action !== 'remove') return fail(400, 'bad_request');
+  if (b.action !== 'add' && b.action !== 'remove') return fail(o, 400, 'bad_request');
   const email = normalizeEmail(b.email);
-  if (!email) return fail(400, 'bad_email');
+  if (!email) return fail(o, 400, 'bad_email');
 
   try {
-    return b.action === 'add' ? await add(email, deps) : await remove(email, caller, deps);
+    return b.action === 'add' ? await add(o, email, deps) : await remove(o, email, caller, deps);
   } catch {
     deps.log('admin-people: unexpected failure');
-    return fail(500, 'internal');
+    return fail(o, 500, 'internal');
   }
 }
 
 // V2-01 "Adding a person": allowlist row first (the auth.users trigger needs it), then the account.
-async function add(email: string, deps: Deps): Promise<Res> {
+async function add(o: string, email: string, deps: Deps): Promise<Res> {
   const ins = await deps.insertAllowlist(email);
   if (!ins.ok) {
     deps.log('admin-people: allowlist insert failed');
-    return fail(500, 'internal');
+    return fail(o, 500, 'internal');
   }
   const err = await deps.createUser(email);
   if (err && !isAlreadyRegistered(err)) {
@@ -147,25 +153,25 @@ async function add(email: string, deps: Deps): Promise<Res> {
     } else {
       deps.log('admin-people: createUser failed, allowlist row kept');
     }
-    return fail(500, 'internal');
+    return fail(o, 500, 'internal');
   }
-  return reply(200, { ok: true });
+  return reply(o, 200, { ok: true });
 }
 
 // V2-01 "Removing a person": refuse admins, hard-delete the account, then drop the allowlist row.
-async function remove(email: string, caller: AuthUser, deps: Deps): Promise<Res> {
+async function remove(o: string, email: string, caller: AuthUser, deps: Deps): Promise<Res> {
   const target = await deps.lookup(email);
-  if (target && (target.is_admin || target.user_id === caller.id)) return fail(409, 'is_admin');
+  if (target && (target.is_admin || target.user_id === caller.id)) return fail(o, 409, 'is_admin');
   if (target) {
     const err = await deps.deleteUser(target.user_id);
     if (err) {
       deps.log('admin-people: deleteUser failed');
-      return fail(500, 'internal');
+      return fail(o, 500, 'internal');
     }
   }
   if (!(await deps.deleteAllowlist(email))) {
     deps.log('admin-people: allowlist delete failed');
-    return fail(500, 'internal');
+    return fail(o, 500, 'internal');
   }
-  return reply(200, { ok: true });
+  return reply(o, 200, { ok: true });
 }

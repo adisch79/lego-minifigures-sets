@@ -5,7 +5,9 @@ project_id = "lego-minifigures-sets"
 
 [auth]
 site_url = "https://minifighunt.com/"
-additional_redirect_urls = []
+# Record of intent only (the hosted project is set in the dashboard). Remove the GitHub URL when GitHub Pages is switched off (V2-06 step 7).
+# SOURCE: docs/decisions.md 2026-11-07 (dual origin during cutover)
+additional_redirect_urls = ["https://minifighunt.com/", "https://adisch79.github.io/lego-minifigures-sets/"]
 # Global flag: nobody signs up. Accounts are created by an admin.
 # SOURCE: https://github.com/supabase/supabase/issues/40582
 enable_signup = false
