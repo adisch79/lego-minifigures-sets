@@ -187,6 +187,12 @@
 
 @media (max-width:640px) {
   .aw-tag { padding:5px 9px; font-size:10px; letter-spacing:.14em; }
+  /* One header row on a phone (mockup c-390): the admin band drops the brand tagline and
+     tightens gaps so brand, Admin tag, back arrow and account fit 354px without wrapping. */
+  .band-top:has(> .aw-tag) { gap:8px; }
+  .band-top:has(> .aw-tag) .brand { gap:10px; }
+  .band-top:has(> .aw-tag) .brand b { font-size:18px; }
+  .band-top:has(> .aw-tag) .brand small { display:none; }
   .aw-hero { padding:10px 0 22px; gap:18px; }
   .aw-sum { gap:6px 16px; }
   .aw-open { width:100%; justify-content:space-between; height:56px; }
