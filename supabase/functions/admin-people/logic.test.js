@@ -1,12 +1,12 @@
 // Unit tests for the pure logic of the admin-people function (V2-05).
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { handleRequest, normalizeEmail, bearerToken, isAlreadyRegistered, ALLOWED_ORIGIN } from './logic.ts';
+import { handleRequest, normalizeEmail, bearerToken, isAlreadyRegistered, ALLOWED_ORIGIN, ALLOWED_ORIGINS } from './logic.ts';
 
 // Throwaway test values only.
 const ADMIN_ID = 'admin-id';
 const TOKEN = 'tok.en.value';
-const ORIGIN = 'https://adisch79.github.io';
+const ORIGIN = 'https://minifighunt.com';
 
 // In-memory fake of the world behind Deps.
 function world(over = {}) {
@@ -60,12 +60,26 @@ const post = (w, body, over = {}) => handleRequest({
 
 test('origin: other or missing origin refused 403, no CORS grant', async () => {
   const w = world();
-  for (const origin of ['https://evil.example', 'https://adisch79.github.io.evil.example', 'http://adisch79.github.io', null]) {
+  for (const origin of ['https://evil.example', 'https://minifighunt.com.evil.example', 'http://minifighunt.com', 'https://adisch79.github.io.evil.example', 'http://adisch79.github.io', 'https://adisch79.github.io/', null]) {
     const r = await post(w, { action: 'add', email: 'a@example.invalid' }, { origin });
     assert.equal(r.status, 403);
     assert.equal(r.headers['access-control-allow-origin'], undefined);
   }
   assert.deepEqual(w.calls, []);
+});
+
+test('origin: both cutover origins accepted, ACAO echoes the exact caller origin', async () => {
+  assert.deepEqual(ALLOWED_ORIGINS, ['https://minifighunt.com', 'https://adisch79.github.io']);
+  for (const origin of ALLOWED_ORIGINS) {
+    const w = world();
+    const r = await post(w, { action: 'add', email: 'a@example.invalid' }, { origin });
+    assert.equal(r.status, 200);
+    assert.equal(r.headers['access-control-allow-origin'], origin);
+    assert.equal(r.headers.vary, 'Origin');
+    const o = await post(w, '', { method: 'OPTIONS', authorization: null, origin });
+    assert.equal(o.status, 204);
+    assert.equal(o.headers['access-control-allow-origin'], origin);
+  }
 });
 
 test('preflight OPTIONS from the allowed origin answers 204 with exact CORS headers', async () => {

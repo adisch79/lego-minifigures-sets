@@ -25,14 +25,14 @@ test('parseAlertKey takes exactly the key', () => {
 });
 
 test('link: figure maps to parent series', () => {
-  const base = 'https://adisch79.github.io/lego-minifigures-sets/#series/';
+  const base = 'https://minifighunt.com/#series/';
   assert.equal(linkFor('71053'), base + '71053');
   assert.equal(linkFor('71053-4'), base + '71053');
 });
 
 test('message: plain text with who, what, link', () => {
   const m = buildMessage('Ann', { user_id: U, kind: 'figure', target_id: '71053-4' });
-  assert.equal(m, 'Ann wants figure 71053-4\nhttps://adisch79.github.io/lego-minifigures-sets/#series/71053');
+  assert.equal(m, 'Ann wants figure 71053-4\nhttps://minifighunt.com/#series/71053');
 });
 
 test('who: display name cleaned, else short id', () => {

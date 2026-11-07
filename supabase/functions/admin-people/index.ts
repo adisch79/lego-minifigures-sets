@@ -3,7 +3,7 @@
 // SUPABASE_URL, SUPABASE_ANON_KEY and SUPABASE_SERVICE_ROLE_KEY are injected by the platform.
 // SOURCE: https://supabase.com/docs/guides/functions/secrets
 import { createClient } from 'npm:@supabase/supabase-js@2';
-import { ALLOWED_ORIGIN, MAX_BODY_BYTES, handleRequest } from './logic.ts';
+import { isAllowedOrigin, MAX_BODY_BYTES, handleRequest } from './logic.ts';
 import type { Deps } from './logic.ts';
 
 // Reads at most `max` bytes of the body, then cancels the stream.
@@ -82,7 +82,7 @@ Deno.serve(async (req: Request) => {
   const declared = req.headers.get('content-length');
   const contentLength = declared !== null && /^\d+$/.test(declared) ? Number(declared) : null;
   let bodyText = '';
-  if (req.method === 'POST' && req.headers.get('origin') === ALLOWED_ORIGIN && !(contentLength !== null && contentLength > MAX_BODY_BYTES)) {
+  if (req.method === 'POST' && isAllowedOrigin(req.headers.get('origin')) && !(contentLength !== null && contentLength > MAX_BODY_BYTES)) {
     try {
       bodyText = await readCapped(req, MAX_BODY_BYTES + 1);
     } catch {
