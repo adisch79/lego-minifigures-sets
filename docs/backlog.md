@@ -58,6 +58,7 @@ Legend: **UI** = needs approved direction first. **Owner** = needs something onl
 | V2-03 | Mark owned / wanted | Per figure and per whole series; progress (e.g. 12/20 owned); filter "my wanted" / "missing" | M | sonnet + senior-frontend-dev | UI | Done (PR into dev) |
 | V2-04 | Telegram alert on wanted | New wanted mark → one Telegram message (who, what, link) within 1 min; repeat clicks not re-sent; token only in Supabase secrets | S | sonnet + security review | Owner (bot token) | Done (PR #26, deployed and verified live 2026-11-06) |
 | V2-05 | Admin page | Owner manages the allowlist and sees all wanted items | S | sonnet | UI | Ready |
+| V2-06 | Move hosting to Cloudflare Pages | Site served from own `*.pages.dev` origin by CI on push to master; `_headers` with CSP incl. `frame-ancestors 'none'`, HSTS, nosniff, Referrer-Policy; Supabase Site URL and redirect list exact new URL; `admin-people` ALLOWED_ORIGIN, `telegram-alert` SITE_URL, smoke script updated; sign-in and admin smoke pass on new URL; GitHub Pages then switched off | M | sonnet + security review | Owner (Cloudflare account, API token, Supabase URL settings) | Ready |
 
 ## MVP 3 — Lowest prices · demo: price chip on every series/figure
 | ID | Title | Acceptance criteria | Size | Model | Flags | Status |
