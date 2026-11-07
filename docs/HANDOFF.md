@@ -16,7 +16,7 @@ Secret names: function `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID`, `ALERT_HOOK_SEC
 - Smoke test: `node scripts/smoke_auth.mjs` sends no mail. `send <email>`, then `verify-link '<link>' <other-email>`: copy the link without opening it. Built-in mail allows 2 per hour and the full run uses both.
 
 ## Owner-needed
-- Hosting move decided 2026-11-07: Cloudflare Pages (story V2-06, after V2-05 release). Owner step 1 done 2026-11-07 (account + 2FA). Owner step 2 given: API token (Cloudflare Pages: Edit) as repo secret.
+- Hosting move decided 2026-11-07: Cloudflare Pages (story V2-06, after V2-05 release). Owner step 1 done 2026-11-07 (account + 2FA). Owner step 2 in progress: account API token, policy Entire Account > Developer Platform > Pages > Edit, expiry 1 year, saved as repo secret `CLOUDFLARE_API_TOKEN`. Account ID `2e5bef97d31f8048a95d39221f12f214` (not secret; becomes repo variable `CLOUDFLARE_ACCOUNT_ID`).
 - Check Supabase Authentication > URL Configuration: Site URL and redirect list exactly `https://adisch79.github.io/lego-minifigures-sets/`, no wildcard (security review 2026-11-05).
 - MVP 2: custom SMTP account before anyone but the owner can sign in.
 - Supabase keys are in `.env` (2026-10-31); a database password or access token may also be needed for migrations. Telegram bot token and chat id: repo-root `.env` and a NAS copy. Key names unverified: a deny rule blocks reading `.env`.
