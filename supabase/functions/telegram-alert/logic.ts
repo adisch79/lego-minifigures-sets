@@ -1,7 +1,7 @@
 // Pure helpers for the telegram-alert Edge Function. No Deno or network APIs here,
 // so node --test can import this file. Erasable TypeScript syntax only.
 
-export const SITE_URL = 'https://adisch79.github.io/lego-minifigures-sets/';
+export const SITE_URL = 'https://minifighunt.com/';
 
 // Same shapes as the CHECK constraint on public.marks (V2-01 migration).
 const SERIES_RE = /^[0-9]{4,6}$/;

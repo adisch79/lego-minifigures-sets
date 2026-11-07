@@ -4,7 +4,7 @@
 project_id = "lego-minifigures-sets"
 
 [auth]
-site_url = "https://adisch79.github.io/lego-minifigures-sets/"
+site_url = "https://minifighunt.com/"
 additional_redirect_urls = []
 # Global flag: nobody signs up. Accounts are created by an admin.
 # SOURCE: https://github.com/supabase/supabase/issues/40582

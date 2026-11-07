@@ -6,7 +6,7 @@ import { handleRequest, normalizeEmail, bearerToken, isAlreadyRegistered, ALLOWE
 // Throwaway test values only.
 const ADMIN_ID = 'admin-id';
 const TOKEN = 'tok.en.value';
-const ORIGIN = 'https://adisch79.github.io';
+const ORIGIN = 'https://minifighunt.com';
 
 // In-memory fake of the world behind Deps.
 function world(over = {}) {
@@ -60,7 +60,7 @@ const post = (w, body, over = {}) => handleRequest({
 
 test('origin: other or missing origin refused 403, no CORS grant', async () => {
   const w = world();
-  for (const origin of ['https://evil.example', 'https://adisch79.github.io.evil.example', 'http://adisch79.github.io', null]) {
+  for (const origin of ['https://evil.example', 'https://minifighunt.com.evil.example', 'http://minifighunt.com', null]) {
     const r = await post(w, { action: 'add', email: 'a@example.invalid' }, { origin });
     assert.equal(r.status, 403);
     assert.equal(r.headers['access-control-allow-origin'], undefined);

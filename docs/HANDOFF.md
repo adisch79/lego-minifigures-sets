@@ -24,6 +24,16 @@ Secret names: function `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID`, `ALERT_HOOK_SEC
 - MVP 2: custom SMTP account before anyone but the owner can sign in.
 - Supabase keys are in `.env` (2026-10-31); a database password or access token may also be needed for migrations. Telegram bot token and chat id: repo-root `.env` and a NAS copy. Key names unverified: a deny rule blocks reading `.env`.
 
+## V2-06 owner steps (Cloudflare Pages, origin https://minifighunt.com)
+Branch `feature/V2-06-cloudflare-pages`. Code ready; nothing deployed, no Supabase setting touched. Order matters.
+1. Create the Pages project once (CI cannot create it): `npx wrangler pages project create minifighunt --production-branch=master` (needs `CLOUDFLARE_API_TOKEN` in env), or dashboard Workers & Pages > Create > Pages > Direct Upload, name `minifighunt`.
+2. Release PR into master. The `deploy-cloudflare` job publishes to `minifighunt.pages.dev`; GitHub Pages deploy still runs.
+3. Dashboard Workers & Pages > minifighunt > Custom domains > Set up: `minifighunt.com` (zone is on the same account, DNS record is added automatically). Optional: `www` redirect.
+4. Supabase Authentication > URL Configuration: Site URL `https://minifighunt.com/`, Redirect URLs exactly `https://minifighunt.com/` (no wildcard). Keep the old GitHub URL in the list until step 7.
+5. Deploy functions, ALLOWED_ORIGIN and SITE_URL changed in code: `npx supabase functions deploy admin-people --project-ref iagnfgedasxkqqjbsoeg` and `npx supabase functions deploy telegram-alert --project-ref iagnfgedasxkqqjbsoeg`. Until then admin on the old origin still works; after, admin works only on the new origin (single allowed origin).
+6. Smoke: `node scripts/smoke_auth.mjs`, then `send <email>` and `verify-link '<link>' <other-email>` (redirect check now expects `https://minifighunt.com/`); open `https://minifighunt.com/#admin`; check headers: `curl -sI https://minifighunt.com/ | grep -i "content-security\|strict-transport\|nosniff\|referrer"`.
+7. After smoke passes: GitHub repo Settings > Pages > Unpublish site; remove the old URL from the Supabase redirect list; follow-up PR deletes the `deploy` job and `pages-origin-guard` (the guard still protects `adisch79.github.io` until then).
+
 ## Rules worth keeping at hand
 - Agent merges feature PRs into dev after code-reviewer and qa pass on the final diff (`gh pr merge <n> --merge`). The auto classifier refuses it otherwise.
 - Re-render cards: `python scripts/build_cards.py <ids>` (no args builds only missing cards).

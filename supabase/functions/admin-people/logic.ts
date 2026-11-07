@@ -2,8 +2,8 @@
 // here: every side effect comes in through Deps, so node --test can drive it.
 // Erasable TypeScript syntax only. Design: docs/design/V2-05-admin.md.
 
-// SOURCE: docs/design/V2-05-admin.md, "CORS": exact origin of the GitHub Pages site.
-export const ALLOWED_ORIGIN = 'https://adisch79.github.io';
+// SOURCE: docs/design/V2-05-admin.md, "CORS": exact origin of the site; SOURCE: docs/decisions.md 2026-11-07 (minifighunt.com, Cloudflare Pages).
+export const ALLOWED_ORIGIN = 'https://minifighunt.com';
 // SOURCE: docs/design/V2-05-admin.md, "Writes": allowed request headers.
 export const ALLOWED_HEADERS = 'authorization, apikey, content-type, x-client-info';
 // SOURCE: docs/design/V2-05-admin.md, "Writes": body must be at most 1 KB.

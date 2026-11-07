@@ -8,7 +8,7 @@ Edge Function (Deno) that sends one plain-text Telegram message when a user mark
 3. The function compares the secret in constant time, validates the body and id shapes, claims the alert (`sent_at` null to now, so no double send), reads the profile, sends the message (8 s timeout). On Telegram failure the claim is cleared and the function answers 502; the next re-mark retries.
 4. One alert per user and target, ever: rows survive unmarking. Above 20 alerts per user per hour the alert is dropped.
 
-Message: `<display name or "user <8 chars of id>"> wants <figure|series> <id>` plus a link to `https://adisch79.github.io/lego-minifigures-sets/#series/<seriesId>` (figures link to the parent series). Never the email.
+Message: `<display name or "user <8 chars of id>"> wants <figure|series> <id>` plus a link to `https://minifighunt.com/#series/<seriesId>` (figures link to the parent series). Never the email.
 
 ## Deploy order
 1. Dashboard, Database, Extensions: enable `pg_net` and `supabase_vault`.
