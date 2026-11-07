@@ -14,6 +14,7 @@ import {
   type RefObject,
 } from 'react'
 import { requestLink, signOut, useAuth, type AuthState } from './auth'
+import { useIsAdmin, type AdminGate } from './adminApi'
 import { DEMO, DEMO_AUTH } from './demo'
 
 type AccountUi = {
@@ -23,6 +24,9 @@ type AccountUi = {
   pillRef: RefObject<HTMLButtonElement | null>
   stripShown: boolean
   dismissStrip: () => void
+  /** Story V2-05: admin status, asked once per account and shared by the menu and the admin page. */
+  adminGate: AdminGate
+  recheckAdmin: () => void
 }
 
 const AccountContext = createContext<AccountUi | null>(null)
@@ -38,8 +42,11 @@ export function AccountProvider({ children }: { children: ReactNode }) {
   const stripShown =
     !stripDismissed && !!auth.linkError && auth.status !== 'disabled' && auth.status !== 'signed-in'
   const dismissStrip = useCallback(() => setStripDismissed(true), [])
+  const { gate: adminGate, recheck: recheckAdmin } = useIsAdmin(auth)
   return (
-    <AccountContext.Provider value={{ auth, open, setOpen, pillRef, stripShown, dismissStrip }}>
+    <AccountContext.Provider
+      value={{ auth, open, setOpen, pillRef, stripShown, dismissStrip, adminGate, recheckAdmin }}
+    >
       {children}
     </AccountContext.Provider>
   )
@@ -49,6 +56,12 @@ function useAccountUi(): AccountUi {
   const ui = useContext(AccountContext)
   if (!ui) throw new Error('Account components need an AccountProvider')
   return ui
+}
+
+/** Admin status for the signed-in user, and a way to ask again after a failed check. */
+export function useAdminGate(): { gate: AdminGate; recheck: () => void } {
+  const { adminGate, recheckAdmin } = useAccountUi()
+  return { gate: adminGate, recheck: recheckAdmin }
 }
 
 /** Auth state and a way to open the sign-in popover, for pages that react to the session. */
@@ -243,13 +256,32 @@ function SignInPanel({ onAnnounce }: { onAnnounce: (text: string) => void }) {
   )
 }
 
+function AdminIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M12 3 4 6v6c0 4.5 3.4 8.3 8 9 4.6-.7 8-4.5 8-9V6l-8-3Z" />
+      <path d="m9 12 2 2 4-4" />
+    </svg>
+  )
+}
+
 function SignedInPanel({ email, onDone }: { email: string; onDone: () => void }) {
   const outRef = useRef<HTMLButtonElement>(null)
+  const { adminGate } = useAccountUi()
   useEffect(() => outRef.current?.focus(), [])
   return (
     <>
       <p className="who">Signed in as</p>
       <p className="full">{email}</p>
+      {adminGate === 'admin' && (
+        <a className="adm-link" href="#admin" onClick={onDone}>
+          <AdminIcon />
+          <span>
+            <b>Admin</b>
+            <small>Wanted wall and allowlist</small>
+          </span>
+        </a>
+      )}
       <button
         ref={outRef}
         type="button"

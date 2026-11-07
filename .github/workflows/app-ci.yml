@@ -1,12 +1,14 @@
 name: App CI
 
 on:
+  schedule:
+    - cron: '17 5 * * *'
   push:
     branches: [dev, master]
-    paths: ['app/**', 'site/img/**', '.github/workflows/app-ci.yml']
+    paths: ['app/**', 'site/img/**', '.github/workflows/app-ci.yml', 'scripts/check_pages_origin*']
   pull_request:
     branches: [dev, master]
-    paths: ['app/**', 'site/img/**', '.github/workflows/app-ci.yml']
+    paths: ['app/**', 'site/img/**', '.github/workflows/app-ci.yml', 'scripts/check_pages_origin*']
 
 concurrency:
   group: app-ci-${{ github.ref }}
@@ -16,7 +18,25 @@ permissions:
   contents: read
 
 jobs:
+  # Shared origin guard (decisions.md 2026-11-06): only this repo may publish Pages.
+  pages-origin-guard:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 24
+      - run: node --test scripts/check_pages_origin.test.mjs
+      - name: Fail if another repo publishes Pages
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh api --paginate --slurp users/adisch79/repos | node scripts/check_pages_origin.mjs
+
   build:
+    # The daily cron runs only the Pages origin guard.
+    if: github.event_name != 'schedule'
     runs-on: ubuntu-latest
     defaults:
       run:

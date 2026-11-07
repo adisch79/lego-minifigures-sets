@@ -278,12 +278,12 @@ test('audit: definer functions pin search_path, RLS everywhere, nothing executab
   }
   const rls = await q("select relname from pg_class where relnamespace='public'::regnamespace and relkind='r' and not relrowsecurity");
   assert.deepEqual(rls.rows, []);
-  for (const role of ['anon', 'authenticated']) {
-    const ex = await q(`select p.proname from pg_proc p
+  const executable = async (role) => (await q(`select p.proname from pg_proc p
       where p.pronamespace in ('private'::regnamespace, 'public'::regnamespace)
-      and has_function_privilege('${role}', p.oid, 'execute')`);
-    assert.deepEqual(ex.rows, [], role);
-  }
+      and has_function_privilege('${role}', p.oid, 'execute') order by 1`)).rows.map((r) => r.proname);
+  assert.deepEqual(await executable('anon'), []);
+  // V2-05: exactly the admin read functions; each re-checks admins inside.
+  assert.deepEqual(await executable('authenticated'), ['admin_allowlist_list', 'admin_wanted_list', 'is_admin']);
 });
 
 test('none of the tables is in the realtime publication', async () => {

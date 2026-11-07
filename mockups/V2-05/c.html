@@ -1,0 +1,252 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>V2-05 admin, direction C: Wanted wall</title>
+<link rel="stylesheet" href="../../app/src/index.css">
+<link rel="stylesheet" href="admin.css">
+<style>
+/* Direction C: figure-centric. One card per wanted figure or series, with the collectors who want it stacked on it.
+   The allowlist lives in a slide-over panel opened from the band. Open it on load with c.html?allow */
+.c-hero { padding:22px 0 30px; display:flex; justify-content:space-between; align-items:flex-end; gap:28px; flex-wrap:wrap; }
+.c-hero h1 { font-size:clamp(40px,6vw,74px); line-height:.92; letter-spacing:-.05em; font-weight:800; margin:6px 0 0; }
+.c-hero h1 em { font-style:normal; color:var(--lego-red); }
+.c-hero .eyebrow { color:var(--ink); opacity:.7; }
+.c-sum { display:flex; gap:22px; margin-top:16px; font-size:13px; font-weight:700; }
+.c-sum b { font-size:20px; font-weight:800; letter-spacing:-.03em; margin-right:5px; font-variant-numeric:tabular-nums; }
+
+/* Header button that opens the slide-over */
+.c-open { display:inline-flex; align-items:center; gap:14px; height:58px; padding:0 8px 0 20px; border:0; border-radius:999px; background:var(--ink); color:var(--white); font:inherit; cursor:pointer; box-shadow:0 18px 30px -18px rgba(0,0,0,.6); transition:transform .2s var(--ease); }
+.c-open:hover { transform:translateY(-2px); }
+.c-open .lbl { text-align:left; line-height:1.1; }
+.c-open .lbl b { display:block; font-size:15px; font-weight:800; }
+.c-open .lbl small { font-size:12px; font-weight:600; color:#B9B9B4; }
+.c-open .stack .av { box-shadow:0 0 0 3px var(--ink); }
+.c-open .stack .av.ink { background:#3A3A36; color:var(--lego-yellow); }
+.c-open .stack .more { background:var(--lego-yellow); color:var(--ink); box-shadow:0 0 0 3px var(--ink); }
+
+/* Avatar stack used on cards and the header button */
+.stack { display:inline-flex; align-items:center; }
+.stack .av, .stack .more { width:30px; height:30px; font-size:12.5px; box-shadow:0 0 0 3px var(--white); }
+.stack > * + * { margin-left:-5px; }
+.stack .more { flex:none; border-radius:50%; display:grid; place-items:center; background:var(--grey-100); color:var(--ink); font-size:11.5px; font-weight:800; }
+
+/* Sort and filter chips */
+.c-bar { display:flex; align-items:center; gap:10px; padding:26px 0 22px; overflow-x:auto; scrollbar-width:none; }
+.c-bar::-webkit-scrollbar { display:none; }
+.fchip { flex:none; display:inline-flex; align-items:center; gap:9px; height:42px; padding:0 8px 0 18px; border-radius:999px; border:2px solid var(--grey-100); background:var(--white); color:var(--ink); font:inherit; font-size:14px; font-weight:800; cursor:pointer; transition:background .2s,border-color .2s,color .2s; }
+.fchip:hover { border-color:var(--ink); }
+.fchip i { font-style:normal; min-width:26px; height:26px; padding:0 7px; border-radius:999px; background:var(--grey-50); display:grid; place-items:center; font-size:12px; font-variant-numeric:tabular-nums; }
+.fchip[aria-pressed=true] { background:var(--ink); border-color:var(--ink); color:var(--white); }
+.fchip[aria-pressed=true] i { background:var(--lego-yellow); color:var(--ink); }
+.fchip.warn i { background:#FFE3E5; color:#B3000E; }
+.fchip.warn[aria-pressed=true] { background:var(--lego-red); border-color:var(--lego-red); }
+.fchip.warn[aria-pressed=true] i { background:var(--white); color:var(--lego-red); }
+.c-bar .hint { margin-left:auto; flex:none; font-size:13px; font-weight:600; color:var(--grey-500); }
+
+/* Card grid */
+.c-grid { list-style:none; margin:0; padding:0 0 96px; display:grid; grid-template-columns:repeat(auto-fill,minmax(230px,1fr)); gap:20px; }
+.c-card { position:relative; display:flex; flex-direction:column; background:var(--white); border-radius:26px; overflow:hidden; animation:rise .55s var(--ease) both; transition:transform .3s var(--ease), box-shadow .3s; }
+.c-card:hover { transform:translateY(-4px); box-shadow:0 28px 40px -26px rgba(0,0,0,.4); }
+.c-stage { position:relative; height:236px; background:radial-gradient(120% 80% at 50% 100%, #FFF4A8 0%, var(--grey-50) 62%); display:grid; place-items:center; overflow:hidden; }
+.c-stage img { height:88%; width:auto; max-width:80%; object-fit:contain; filter:drop-shadow(0 14px 14px rgba(0,0,0,.18)); transition:transform .45s var(--ease); }
+.c-card:hover .c-stage img { transform:scale(1.06) rotate(-2deg); }
+.c-stage.series { background:var(--grey-100); }
+.c-stage.series img { height:100%; width:100%; max-width:none; object-fit:cover; filter:none; }
+.c-rank { position:absolute; left:16px; top:10px; font-size:54px; font-weight:800; letter-spacing:-.06em; line-height:1; color:var(--ink); opacity:.1; font-variant-numeric:tabular-nums; }
+.c-stage.series .c-rank { display:none; }
+.c-whole { position:absolute; left:14px; bottom:14px; font-size:10.5px; font-weight:800; letter-spacing:.14em; text-transform:uppercase; background:var(--ink); color:var(--lego-yellow); padding:5px 9px; border-radius:999px; }
+
+/* Alert status dot: worst state of the card's alerts wins */
+.dot { position:absolute; top:14px; right:14px; display:inline-flex; align-items:center; gap:7px; height:28px; padding:0 11px 0 9px; border-radius:999px; background:rgba(255,255,255,.92); backdrop-filter:blur(6px); font-size:11.5px; font-weight:800; color:var(--ink); }
+.dot::before { content:""; width:10px; height:10px; border-radius:50%; background:#22A447; box-shadow:0 0 0 3px #D7F0DC; }
+.dot.queued::before { background:#E2B400; box-shadow:0 0 0 3px #FFF1A6; animation:blink 1.2s infinite; }
+.dot.none { background:var(--lego-red); color:var(--white); }
+.dot.none::before { background:var(--white); box-shadow:0 0 0 3px rgba(255,255,255,.35); }
+.c-card.none { box-shadow:inset 0 0 0 3px var(--lego-red); }
+.c-card.none .c-stage { margin:3px 3px 0; border-radius:23px 23px 0 0; }
+
+.c-body { padding:16px 18px 18px; display:flex; flex-direction:column; gap:3px; flex:1; }
+.c-body .id { font-size:11px; font-weight:800; letter-spacing:.12em; color:var(--grey-500); font-variant-numeric:tabular-nums; }
+.c-body h3 { margin:0; font-size:19px; font-weight:800; letter-spacing:-.03em; line-height:1.12; }
+.c-body .ser { font-size:13px; font-weight:600; color:var(--grey-500); }
+.c-foot { display:flex; align-items:center; gap:10px; margin-top:14px; padding-top:14px; border-top:1px dashed var(--grey-300); }
+.c-foot .cwho { min-width:0; flex:1; margin:0; font-size:13px; font-weight:700; line-height:1.25; letter-spacing:0; text-transform:none; color:var(--ink); }
+.c-foot .cwho b { display:block; font-size:14px; font-weight:800; }
+.c-foot .cwho span { display:block; color:var(--grey-500); font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+
+.c-empty { grid-column:1/-1; text-align:center; padding:60px 20px; color:var(--grey-500); font-weight:600; }
+.c-empty b { display:block; font-size:22px; color:var(--ink); letter-spacing:-.03em; margin-bottom:6px; }
+
+/* Slide-over allowlist panel */
+.scrim { position:fixed; inset:0; background:rgba(18,18,17,.48); backdrop-filter:blur(2px); opacity:0; pointer-events:none; transition:opacity .3s; z-index:20; }
+.panel { position:fixed; top:0; right:0; bottom:0; width:min(420px,100%); background:var(--white); z-index:21; display:flex; flex-direction:column; transform:translateX(102%); visibility:hidden; transition:transform .4s var(--ease), visibility 0s .4s; box-shadow:-30px 0 60px -30px rgba(0,0,0,.45); }
+body.open .scrim { opacity:1; pointer-events:auto; }
+body.open .panel { transform:none; visibility:visible; transition:transform .4s var(--ease); }
+.p-top { background:var(--ink); color:var(--white); padding:22px 22px 20px; }
+.p-row { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; }
+.p-top .eyebrow { color:var(--lego-yellow); }
+.p-top h2 { margin:6px 0 4px; font-size:28px; font-weight:800; letter-spacing:-.04em; }
+.p-top p { margin:0; font-size:13.5px; line-height:1.45; color:#B9B9B4; font-weight:500; }
+.p-top .icon-btn { color:var(--white); background:#2E2E2B; width:40px; height:40px; }
+.p-top .icon-btn:hover { background:var(--lego-red); color:var(--white); }
+.p-add { display:flex; gap:8px; margin-top:18px; }
+.p-add .mail { flex:1; background:#262624; border-color:#33332F; color:var(--white); }
+.p-add .mail::placeholder { color:#8A8A85; }
+.p-add .mail:focus { border-color:var(--lego-yellow); }
+.p-add .btn { background:var(--lego-yellow); color:var(--ink); padding:0 18px; }
+.p-split { display:flex; gap:8px; padding:16px 22px 6px; }
+.p-split span { font-size:12px; font-weight:800; padding:6px 11px; border-radius:999px; background:var(--grey-50); }
+.p-split span b { font-variant-numeric:tabular-nums; }
+.p-list { list-style:none; margin:0; padding:6px 12px 24px; overflow-y:auto; flex:1; }
+.p-p { display:flex; align-items:center; gap:12px; padding:10px; border-radius:16px; transition:background .2s; animation:rise .4s var(--ease) both; }
+.p-p:hover { background:var(--grey-50); }
+.p-p .t { display:block; min-width:0; flex:1 1 0; overflow:hidden; }
+.p-p .t b { display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:15px; font-weight:800; }
+.p-p .t b em { font-style:normal; font-size:10px; letter-spacing:.14em; text-transform:uppercase; background:var(--lego-red); color:var(--white); border-radius:999px; padding:2px 7px; margin-left:6px; vertical-align:2px; }
+.p-p .t small { display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:12.5px; font-weight:600; color:var(--grey-500); }
+.p-p .n { flex:none; font-size:12px; font-weight:800; color:var(--grey-500); font-variant-numeric:tabular-nums; }
+.p-p .n.hot { color:var(--lego-red); }
+.p-p .icon-btn { opacity:.55; }
+.p-p:hover .icon-btn, .p-p .icon-btn:focus-visible { opacity:1; }
+
+@media (max-width:640px) {
+  .c-hero { padding:10px 0 22px; gap:18px; }
+  .c-sum { gap:16px; }
+  .c-open { width:100%; justify-content:space-between; height:56px; }
+  .c-bar { padding:18px 16px 16px; margin:0 -16px; }
+  .c-bar .hint { display:none; }
+  .c-grid { grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; }
+  .c-card { border-radius:20px; }
+  .c-stage { height:168px; }
+  .c-rank { font-size:40px; left:12px; }
+  .dot { top:10px; right:10px; height:24px; padding:0 8px; font-size:0; gap:0; }
+  .dot::before { width:9px; height:9px; }
+  .c-whole { left:10px; bottom:10px; font-size:9.5px; }
+  .c-body { padding:12px 13px 14px; }
+  .c-body h3 { font-size:16px; }
+  .c-body .ser { font-size:12px; }
+  .c-foot { flex-direction:column; align-items:flex-start; gap:8px; margin-top:10px; padding-top:10px; }
+  .c-foot .cwho { width:100%; }
+  .stack .av, .stack .more { width:26px; height:26px; font-size:11px; }
+  .p-p .icon-btn { opacity:1; }
+}
+@media (prefers-reduced-motion:reduce) { * { animation:none !important; transition:none !important; } }
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script src="data.js"></script>
+<script>
+/* Group wanted marks by target (figure or whole series) */
+var RANK = { none: 3, queued: 2, sent: 1 };
+var byId = {}, CARDS = [];
+WANTED.forEach(function (w) {
+  var c = byId[w.id];
+  if (!c) { c = byId[w.id] = { w: w, people: [], latest: w.at, worst: 'sent', sent: 0 }; CARDS.push(c); }
+  c.people.push(person(w.who));
+  if (w.at > c.latest) c.latest = w.at;
+  if (RANK[w.alert] > RANK[c.worst]) c.worst = w.alert;
+  if (w.alert === 'sent') c.sent++;
+});
+var popular = CARDS.slice().sort(function (a, b) { return b.people.length - a.people.length || (b.latest > a.latest ? 1 : -1); });
+popular.forEach(function (c, i) { c.rank = i + 1; });
+var notSent = CARDS.filter(function (c) { return c.worst !== 'sent'; });
+var signed = PEOPLE.filter(function (p) { return p.signedIn; }).length;
+
+var DOT_TXT = { sent: 'Sent', queued: 'Queued', none: 'Not sent' };
+function stack(people, max) {
+  var html = people.slice(0, max).map(function (p) { return avatar(p, PEOPLE.indexOf(p)); }).join('');
+  if (people.length > max) html += '<span class="more">+' + (people.length - max) + '</span>';
+  return '<span class="stack">' + html + '</span>';
+}
+function names(people) {
+  var l = people.map(label);
+  return l.length <= 2 ? l.join(' & ') : l.slice(0, 2).join(', ') + ' +' + (l.length - 2);
+}
+function card(c, i) {
+  var w = c.w, series = w.kind === 'series';
+  return '<li class="c-card ' + c.worst + '" style="animation-delay:' + (i * 40) + 'ms">' +
+    '<div class="c-stage' + (series ? ' series' : '') + '"><img src="' + art(w) + '" alt="" loading="lazy">' +
+    '<span class="c-rank">' + (c.rank < 10 ? '0' : '') + c.rank + '</span>' +
+    '<span class="dot ' + c.worst + '" title="' + c.sent + ' of ' + c.people.length + ' alerts sent">' + DOT_TXT[c.worst] + '</span>' +
+    (series ? '<span class="c-whole">Whole series</span>' : '') + '</div>' +
+    '<div class="c-body"><span class="id">' + w.id + '</span><h3>' + esc(series ? w.name.replace(' Minifigures', '') : w.name) + '</h3>' +
+    '<span class="ser">' + (series ? 'All figures in the series' : SERIES[seriesOf(w)]) + '</span>' +
+    '<div class="c-foot">' + stack(c.people, 3) +
+    '<span class="cwho"><b>' + c.people.length + (c.people.length === 1 ? ' collector' : ' collectors') + '</b><span>' + esc(names(c.people)) + ' &middot; ' + ago(c.latest) + '</span></span></div></div></li>';
+}
+
+var VIEWS = {
+  popular: { title: 'Most wanted', list: function () { return popular; }, hint: 'Ranked by collectors, then newest' },
+  newest: { title: 'Newest', list: function () { return CARDS.slice().sort(function (a, b) { return b.latest > a.latest ? 1 : -1; }); }, hint: 'Latest mark first' },
+  unsent: { title: 'Not sent', list: function () { return notSent; }, hint: 'Queued or blocked by the hourly cap' }
+};
+var view = 'popular';
+
+function chips() {
+  return '<div class="c-bar" role="toolbar" aria-label="Sort and filter">' +
+    '<button class="fchip" data-v="popular" aria-pressed="' + (view === 'popular') + '">Most wanted <i>' + CARDS.length + '</i></button>' +
+    '<button class="fchip" data-v="newest" aria-pressed="' + (view === 'newest') + '">Newest <i>' + WANTED.length + '</i></button>' +
+    '<button class="fchip warn" data-v="unsent" aria-pressed="' + (view === 'unsent') + '">Not sent <i>' + notSent.length + '</i></button>' +
+    '<span class="hint">' + VIEWS[view].hint + '</span></div>';
+}
+function grid() {
+  var list = VIEWS[view].list();
+  if (!list.length) return '<ul class="c-grid"><li class="c-empty"><b>Every alert went out</b>Nothing is queued or blocked right now.</li></ul>';
+  return '<ul class="c-grid" aria-label="' + VIEWS[view].title + '">' + list.map(card).join('') + '</ul>';
+}
+
+var openBtn = '<button class="c-open" id="openAllow" aria-controls="panel" aria-expanded="false">' +
+  '<span class="lbl"><b>Allowlist</b><small>' + PEOPLE.length + ' invited &middot; ' + signed + ' signed in</small></span>' +
+  stack(PEOPLE.filter(function (p) { return p.signedIn; }), 3) + '</button>';
+
+var hero = '<div class="wrap c-hero"><div><p class="eyebrow">Admin &middot; Wanted wall</p>' +
+  '<h1>What they <em>want</em></h1>' +
+  '<div class="c-sum"><span><b>' + CARDS.length + '</b>figures</span><span><b>' + WANTED.length + '</b>marks</span><span><b>' + notSent.length + '</b>to check</span></div></div>' +
+  openBtn + '</div>';
+
+var wantCount = {};
+WANTED.forEach(function (w) { wantCount[w.who] = (wantCount[w.who] || 0) + 1; });
+var panel = '<div class="scrim" id="scrim"></div>' +
+  '<aside class="panel" id="panel" role="dialog" aria-modal="true" aria-labelledby="pt">' +
+  '<div class="p-top"><div class="p-row"><div><p class="eyebrow">Allowlist</p><h2 id="pt">Invited collectors</h2></div>' +
+  '<button class="icon-btn" id="closeAllow" aria-label="Close allowlist">' + X_ICON + '</button></div>' +
+  '<p>Only these addresses can get a sign-in link. Removing one signs that collector out.</p>' +
+  '<form class="p-add" onsubmit="return false"><label class="sr" for="m">Email to invite</label><input id="m" class="mail" type="email" placeholder="name@example.com">' +
+  '<button class="btn">' + PLUS_ICON + 'Invite</button></form></div>' +
+  '<div class="p-split"><span><b>' + signed + '</b> signed in</span><span><b>' + (PEOPLE.length - signed) + '</b> not yet</span></div>' +
+  '<ul class="p-list">' + PEOPLE.map(function (p, i) {
+    var n = wantCount[p.email] || 0;
+    return '<li class="p-p" style="animation-delay:' + (i * 30) + 'ms">' + avatar(p, i) +
+      '<span class="t"><b>' + esc(label(p)) + (p.admin ? '<em>You</em>' : '') + '</b><small title="' + esc(p.email) + '">' +
+      (p.signedIn ? 'Seen ' + ago(p.last) : 'Invited ' + ago(p.added) + ', not signed in') + '</small></span>' +
+      '<span class="n' + (n >= 4 ? ' hot' : '') + '">' + (n ? n + ' wanted' : '') + '</span>' +
+      (p.admin ? '' : '<button class="icon-btn" aria-label="Remove ' + esc(p.email) + '">' + X_ICON + '</button>') + '</li>';
+  }).join('') + '</ul></aside>';
+
+var app = document.getElementById('app');
+function render() {
+  document.getElementById('board').innerHTML = chips() + grid();
+}
+app.innerHTML = header(hero) + '<main class="wrap" id="board"></main>' + panel;
+render();
+
+document.getElementById('board').addEventListener('click', function (e) {
+  var b = e.target.closest('.fchip');
+  if (b) { view = b.getAttribute('data-v'); render(); }
+});
+function setOpen(on) {
+  document.body.classList.toggle('open', on);
+  document.getElementById('openAllow').setAttribute('aria-expanded', on);
+  if (on) document.getElementById('m').focus({ preventScroll: true });
+}
+document.getElementById('openAllow').onclick = function () { setOpen(true); };
+document.getElementById('closeAllow').onclick = function () { setOpen(false); };
+document.getElementById('scrim').onclick = function () { setOpen(false); };
+document.addEventListener('keydown', function (e) { if (e.key === 'Escape') setOpen(false); });
+if (/[?&]allow/.test(location.search)) setOpen(true);
+</script>
+</body>
+</html>
