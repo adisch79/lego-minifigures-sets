@@ -22,7 +22,7 @@ Adding and removing need the service role (Auth admin API), so they run in an Ed
 - Email: trim, lower-case, max 254 chars, one `@`, no whitespace or control chars. Body must be JSON, at most 1 KB.
 - `add`, as V2-01 "Adding a person": insert the allowlist row (`on conflict do nothing`), then `auth.admin.createUser({ email, email_confirm: true })`; if creation fails for any reason other than "already registered", delete the allowlist row and return `internal`.
 - `remove`, as V2-01 "Removing a person": look up the user with `admin_user_lookup`; refuse with `is_admin` if the target is an admin (covers self and last admin); `auth.admin.deleteUser(user_id)` (hard delete, cascades profile, marks, alerts, so a still-valid token can no longer write); then delete the allowlist row. Marks are lost; the UI says so in the confirm. With one admin, two admins removing each other cannot race; re-check if a second admin is added.
-- CORS: exact origin `https://adisch79.github.io`, `Access-Control-Allow-Headers: authorization, apikey, content-type, x-client-info`, `Vary: Origin`. Other origin 403, other method 405.
+- CORS: exact origin `https://minifighunt.com` (was `https://adisch79.github.io` until V2-06), `Access-Control-Allow-Headers: authorization, apikey, content-type, x-client-info`, `Vary: Origin`. Other origin 403, other method 405.
 - Responses: `{ok: true}` or `{error: "<code>"}` with codes `unauthorized`, `not_admin`, `bad_request`, `bad_email`, `is_admin`, `internal`. Never logs emails or tokens.
 
 ## UI (senior-frontend-dev, direction C)

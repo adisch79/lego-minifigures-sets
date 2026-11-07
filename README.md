@@ -26,16 +26,11 @@ python -m unittest discover tests   # run tests
 ```
 
 ### Live site
-**https://adisch79.github.io/lego-minifigures-sets/**
-
-**New origin (V2-06): https://minifighunt.com/** on Cloudflare Pages project `minifighunt`. The `deploy-cloudflare` job publishes `app/dist` (with `public/_headers`: CSP, HSTS) on every push to `master`.
-The GitHub Pages site above stays until the smoke test passes on the new origin, then it is switched off.
-
-The `deploy` job in `.github/workflows/app-ci.yml` publishes `app/dist` to GitHub Pages on every push to `master`.
+**https://minifighunt.com/** on Cloudflare Pages project `minifighunt` (only host; GitHub Pages is switched off). The `deploy-cloudflare` job in `.github/workflows/app-ci.yml` publishes `app/dist` (with `public/_headers`: CSP, HSTS) on every push to `master`.
 Flow: `feature/<story>` → `dev` → release merge into `master` (which deploys).
 
-Repo settings this needs (already done): Pages source = GitHub Actions; default branch = `master`;
-environment `github-pages` allows `master` to deploy.
+Repo settings this needs (already done): default branch = `master`; environment `cloudflare-pages` (branch `master` only)
+holds secret `CLOUDFLARE_API_TOKEN`; repo variable `CLOUDFLARE_ACCOUNT_ID`. GitHub Pages is off.
 
 ## Data source
 Catalog and images: [Rebrickable](https://rebrickable.com) data downloads. Personal, non-commercial use.
