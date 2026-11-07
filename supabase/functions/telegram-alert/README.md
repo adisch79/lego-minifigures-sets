@@ -19,7 +19,7 @@ Message: `<display name or "user <8 chars of id>"> wants <figure|series> <id>` p
    `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` are injected by the platform.
 3. Deploy the function. `config.toml` sets `verify_jwt = false` (the trigger has no user JWT; the shared secret is the gate):
 
-       npx supabase functions deploy telegram-alert --project-ref <ref>
+       npx --yes supabase functions deploy telegram-alert --remote=<ref> --yes
 
 4. Vault secrets (SQL editor, once; `alert_hook_secret` has the same value as `ALERT_HOOK_SECRET`):
 
