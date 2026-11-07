@@ -7,7 +7,7 @@ Edge Function (Deno) that adds or removes an invited person (story V2-05). Needs
 - `verify_jwt = true` (`config.toml`). The function also validates the token with `auth.getUser`, then checks `public.admins` live (403 `not_admin`).
 - `add`: inserts the allowlist row, then creates the account (`email_confirm: true`). A create failure other than "already registered" removes the allowlist row again.
 - `remove`: refuses admins and the caller (`is_admin`), hard-deletes the account (profile, marks and alerts cascade), then deletes the allowlist row. The person's marks are lost.
-- CORS: only the exact origins in `ALLOWED_ORIGINS` (`https://minifighunt.com`, and `https://adisch79.github.io` during the V2-06 cutover; removed at V2-06 step (h)). ACAO echoes the caller with `Vary: Origin`; other origin 403, other method 405.
+- CORS: only the exact origin `https://minifighunt.com` (`ALLOWED_ORIGINS`). ACAO echoes the caller with `Vary: Origin`; other origin 403, other method 405.
 - Answers `{"ok": true}` or `{"error": "<code>"}`: `unauthorized` (401), `not_admin` (403), `bad_request` and `bad_email` (400), `is_admin` (409), `internal` (500). Logs never hold emails or tokens.
 
 ## Deploy (owner steps)
