@@ -1,7 +1,7 @@
 // Pure logic for story V1-05: hash routing and the series page's figure selection.
 import type { Figure, Series } from './catalog'
 
-export type Route = { page: 'home' } | { page: 'series'; id: string }
+export type Route = { page: 'home' } | { page: 'admin' } | { page: 'series'; id: string }
 
 export type Load =
   | { status: 'loading' }
@@ -18,8 +18,10 @@ function decode(text: string): string {
   }
 }
 
-/** Reads the route from location.hash. Any hash that is not a series link means home. */
+/** Reads the route from location.hash. Any hash that is not a series or admin link means home. */
 export function parseRoute(hash: string): Route {
+  // Story V2-05: the admin page. A trailing slash is tolerated like on series links.
+  if (hash.replace(/\/+$/, '') === '#admin') return { page: 'admin' }
   if (!hash.startsWith(SERIES_PREFIX)) return { page: 'home' }
   return { page: 'series', id: decode(hash.slice(SERIES_PREFIX.length).replace(/\/+$/, '')) }
 }

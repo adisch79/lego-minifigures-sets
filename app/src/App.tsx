@@ -24,6 +24,7 @@ import { AccountControl, AccountProvider, LinkErrorStrip, useAccount } from './A
 import { filterSeries, type SeriesFilter } from './marks'
 import { FilterBar, HeartOutlineIcon, MarksProvider, TileBadge, TileProgress, TrophyIcon, useMarksUi } from './MarkChips'
 import SeriesPage, { Brand, LoadError } from './SeriesPage'
+import Admin from './Admin'
 
 // Vite base is './', so this stays correct under a Pages sub-path.
 const BASE = import.meta.env.BASE_URL
@@ -328,9 +329,11 @@ export default function App() {
   // Kept here, not in Home, so the filter survives a visit to a series page.
   const [filter, setFilter] = useState<SeriesFilter>('all')
   const seriesId = route.page === 'series' ? route.id : null
+  // One key per page, so scroll and focus react to any page change (home, admin, a series).
+  const pageKey = route.page === 'series' ? `series/${route.id}` : route.page
 
-  // Last committed route, and how far down home was when it was left.
-  const shownId = useRef(seriesId)
+  // Last committed page key, and how far down home was when it was left.
+  const shownKey = useRef(pageKey)
   const homeScroll = useRef(0)
 
   useEffect(() => {
@@ -364,7 +367,7 @@ export default function App() {
   useEffect(() => {
     const onHash = () => {
       // Read before the render: leaving home shortens the page and would clamp the offset.
-      if (shownId.current === null) homeScroll.current = window.scrollY
+      if (shownKey.current === 'home') homeScroll.current = window.scrollY
       setRoute(parseRoute(window.location.hash))
     }
     window.addEventListener('hashchange', onHash)
@@ -373,23 +376,26 @@ export default function App() {
 
   // Moving between pages replaces the document content, so scroll and focus are set by hand.
   useLayoutEffect(() => {
-    const previous = shownId.current
-    if (previous === seriesId) return
-    shownId.current = seriesId
-    if (seriesId !== null) {
+    const previous = shownKey.current
+    if (previous === pageKey) return
+    shownKey.current = pageKey
+    if (pageKey !== 'home') {
       window.scrollTo(0, 0)
       document.querySelector<HTMLElement>('h1')?.focus({ preventScroll: true })
     } else {
       window.scrollTo(0, homeScroll.current)
+      // Back from a series: focus the tile that led there. Series keys match the tile hrefs.
       const tile = [...document.querySelectorAll<HTMLElement>('a.tile-link')].find(
-        (a) => a.getAttribute('href') === `#series/${previous}`,
+        (a) => a.getAttribute('href') === `#${previous}`,
       )
       tile?.focus({ preventScroll: true })
     }
-  }, [seriesId])
+  }, [pageKey])
 
   useEffect(() => {
-    if (seriesId === null) {
+    if (route.page === 'admin') {
+      document.title = 'Admin - Minifig Vault'
+    } else if (seriesId === null) {
       document.title = 'Minifig Vault'
     } else if (load.status === 'ready') {
       const found = findSeries(load.series, seriesId)
@@ -397,7 +403,7 @@ export default function App() {
         ? `${found.id} ${found.name} - Minifig Vault`
         : 'Series not found - Minifig Vault'
     }
-  }, [seriesId, load])
+  }, [route.page, seriesId, load])
 
   const retry = () => {
     setLoad({ status: 'loading' })
@@ -407,7 +413,9 @@ export default function App() {
   return (
     <AccountProvider>
       <MarksProvider>
-        {seriesId !== null ? (
+        {route.page === 'admin' ? (
+          <Admin load={load} onRetry={retry} />
+        ) : seriesId !== null ? (
           <SeriesPage id={seriesId} load={load} onRetry={retry} />
         ) : (
           <Home

@@ -25,3 +25,7 @@ enable_signup = false
 # ALERT_HOOK_SECRET is the gate (constant-time compare inside the function).
 [functions.telegram-alert]
 verify_jwt = false
+
+# V2-05: admin page calls this with the signed-in user JWT; the function re-checks admins.
+[functions.admin-people]
+verify_jwt = true
