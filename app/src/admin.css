@@ -1,0 +1,216 @@
+/* Admin page (story V2-05), approved direction C "Wanted wall" (mockups/V2-05/c.html, admin.css).
+   Every class carries an aw- (wall) or ap- (allowlist panel) prefix: index.css already owns plain
+   .dot, .sent, .av, .eyebrow, .empty and .hint, and a shared name would pick up their rules.
+   Theme tokens (--lego-red, --ink, --grey-*) come from index.css. */
+
+.aw-page { min-height:100vh; background:var(--grey-50); }
+
+/* Header row: brand, Admin tag, back link, account */
+.aw-tag { flex:none; font-size:11px; font-weight:800; letter-spacing:.18em; text-transform:uppercase; background:var(--ink); color:var(--lego-yellow); border-radius:999px; padding:6px 11px; }
+
+/* Hero */
+.aw-hero { padding:22px 0 30px; display:flex; justify-content:space-between; align-items:flex-end; gap:28px; flex-wrap:wrap; }
+.aw-eyebrow { font-size:11.5px; font-weight:800; letter-spacing:.16em; text-transform:uppercase; margin:0; opacity:.7; }
+.aw-hero h1 { font-size:clamp(40px,6vw,74px); line-height:.92; letter-spacing:-.05em; font-weight:800; margin:6px 0 0; }
+.aw-hero h1 em { font-style:normal; color:var(--lego-red); }
+.aw-hero h1:focus { outline:none; }
+.aw-sum { display:flex; flex-wrap:wrap; gap:8px 22px; margin:16px 0 0; padding:0; list-style:none; font-size:13px; font-weight:700; }
+.aw-sum b { font-size:20px; font-weight:800; letter-spacing:-.03em; margin-right:5px; font-variant-numeric:tabular-nums; }
+.aw-sum-wait { display:inline-block; width:240px; height:24px; border-radius:999px; background:rgba(255,255,255,.55); animation:breathe 1.4s ease-in-out infinite; }
+
+/* Avatars and the stacked avatar row */
+.aw-av { flex:none; width:34px; height:34px; border-radius:50%; background:var(--lego-red); color:var(--lego-yellow); display:grid; place-items:center; font-size:15px; font-weight:800; }
+.aw-av.t-ink { background:var(--ink); color:var(--lego-yellow); }
+.aw-av.t-y { background:var(--lego-yellow); color:var(--ink); }
+.aw-av.t-ghost { background:transparent; border:2px dashed var(--grey-300); color:var(--grey-500); }
+.aw-stack { display:inline-flex; align-items:center; flex:none; }
+.aw-stack .aw-av, .aw-stack .aw-more { width:30px; height:30px; font-size:12.5px; box-shadow:0 0 0 3px var(--white); }
+.aw-stack > * + * { margin-left:-5px; }
+.aw-more { flex:none; border-radius:50%; display:grid; place-items:center; background:var(--grey-100); color:var(--ink); font-size:11.5px; font-weight:800; font-variant-numeric:tabular-nums; }
+
+/* Header button that opens the allowlist */
+.aw-open { display:inline-flex; align-items:center; gap:14px; height:58px; padding:0 8px 0 20px; border:0; border-radius:999px; background:var(--ink); color:var(--white); font:inherit; cursor:pointer; box-shadow:0 18px 30px -18px rgba(0,0,0,.6); transition:transform .2s var(--ease), box-shadow .2s; }
+.aw-open:hover { transform:translateY(-2px); box-shadow:0 22px 34px -18px rgba(0,0,0,.65); }
+.aw-open:active { transform:scale(.98); }
+.aw-open:disabled { cursor:progress; opacity:.7; transform:none; }
+.aw-open-l { text-align:left; line-height:1.1; }
+.aw-open-l b { display:block; font-size:15px; font-weight:800; }
+.aw-open-l small { font-size:12px; font-weight:600; color:#B9B9B4; font-variant-numeric:tabular-nums; }
+.aw-open .aw-stack .aw-av, .aw-open .aw-stack .aw-more { box-shadow:0 0 0 3px var(--ink); }
+.aw-open .aw-stack .aw-av.t-ink { background:#3A3A36; }
+.aw-open .aw-stack .aw-more { background:var(--lego-yellow); color:var(--ink); }
+.aw-open .aw-stack:empty { display:none; }
+
+/* Sort and filter chips */
+.aw-bar { display:flex; align-items:center; gap:10px; padding:26px 0 22px; overflow-x:auto; scrollbar-width:none; }
+.aw-bar::-webkit-scrollbar { display:none; }
+.aw-chip { flex:none; display:inline-flex; align-items:center; gap:9px; height:42px; padding:0 8px 0 18px; border-radius:999px; border:2px solid var(--grey-100); background:var(--white); color:var(--ink); font:inherit; font-size:14px; font-weight:800; cursor:pointer; transition:background .2s, border-color .2s, color .2s, transform .15s; }
+.aw-chip:hover { border-color:var(--ink); }
+.aw-chip:active { transform:scale(.97); }
+.aw-chip i { font-style:normal; min-width:26px; height:26px; padding:0 7px; border-radius:999px; background:var(--grey-50); display:grid; place-items:center; font-size:12px; font-variant-numeric:tabular-nums; }
+.aw-chip[aria-pressed=true] { background:var(--ink); border-color:var(--ink); color:var(--white); }
+.aw-chip[aria-pressed=true] i { background:var(--lego-yellow); color:var(--ink); }
+.aw-chip.warn i { background:#FFE3E5; color:#B3000E; }
+.aw-chip.warn[aria-pressed=true] { background:var(--lego-red); border-color:var(--lego-red); }
+.aw-chip.warn[aria-pressed=true] i { background:var(--white); color:var(--lego-red); }
+.aw-hint { margin-left:auto; flex:none; font-size:13px; font-weight:600; color:var(--grey-500); }
+
+/* Over-the-limit notice */
+.aw-note { display:flex; gap:12px; align-items:center; margin:0 0 20px; padding:12px 16px; border-radius:16px; background:var(--white); box-shadow:inset 0 0 0 2px var(--lego-yellow); font-size:14px; font-weight:600; line-height:1.4; animation:drop .35s var(--ease) both; }
+.aw-note-i { flex:none; width:30px; height:30px; border-radius:50%; background:var(--lego-yellow); color:var(--ink); display:grid; place-items:center; font-weight:800; }
+
+/* Card grid */
+.aw-grid { list-style:none; margin:0; padding:0 0 96px; display:grid; grid-template-columns:repeat(auto-fill,minmax(230px,1fr)); gap:20px; }
+.aw-card { position:relative; min-width:0; display:flex; flex-direction:column; background:var(--white); border-radius:26px; overflow:hidden; animation:rise .55s var(--ease) both; transition:transform .3s var(--ease), box-shadow .3s; }
+.aw-card:hover { transform:translateY(-4px); box-shadow:0 28px 40px -26px rgba(0,0,0,.4); }
+.aw-stage { position:relative; height:236px; background:radial-gradient(120% 80% at 50% 100%, #FFF4A8 0%, var(--grey-50) 62%); display:grid; place-items:center; overflow:hidden; }
+.aw-stage img { height:88%; width:auto; max-width:80%; object-fit:contain; filter:drop-shadow(0 14px 14px rgba(0,0,0,.18)); transition:transform .45s var(--ease); }
+.aw-card:hover .aw-stage img { transform:scale(1.06) rotate(-2deg); }
+/* Opaque white renders: multiply drops the white into the stage colour, a shadow would outline the box */
+.aw-stage.k-render img { mix-blend-mode:multiply; filter:none; height:72%; }
+/* A composed series card or a bag photo fills the stage */
+.aw-stage.k-cover, .aw-stage.k-photo { background:var(--grey-100); }
+.aw-stage.k-cover img, .aw-stage.k-photo img { height:100%; width:100%; max-width:none; object-fit:cover; filter:none; }
+.aw-card:hover .aw-stage.k-cover img, .aw-card:hover .aw-stage.k-photo img { transform:scale(1.04); }
+.aw-none { padding:0 20px; text-align:center; font-size:15px; font-weight:800; color:var(--grey-500); letter-spacing:-.01em; }
+.aw-rank { position:absolute; left:16px; top:10px; font-size:54px; font-weight:800; letter-spacing:-.06em; line-height:1; color:var(--ink); opacity:.1; font-variant-numeric:tabular-nums; pointer-events:none; }
+.aw-stage.k-cover .aw-rank, .aw-stage.k-photo .aw-rank { display:none; }
+.aw-whole { position:absolute; left:14px; bottom:14px; font-size:10.5px; font-weight:800; letter-spacing:.14em; text-transform:uppercase; background:var(--ink); color:var(--lego-yellow); padding:5px 9px; border-radius:999px; }
+
+/* Alert status: the worst state of the card's alerts wins */
+.aw-dot { position:absolute; top:14px; right:14px; display:inline-flex; align-items:center; gap:7px; height:28px; padding:0 11px 0 9px; border-radius:999px; background:rgba(255,255,255,.92); backdrop-filter:blur(6px); font-size:11.5px; font-weight:800; color:var(--ink); }
+.aw-dot::before { content:""; flex:none; width:10px; height:10px; border-radius:50%; background:#22A447; box-shadow:0 0 0 3px #D7F0DC; }
+.aw-dot.a-unsent::before { background:#E2B400; box-shadow:0 0 0 3px #FFF1A6; animation:aw-blink 1.2s infinite; }
+.aw-dot.a-none { background:var(--lego-red); color:var(--white); }
+.aw-dot.a-none::before { background:var(--white); box-shadow:0 0 0 3px rgba(255,255,255,.35); }
+.aw-card.a-none { box-shadow:inset 0 0 0 3px var(--lego-red); }
+.aw-card.a-none:hover { box-shadow:inset 0 0 0 3px var(--lego-red), 0 28px 40px -26px rgba(0,0,0,.4); }
+.aw-card.a-none .aw-stage { margin:3px 3px 0; border-radius:23px 23px 0 0; }
+
+.aw-body { padding:16px 18px 18px; display:flex; flex-direction:column; gap:3px; flex:1; min-width:0; }
+.aw-id { font-size:11px; font-weight:800; letter-spacing:.12em; color:var(--grey-500); font-variant-numeric:tabular-nums; }
+.aw-body h3 { margin:0; font-size:19px; font-weight:800; letter-spacing:-.03em; line-height:1.12; overflow-wrap:break-word; }
+.aw-ser { font-size:13px; font-weight:600; color:var(--grey-500); }
+.aw-foot { display:flex; align-items:center; gap:10px; margin-top:auto; padding-top:14px; border-top:1px dashed var(--grey-300); }
+.aw-body .aw-foot { margin-top:14px; }
+.aw-who { min-width:0; flex:1; font-size:13px; font-weight:700; line-height:1.25; }
+.aw-who b { display:block; font-size:14px; font-weight:800; }
+.aw-who span { display:block; color:var(--grey-500); font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+
+/* Loading skeleton cards */
+.aw-card.aw-ghost { animation:none; }
+.aw-card.aw-ghost:hover { transform:none; box-shadow:none; }
+.aw-card.aw-ghost .aw-stage { background:var(--grey-50); animation:breathe 1.4s ease-in-out infinite; }
+.aw-card.aw-ghost .ghost-line { margin-top:10px; }
+
+/* Empty and error states inside the wall */
+.aw-empty { grid-column:1/-1; text-align:center; padding:64px 20px 72px; color:var(--grey-500); font-weight:600; line-height:1.5; background:var(--white); border-radius:26px; }
+.aw-empty b { display:block; font-size:22px; color:var(--ink); letter-spacing:-.03em; margin-bottom:6px; }
+.aw-empty p { margin:0 auto; max-width:44ch; }
+.aw-empty-i { width:64px; height:64px; margin:0 auto 16px; border-radius:20px; background:var(--lego-yellow); color:var(--ink); display:grid; place-items:center; box-shadow:0 10px 20px -12px rgba(0,0,0,.3); animation:snap .5s var(--ease); }
+.aw-empty.bad .aw-empty-i { background:var(--lego-red); color:var(--white); }
+.aw-empty .again { margin-top:20px; }
+
+/* Gate screens: not signed in, not an admin, checking, failed check */
+.aw-gate { padding:clamp(28px,8vh,90px) 0 80px; max-width:720px; }
+.aw-gate h1 { font-size:clamp(38px,5.4vw,66px); line-height:.95; letter-spacing:-.045em; font-weight:800; margin:18px 0 18px; }
+.aw-gate h1 em { font-style:normal; color:var(--lego-red); }
+.aw-gate h1:focus { outline:none; }
+.aw-gate p { font-size:17px; line-height:1.5; font-weight:500; margin:0 0 28px; max-width:46ch; }
+.aw-gate-i { width:72px; height:72px; border-radius:22px; background:var(--ink); color:var(--lego-yellow); display:grid; place-items:center; box-shadow:0 18px 30px -18px rgba(0,0,0,.6); animation:stamp .6s var(--ease) both; }
+.aw-gate-i.bad { background:var(--lego-red); color:var(--white); }
+.aw-gate-i.wait { background:rgba(255,255,255,.55); box-shadow:none; animation:breathe 1.4s ease-in-out infinite; }
+.aw-acts { display:flex; flex-wrap:wrap; gap:10px; }
+.aw-btn { display:inline-flex; align-items:center; justify-content:center; gap:8px; height:48px; padding:0 22px; border:0; border-radius:999px; font:inherit; font-size:15px; font-weight:800; cursor:pointer; text-decoration:none; background:var(--ink); color:var(--lego-yellow); white-space:nowrap; transition:transform .15s, background .2s, color .2s; }
+.aw-btn:active { transform:scale(.97); }
+.aw-btn.light { background:var(--white); color:var(--ink); }
+.aw-btn.light:hover { background:var(--ink); color:var(--lego-yellow); }
+
+/* Slide-over allowlist */
+.ap-scrim { position:fixed; inset:0; background:rgba(18,18,17,.48); backdrop-filter:blur(2px); opacity:0; pointer-events:none; transition:opacity .3s; z-index:30; }
+.ap-scrim.on { opacity:1; pointer-events:auto; }
+.ap-panel { position:fixed; top:0; right:0; bottom:0; width:min(420px,100%); background:var(--white); z-index:31; display:flex; flex-direction:column; transform:translateX(102%); visibility:hidden; transition:transform .4s var(--ease), visibility 0s .4s; box-shadow:-30px 0 60px -30px rgba(0,0,0,.45); }
+.ap-panel.on { transform:none; visibility:visible; transition:transform .4s var(--ease); }
+.ap-top { background:var(--ink); color:var(--white); padding:22px 22px 20px; }
+.ap-row { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; }
+.ap-eyebrow { font-size:11.5px; font-weight:800; letter-spacing:.16em; text-transform:uppercase; margin:0; color:var(--lego-yellow); }
+.ap-top h2 { margin:6px 0 4px; font-size:28px; font-weight:800; letter-spacing:-.04em; }
+.ap-top p { margin:0; font-size:13.5px; line-height:1.45; color:#B9B9B4; font-weight:500; }
+.ap-top :focus-visible { outline-color:var(--lego-yellow); }
+.ap-x { flex:none; width:40px; height:40px; border-radius:50%; border:0; background:#2E2E2B; color:var(--white); display:grid; place-items:center; cursor:pointer; transition:background .2s, color .2s; }
+.ap-x:hover { background:var(--lego-red); }
+.ap-add { display:flex; gap:8px; margin-top:18px; }
+.ap-mail { flex:1; min-width:0; height:46px; border-radius:999px; border:2px solid #33332F; background:#262624; padding:0 18px; color:var(--white); font:inherit; font-size:15px; transition:border-color .2s; }
+.ap-mail::placeholder { color:#8A8A85; }
+.ap-mail:focus { outline:none; border-color:var(--lego-yellow); }
+.ap-mail.bad { border-color:#FF5A66; }
+.ap-go { flex:none; display:inline-flex; align-items:center; justify-content:center; gap:8px; height:46px; min-width:108px; padding:0 18px; border:0; border-radius:999px; background:var(--lego-yellow); color:var(--ink); font:inherit; font-size:14px; font-weight:800; cursor:pointer; transition:transform .15s, opacity .2s; }
+.ap-go:active { transform:scale(.97); }
+.ap-go:disabled { cursor:progress; opacity:.75; }
+.ap-msg { display:flex; gap:8px; align-items:flex-start; margin:10px 2px 0; font-size:13px; line-height:1.4; font-weight:700; color:#FF8A93; }
+.ap-msg.ok { color:var(--lego-yellow); }
+.ap-split { display:flex; gap:8px; padding:16px 22px 6px; }
+.ap-split span { font-size:12px; font-weight:800; padding:6px 11px; border-radius:999px; background:var(--grey-50); }
+.ap-split b { font-variant-numeric:tabular-nums; }
+.ap-list { list-style:none; margin:0; padding:6px 12px 24px; overflow-y:auto; overscroll-behavior:contain; flex:1; }
+.ap-p { border-radius:16px; transition:background .2s, box-shadow .2s; animation:rise .4s var(--ease) both; }
+.ap-p:hover { background:var(--grey-50); }
+.ap-line { display:flex; align-items:center; gap:12px; padding:10px; }
+.ap-t { display:block; min-width:0; flex:1 1 0; overflow:hidden; }
+.ap-t b { display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:15px; font-weight:800; }
+.ap-t b em { font-style:normal; font-size:10px; letter-spacing:.14em; text-transform:uppercase; background:var(--lego-red); color:var(--white); border-radius:999px; padding:2px 7px; margin-left:6px; vertical-align:2px; }
+.ap-t small { display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:12.5px; font-weight:600; color:var(--grey-500); }
+.ap-n { flex:none; font-size:12px; font-weight:800; color:var(--grey-500); font-variant-numeric:tabular-nums; }
+.ap-n.hot { color:var(--lego-red); }
+.ap-rm { flex:none; width:36px; height:36px; border-radius:50%; border:0; background:transparent; color:var(--grey-500); display:grid; place-items:center; cursor:pointer; opacity:.55; transition:background .2s, color .2s, opacity .2s; }
+.ap-rm:hover { background:#FFF5F5; color:var(--lego-red); }
+.ap-p:hover .ap-rm, .ap-rm:focus-visible { opacity:1; }
+
+/* Inline remove confirm: the row turns into a small red-edged card */
+.ap-p.ask { background:#FFF5F5; box-shadow:inset 0 0 0 2px var(--lego-red); }
+.ap-p.ask:hover { background:#FFF5F5; }
+.ap-ask { padding:0 12px 12px 56px; animation:drop .3s var(--ease) both; }
+.ap-ask p { margin:0 0 10px; font-size:13px; line-height:1.45; font-weight:600; color:var(--ink); }
+.ap-ask p b { font-weight:800; }
+.ap-ask-b { display:flex; gap:8px; }
+.ap-ask-b button { height:38px; padding:0 16px; border-radius:999px; font:inherit; font-size:13.5px; font-weight:800; cursor:pointer; display:inline-flex; align-items:center; gap:8px; transition:transform .15s, background .2s; }
+.ap-ask-b button:active { transform:scale(.97); }
+.ap-ask-b button:disabled { cursor:progress; opacity:.75; }
+.ap-keep { border:2px solid var(--ink); background:var(--white); color:var(--ink); }
+.ap-del { border:0; background:var(--lego-red); color:var(--white); }
+.ap-err { margin:10px 0 0; font-size:12.5px; font-weight:700; color:#B3000E; }
+.ap-empty { padding:40px 20px; text-align:center; font-size:14px; font-weight:600; color:var(--grey-500); }
+
+.aw-spin { flex:none; width:14px; height:14px; border-radius:50%; border:2px solid currentColor; border-right-color:transparent; animation:spin .8s linear infinite; }
+
+@keyframes aw-blink { 50% { opacity:.25; } }
+
+@media (max-width:640px) {
+  .aw-tag { padding:5px 9px; font-size:10px; letter-spacing:.14em; }
+  .aw-hero { padding:10px 0 22px; gap:18px; }
+  .aw-sum { gap:6px 16px; }
+  .aw-open { width:100%; justify-content:space-between; height:56px; }
+  .aw-bar { padding:18px 18px 16px; margin:0 -18px; }
+  .aw-hint { display:none; }
+  .aw-grid { grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; padding-bottom:64px; }
+  .aw-card { border-radius:20px; }
+  .aw-card.a-none .aw-stage { border-radius:17px 17px 0 0; }
+  .aw-stage { height:168px; }
+  .aw-rank { font-size:40px; left:12px; }
+  /* On a phone the dot keeps its colour and drops the word; the word stays for screen readers */
+  .aw-dot { top:10px; right:10px; height:24px; padding:0 8px; gap:0; }
+  .aw-dot span { position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; }
+  .aw-dot::before { width:9px; height:9px; }
+  .aw-whole { left:10px; bottom:10px; font-size:9.5px; }
+  .aw-body { padding:12px 13px 14px; }
+  .aw-body h3 { font-size:16px; }
+  .aw-ser { font-size:12px; }
+  .aw-foot { flex-direction:column; align-items:flex-start; gap:8px; padding-top:10px; }
+  .aw-body .aw-foot { margin-top:10px; }
+  .aw-who { width:100%; }
+  .aw-stack .aw-av, .aw-stack .aw-more { width:26px; height:26px; font-size:11px; }
+  .aw-empty { border-radius:20px; padding:48px 18px 56px; }
+  .ap-rm { opacity:1; }
+  .ap-mail { font-size:16px; }
+  .ap-ask { padding-left:12px; }
+}
