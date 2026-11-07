@@ -60,7 +60,7 @@ const post = (w, body, over = {}) => handleRequest({
 
 test('origin: other or missing origin refused 403, no CORS grant', async () => {
   const w = world();
-  for (const origin of ['https://evil.example', 'https://minifighunt.com.evil.example', 'http://minifighunt.com', 'https://adisch79.github.io.evil.example', 'http://adisch79.github.io', 'https://adisch79.github.io/', null]) {
+  for (const origin of ['https://evil.example', 'https://minifighunt.com.evil.example', 'http://minifighunt.com', 'https://adisch79.github.io.evil.example', 'http://adisch79.github.io', 'https://adisch79.github.io/', 'https://adisch79.github.io', null]) {
     const r = await post(w, { action: 'add', email: 'a@example.invalid' }, { origin });
     assert.equal(r.status, 403);
     assert.equal(r.headers['access-control-allow-origin'], undefined);
@@ -68,8 +68,8 @@ test('origin: other or missing origin refused 403, no CORS grant', async () => {
   assert.deepEqual(w.calls, []);
 });
 
-test('origin: both cutover origins accepted, ACAO echoes the exact caller origin', async () => {
-  assert.deepEqual(ALLOWED_ORIGINS, ['https://minifighunt.com', 'https://adisch79.github.io']);
+test('origin: only minifighunt.com accepted, ACAO echoes the exact caller origin', async () => {
+  assert.deepEqual(ALLOWED_ORIGINS, ['https://minifighunt.com']);
   for (const origin of ALLOWED_ORIGINS) {
     const w = world();
     const r = await post(w, { action: 'add', email: 'a@example.invalid' }, { origin });

@@ -4,10 +4,8 @@
 
 // SOURCE: docs/design/V2-05-admin.md, "CORS": exact origin of the site; SOURCE: docs/decisions.md 2026-11-07 (minifighunt.com, Cloudflare Pages).
 export const ALLOWED_ORIGIN = 'https://minifighunt.com';
-// Cutover: GitHub Pages stays live until the V2-06 smoke passes, so its origin is accepted too (exact match only).
-// TODO: remove the GitHub origin when GitHub Pages is switched off (V2-06 step (h)).
-// SOURCE: docs/decisions.md 2026-11-07 (dual origin during cutover).
-export const ALLOWED_ORIGINS: readonly string[] = [ALLOWED_ORIGIN, 'https://adisch79.github.io'];
+// SOURCE: docs/decisions.md 2026-11-07 (GitHub Pages switched off, single origin).
+export const ALLOWED_ORIGINS: readonly string[] = [ALLOWED_ORIGIN];
 export const isAllowedOrigin = (origin: string | null): origin is string => origin !== null && ALLOWED_ORIGINS.includes(origin);
 // SOURCE: docs/design/V2-05-admin.md, "Writes": allowed request headers.
 export const ALLOWED_HEADERS = 'authorization, apikey, content-type, x-client-info';
