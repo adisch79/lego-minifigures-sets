@@ -3,8 +3,27 @@
 // SUPABASE_URL, SUPABASE_ANON_KEY and SUPABASE_SERVICE_ROLE_KEY are injected by the platform.
 // SOURCE: https://supabase.com/docs/guides/functions/secrets
 import { createClient } from 'npm:@supabase/supabase-js@2';
-import { handleRequest } from './logic.ts';
+import { ALLOWED_ORIGIN, MAX_BODY_BYTES, handleRequest } from './logic.ts';
 import type { Deps } from './logic.ts';
+
+// Reads at most `max` bytes of the body, then cancels the stream.
+async function readCapped(req: Request, max: number): Promise<string> {
+  if (!req.body) return '';
+  const reader = req.body.getReader();
+  const chunks: Uint8Array[] = [];
+  let total = 0;
+  while (total < max) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    chunks.push(value);
+    total += value.length;
+  }
+  await reader.cancel().catch(() => {});
+  const all = new Uint8Array(total);
+  let off = 0;
+  for (const c of chunks) { all.set(c, off); off += c.length; }
+  return new TextDecoder().decode(all.subarray(0, max));
+}
 
 Deno.serve(async (req: Request) => {
   const url = Deno.env.get('SUPABASE_URL');
@@ -37,8 +56,12 @@ Deno.serve(async (req: Request) => {
       return Array.isArray(data) && data.length > 0 ? data[0] : null;
     },
     insertAllowlist: async (email) => {
-      const { error } = await db.from('allowlist').upsert({ email }, { onConflict: 'email', ignoreDuplicates: true });
-      return !error;
+      // ignoreDuplicates + select: returns only rows this call actually inserted.
+      const { data, error } = await db
+        .from('allowlist')
+        .upsert({ email }, { onConflict: 'email', ignoreDuplicates: true })
+        .select('email');
+      return { ok: !error, inserted: !error && Array.isArray(data) && data.length > 0 };
     },
     deleteAllowlist: async (email) => {
       const { error } = await db.from('allowlist').delete().eq('email', email);
@@ -55,16 +78,22 @@ Deno.serve(async (req: Request) => {
     log: (message) => console.error(message),
   };
 
+  // Read the body only for a POST from the allowed origin, and never more than the limit + 1 byte.
+  const declared = req.headers.get('content-length');
+  const contentLength = declared !== null && /^\d+$/.test(declared) ? Number(declared) : null;
   let bodyText = '';
-  try {
-    bodyText = await req.text();
-  } catch {
-    bodyText = '';
+  if (req.method === 'POST' && req.headers.get('origin') === ALLOWED_ORIGIN && !(contentLength !== null && contentLength > MAX_BODY_BYTES)) {
+    try {
+      bodyText = await readCapped(req, MAX_BODY_BYTES + 1);
+    } catch {
+      bodyText = '';
+    }
   }
   const res = await handleRequest({
     method: req.method,
     origin: req.headers.get('origin'),
     authorization: req.headers.get('authorization'),
+    contentLength,
     bodyText,
   }, deps);
   return new Response(res.body === null ? null : JSON.stringify(res.body), { status: res.status, headers: res.headers });

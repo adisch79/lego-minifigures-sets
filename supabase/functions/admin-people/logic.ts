@@ -22,7 +22,8 @@ export type Deps = {
   getUser: (jwt: string) => Promise<AuthUser | null>; // auth client, validates the token
   isAdmin: (userId: string) => Promise<boolean>; // live read of public.admins (service client)
   lookup: (email: string) => Promise<Lookup | null>; // rpc admin_user_lookup
-  insertAllowlist: (email: string) => Promise<boolean>; // on conflict do nothing; true on success
+  // On conflict do nothing. ok=false on error; inserted=true only when this call created the row.
+  insertAllowlist: (email: string) => Promise<{ ok: boolean; inserted: boolean }>;
   deleteAllowlist: (email: string) => Promise<boolean>;
   createUser: (email: string) => Promise<AuthErr>; // auth.admin.createUser({ email, email_confirm: true })
   deleteUser: (userId: string) => Promise<AuthErr>; // auth.admin.deleteUser
@@ -33,6 +34,7 @@ export type Req = {
   method: string;
   origin: string | null;
   authorization: string | null;
+  contentLength?: number | null; // declared Content-Length, when present
   bodyText: string;
 };
 
@@ -61,6 +63,7 @@ export function normalizeEmail(raw: unknown): string | null {
   const e = raw.trim().toLowerCase();
   if (e.length === 0 || e.length > MAX_EMAIL_CHARS) return null;
   if (/[\s\u0000-\u001f\u007f-\u009f]/.test(e)) return null;
+  if (/[^!-~]/.test(e)) return null; // ASCII only: no homograph or odd-Unicode addresses
   const parts = e.split('@');
   if (parts.length !== 2 || parts[0] === '' || parts[1] === '') return null;
   return e;
@@ -84,6 +87,8 @@ export async function handleRequest(req: Req, deps: Deps): Promise<Res> {
   if (req.origin !== ALLOWED_ORIGIN) return { status: 403, headers: { vary: 'Origin' }, body: { error: 'origin' } };
   if (req.method === 'OPTIONS') return { status: 204, headers: corsHeaders(), body: null };
   if (req.method !== 'POST') return fail(405, 'bad_request');
+  // Declared size over the limit: refuse before any auth work or body use.
+  if (typeof req.contentLength === 'number' && req.contentLength > MAX_BODY_BYTES) return fail(413, 'bad_request');
 
   const jwt = bearerToken(req.authorization);
   if (!jwt) return fail(401, 'unauthorized');
@@ -128,14 +133,20 @@ export async function handleRequest(req: Req, deps: Deps): Promise<Res> {
 
 // V2-01 "Adding a person": allowlist row first (the auth.users trigger needs it), then the account.
 async function add(email: string, deps: Deps): Promise<Res> {
-  if (!(await deps.insertAllowlist(email))) {
+  const ins = await deps.insertAllowlist(email);
+  if (!ins.ok) {
     deps.log('admin-people: allowlist insert failed');
     return fail(500, 'internal');
   }
   const err = await deps.createUser(email);
   if (err && !isAlreadyRegistered(err)) {
-    deps.log('admin-people: createUser failed, rolling back allowlist row');
-    if (!(await deps.deleteAllowlist(email))) deps.log('admin-people: rollback failed');
+    // Roll back only a row this request created; a pre-existing row belongs to an earlier invite.
+    if (ins.inserted) {
+      deps.log('admin-people: createUser failed, rolling back allowlist row');
+      if (!(await deps.deleteAllowlist(email))) deps.log('admin-people: rollback failed');
+    } else {
+      deps.log('admin-people: createUser failed, allowlist row kept');
+    }
     return fail(500, 'internal');
   }
   return reply(200, { ok: true });

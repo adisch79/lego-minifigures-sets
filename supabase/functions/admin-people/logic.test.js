@@ -27,7 +27,12 @@ function world(over = {}) {
       const u = w.users.get(email);
       return u ? { user_id: u.id, is_admin: u.admin } : null;
     },
-    insertAllowlist: async (email) => { w.calls.push('insert'); w.allowlist.add(email); return true; },
+    insertAllowlist: async (email) => {
+      w.calls.push('insert');
+      const inserted = !w.allowlist.has(email);
+      w.allowlist.add(email);
+      return { ok: true, inserted };
+    },
     deleteAllowlist: async (email) => { w.calls.push('delAllow'); w.allowlist.delete(email); return true; },
     createUser: async (email) => {
       w.calls.push('create');
@@ -251,4 +256,38 @@ test('logs never contain an email or a token, on any path', async () => {
   assert.ok(w.logs.length >= 3);
   const all = w.logs.join('\n');
   assert.ok(!/@|leak|tok\.en/.test(all), all);
+});
+
+test('add: createUser failure keeps a pre-existing allowlist row', async () => {
+  const w = world({ createError: { message: 'database error', status: 500 } });
+  w.allowlist.add('old@example.invalid');
+  const r = await post(w, { action: 'add', email: 'old@example.invalid' });
+  assert.equal(r.status, 500);
+  assert.ok(w.allowlist.has('old@example.invalid'));
+  assert.ok(!w.calls.includes('delAllow'));
+});
+
+test('declared content-length over 1 KB gives 413 before auth or body use', async () => {
+  const w = world();
+  const r = await post(w, '', { contentLength: 1025, authorization: null });
+  assert.equal(r.status, 413);
+  assert.deepEqual(r.body, { error: 'bad_request' });
+  assert.deepEqual(w.calls, []);
+  assert.equal((await post(w, { action: 'add', email: 'a@example.invalid' }, { contentLength: 1024 })).status, 200);
+});
+
+test('413 does not apply to a wrong origin (403 first)', async () => {
+  const r = await post(world(), '', { contentLength: 5000, origin: 'https://evil.example' });
+  assert.equal(r.status, 403);
+});
+
+test('non-ASCII emails are refused as bad_email', async () => {
+  const w = world();
+  for (const email of ['jörg@example.invalid', 'a@exämple.invalid', 'а@example.invalid', 'a​@x.y']) {
+    const r = await post(w, { action: 'add', email });
+    assert.equal(r.status, 400, email);
+    assert.deepEqual(r.body, { error: 'bad_email' });
+  }
+  assert.equal(normalizeEmail('jörg@example.invalid'), null);
+  assert.deepEqual(w.calls, []);
 });

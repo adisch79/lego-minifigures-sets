@@ -21,25 +21,35 @@ export async function checkAdmin(): Promise<boolean | null> {
   }
 }
 
+export const NOT_ALLOWED = 'Not allowed'
+export const LOAD_FAILED = 'Could not load'
+
 export type AdminLists = { people: Person[]; wanted: WantedRow[] }
 
 /** Both admin lists in parallel. Throws on any failure; the page shows one error state. */
 export async function loadLists(): Promise<AdminLists> {
-  if (DEMO_ADMIN) {
+  // import.meta.env.DEV is a build-time constant: the demo chunk is dropped from production.
+  if (import.meta.env.DEV && DEMO_ADMIN) {
     const { demoLists } = await import('./adminDemo')
     const raw = await demoLists()
     return { people: parsePeople(raw.people), wanted: parseWanted(raw.wanted) }
   }
-  if (!supabase) throw new Error('Sign-in is not configured on this build.')
-  const [p, w] = await Promise.all([supabase.rpc('admin_allowlist_list'), supabase.rpc('admin_wanted_list')])
-  if (p.error) throw new Error(p.error.message || 'The allowlist could not be loaded.')
-  if (w.error) throw new Error(w.error.message || 'The wanted list could not be loaded.')
+  if (!supabase) throw new Error(LOAD_FAILED)
+  let p, w
+  try {
+    ;[p, w] = await Promise.all([supabase.rpc('admin_allowlist_list'), supabase.rpc('admin_wanted_list')])
+  } catch {
+    throw new Error(LOAD_FAILED) // network failure: never pass the raw message to the UI
+  }
+  const failed = p.error ?? w.error
+  // Only the two fixed texts reach the UI, never a raw PostgREST message.
+  if (failed) throw new Error(failed.code === '42501' ? NOT_ALLOWED : LOAD_FAILED)
   return { people: parsePeople(p.data), wanted: parseWanted(w.data) }
 }
 
 /** Invites or removes one address through the admin-people Edge Function. Never throws. */
 export async function changePerson(action: 'add' | 'remove', email: string): Promise<PeopleResult> {
-  if (DEMO_ADMIN) {
+  if (import.meta.env.DEV && DEMO_ADMIN) {
     const { demoPeople } = await import('./adminDemo')
     return demoPeople(action, email)
   }
@@ -125,7 +135,7 @@ export function useAdminData(enabled: boolean): {
       const lists = await loadLists()
       if (live.current) setData({ status: 'ready', ...lists })
     } catch (err) {
-      if (live.current) setData({ status: 'error', message: err instanceof Error ? err.message : String(err) })
+      if (live.current) setData({ status: 'error', message: err instanceof Error ? err.message : LOAD_FAILED })
     }
   }, [])
 
@@ -138,7 +148,7 @@ export function useAdminData(enabled: boolean): {
         if (current && live.current) setData({ status: 'ready', ...lists })
       },
       (err: unknown) => {
-        if (current && live.current) setData({ status: 'error', message: err instanceof Error ? err.message : String(err) })
+        if (current && live.current) setData({ status: 'error', message: err instanceof Error ? err.message : LOAD_FAILED })
       },
     )
     return () => {
