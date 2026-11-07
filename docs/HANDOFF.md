@@ -25,7 +25,7 @@ Secret names: function `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID`, `ALERT_HOOK_SEC
 - Supabase keys are in `.env` (2026-10-31); a database password or access token may also be needed for migrations. Telegram bot token and chat id: repo-root `.env` and a NAS copy. Key names unverified: a deny rule blocks reading `.env`.
 
 ## V2-06 cutover state (2026-11-07)
-Done: (a) env secret set, (b) Pages project `minifighunt` created, (d) `admin-people` redeployed (CORS: both origins 204, other 403), (e) release PR #38 merged, master run all 4 jobs success, `minifighunt.pages.dev` 200. (f) domain attached via API with the wrangler OAuth token (`POST /accounts/<id>/pages/projects/minifighunt/domains`); status pending `CNAME record not set`: wrangler OAuth has no DNS scope, owner adds CNAME `@` to `minifighunt.pages.dev`, proxied. (c) Supabase URL config: owner, not confirmed. Then telegram-alert deploy, (g), (h).
+Done: (a) env secret set, (b) Pages project `minifighunt` created, (d) `admin-people` redeployed (CORS: both origins 204, other 403), (e) release PR #38 merged, master run all 4 jobs success, `minifighunt.pages.dev` 200. (f) domain attached via API with the wrangler OAuth token (`POST /accounts/<id>/pages/projects/minifighunt/domains`); owner added CNAME `@` to `minifighunt.pages.dev` (proxied); domain `active`; `https://minifighunt.com/` 200 with all five headers (CSP, HSTS, nosniff, Referrer-Policy, Permissions-Policy). (c) Supabase URL config: owner confirmed. Then telegram-alert deploy, (g), (h).
 
 ## V2-06 owner steps (Cloudflare Pages, origin https://minifighunt.com)
 Branch `feature/V2-06-cloudflare-pages`. Code ready; nothing deployed, no Supabase setting touched. Order matters.
