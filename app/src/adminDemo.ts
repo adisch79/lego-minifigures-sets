@@ -2,7 +2,7 @@
 // The import sits in a branch that is the constant false in a production build, so this module and
 // its invented addresses never reach dist (checked by grepping the build for "example.com").
 // SOURCE: mockups/V2-05/data.js. Figure ids are real catalog entries; every email is invented.
-import { readPeopleResult, type PeopleResult } from './admin'
+import { readPeopleResult, type PeopleResult } from './adminLogic'
 
 type PersonRow = {
   email: string

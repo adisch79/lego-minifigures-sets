@@ -2,7 +2,7 @@
 // The UI gate is cosmetic: every RPC and the admin-people Edge Function check `admins` again.
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { supabase, type AuthState } from './auth'
-import { parsePeople, parseWanted, readPeopleResult, type PeopleResult, type Person, type WantedRow } from './admin'
+import { parsePeople, parseWanted, readPeopleResult, type PeopleResult, type Person, type WantedRow } from './adminLogic'
 import { DEMO_ADMIN } from './demo'
 
 export type AdminGate = 'checking' | 'admin' | 'not-admin' | 'error'
@@ -129,10 +129,22 @@ export function useAdminData(enabled: boolean): {
     }
   }, [])
 
+  // State is set in the promise callbacks only, never synchronously in the effect body.
   useEffect(() => {
     if (!enabled) return
-    void fetchNow()
-  }, [enabled, attempt, fetchNow])
+    let current = true
+    loadLists().then(
+      (lists) => {
+        if (current && live.current) setData({ status: 'ready', ...lists })
+      },
+      (err: unknown) => {
+        if (current && live.current) setData({ status: 'error', message: err instanceof Error ? err.message : String(err) })
+      },
+    )
+    return () => {
+      current = false
+    }
+  }, [enabled, attempt])
 
   const retry = useCallback(() => {
     setData({ status: 'loading' })

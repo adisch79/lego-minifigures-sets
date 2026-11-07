@@ -25,7 +25,7 @@ import {
   type Person,
   type WallView,
   type WantedCard,
-} from './admin'
+} from './adminLogic'
 import { changePerson, useAdminData } from './adminApi'
 import { AccountControl, LinkErrorStrip, useAccount, useAdminGate } from './Account'
 import { DEMO_ADMIN } from './demo'
@@ -507,10 +507,12 @@ function Allowlist({
     }
   }, [open, onClose])
 
-  // A closed panel forgets a half-made confirm.
-  useEffect(() => {
+  // A closed panel forgets a half-made confirm. Adjusted during render, not in an effect.
+  const [seenOpen, setSeenOpen] = useState(open)
+  if (seenOpen !== open) {
+    setSeenOpen(open)
     if (!open) setAsk(null)
-  }, [open])
+  }
 
   const invite = async (e: FormEvent) => {
     e.preventDefault()
