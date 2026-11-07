@@ -29,8 +29,8 @@ python -m unittest discover tests   # run tests
 **https://minifighunt.com/** on Cloudflare Pages project `minifighunt` (only host; GitHub Pages is switched off). The `deploy-cloudflare` job in `.github/workflows/app-ci.yml` publishes `app/dist` (with `public/_headers`: CSP, HSTS) on every push to `master`.
 Flow: `feature/<story>` → `dev` → release merge into `master` (which deploys).
 
-Repo settings this needs (already done): Pages source = GitHub Actions; default branch = `master`;
-environment `github-pages` allows `master` to deploy.
+Repo settings this needs (already done): default branch = `master`; environment `cloudflare-pages` (branch `master` only)
+holds secret `CLOUDFLARE_API_TOKEN`; repo variable `CLOUDFLARE_ACCOUNT_ID`. GitHub Pages is off.
 
 ## Data source
 Catalog and images: [Rebrickable](https://rebrickable.com) data downloads. Personal, non-commercial use.
