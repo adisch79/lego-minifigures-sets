@@ -146,59 +146,60 @@ def page_d(s):
 <div class="band">{band}</div></div>"""
 
 
-# E geometry: logo at B's top (y 26), centred in the band between the age/set block and the badge.
-# Group starts from A (box 600x476 at top 234, contain, bottom aligned at y 710); if A leaves an empty band
-# under the logo, the group is moved up to logo bottom + E_GAP and scaled up, side crop capped at 80 px per side.
+# E geometry: A's meta, badge, band and group (box 600x476 at top 234, bottom at y 710); B's logo size,
+# centred and layered OVER the crowd (z-order), overlapping the top of the figures by E_OVERLAP of its height,
+# as on the retail box (logo over the figures' heads). The logo must sit below the age block and badge.
+# If A's group leaves an empty band under the top row, the group grows upward (bottom fixed at 710) until the
+# logo touches the top-row clearance line; side crop capped at 80 px per side.
 IDS_E = IDS + ["71023", "71045"]
 A_GROUP_TOP, A_GROUP_W, A_GROUP_H = 234, 600, 476
 GROUP_BOTTOM = A_GROUP_TOP + A_GROUP_H   # 710, as A
-E_LOGO_TOP = 26                          # B's logo top
-E_LOGO_H = 124                           # B's logo height
+E_LOGO_W, E_LOGO_H = 540, 124            # B's logo box
 E_TALL_RATIO, E_TALL_H = 2.0, 190        # logos narrower than 2:1 (71023 LEGO Movie 2) may grow to 190 px
-META_RIGHT = 102                         # right edge of the age rule / set number block (left 30 + rule 72)
-BADGE_LEFT = 600 - 14 - round(round(104 / 0.95) * BADGE_W / BADGE_H)   # 466: badge box left edge
-E_CLEAR = 10                             # clearance to age block and badge
-E_BAND_L, E_BAND_R = META_RIGHT + E_CLEAR, BADGE_LEFT - E_CLEAR       # 112..456, 344 px wide
-E_GAP = 10                               # logo bottom to group top
+BADGE_BOTTOM = 10 + round(104 / 0.95)    # 119: badge box bottom (top 10, as A)
+META_BOTTOM = 24 + 40 + 6 + 3 + 6 + 22   # 101: age line + rule + set number, as A
+E_CLEAR = 10                             # clearance from age block and badge
+E_LOGO_MIN_TOP = max(BADGE_BOTTOM, META_BOTTOM) + E_CLEAR   # 129
+E_OVERLAP = 0.35                         # share of logo height drawn over the crowd
 E_MAX_GW = 760                           # widest group: 80 px crop per side
 
 
 def e_layout(s):
-    """Logo box and size, group box for E, from the real image sizes."""
+    """Logo size and top, group box for E, from the real image sizes."""
     sid = s["id"]
     logo = bc.LOGOS / (bc.LOGO[sid] if sid in bc.LOGO else "lego-minifigures-lockup.png")
     lw0, lh0 = Image.open(logo).size
     gw0, gh0 = Image.open(bc.GROUP / (sid + ".png")).size
     box_h = E_TALL_H if lw0 / lh0 < E_TALL_RATIO else E_LOGO_H
-    box_w = E_BAND_R - E_BAND_L
-    k = min(box_h / lh0, box_w / lw0)
+    k = min(box_h / lh0, E_LOGO_W / lw0)
     lw, lh = round(lw0 * k), round(lh0 * k)
-    logo_bottom = E_LOGO_TOP + lh
     gh = min(A_GROUP_H, A_GROUP_W * gh0 / gw0)            # A's visible group height
-    if GROUP_BOTTOM - gh > logo_bottom + E_GAP:            # empty band under the logo: grow the group upward
-        gh = GROUP_BOTTOM - logo_bottom - E_GAP
+    lift = lh * (1 - E_OVERLAP)                            # logo top sits this far above the group top
+    if GROUP_BOTTOM - gh - lift > E_LOGO_MIN_TOP:          # empty band under the top row: grow the group upward
+        gh = GROUP_BOTTOM - E_LOGO_MIN_TOP - lift
     gw = gh * gw0 / gh0
     if gw > E_MAX_GW:                                       # crop cap reached: keep the bottom, accept a gap
         gw, gh = E_MAX_GW, E_MAX_GW * gh0 / gw0
-    if gw < A_GROUP_W and gh < A_GROUP_H:                   # never smaller than A
-        gw, gh = A_GROUP_W, A_GROUP_W * gh0 / gw0
-    return dict(box_h=box_h, box_w=box_w, lw=lw, lh=lh, logo_bottom=logo_bottom,
-                gw=round(gw), gh=round(gh), group_top=round(GROUP_BOTTOM - gh), gap=round(GROUP_BOTTOM - gh - logo_bottom))
+    group_top = round(GROUP_BOTTOM - gh)
+    logo_top = max(E_LOGO_MIN_TOP, round(group_top - lift))
+    return dict(box_h=box_h, lw=lw, lh=lh, logo_top=logo_top, gw=round(gw), gh=round(gh),
+                group_top=group_top, overlap=logo_top + lh - group_top)
 
 
 def page_e(s):
-    """E: A's meta, badge and band; B's logo at the top between them; A's group grown to meet the logo."""
+    """E: A's meta, badge, band and group; B-size logo centred and layered over the top of the crowd."""
     L = e_layout(s)
-    bg, ink, theme, band = parts(s, L["box_h"], L["box_w"])
+    bg, ink, theme, band = parts(s, L["box_h"], E_LOGO_W)
     return f"""<!DOCTYPE html><meta charset="utf-8"><style>{BASE}
 .card{{background:{bg};color:{ink}}}
 .meta{{position:absolute;left:30px;top:24px;line-height:1;font-weight:800;z-index:3}}
 .badge{{position:absolute;right:14px;top:10px;z-index:3}}
-.theme{{position:absolute;left:{E_BAND_L}px;width:{L["box_w"]}px;top:{E_LOGO_TOP}px;text-align:center;line-height:0;z-index:2}}
 .group{{position:absolute;left:{(600 - L["gw"]) // 2}px;top:{L["group_top"]}px;width:{L["gw"]}px;height:{L["gh"]}px;z-index:1}}
+.theme{{position:absolute;left:0;right:0;top:{L["logo_top"]}px;text-align:center;line-height:0;z-index:2}}
+.theme img{{filter:drop-shadow(0 4px 6px rgba(0,0,0,.45))}}
 .band{{position:absolute;left:0;right:0;bottom:0;height:80px;background:#0b0b0b;display:flex;align-items:center;padding:0 30px;z-index:3}}
 </style><div class="card"><div class="meta">{meta(s)}</div>{badge(s, 104)}
-<div class="theme">{theme}</div>{group(s)}
+{group(s)}<div class="theme">{theme}</div>
 <div class="band">{band}</div></div>"""
 
 
