@@ -28,28 +28,15 @@ Previous next-step text (V2-04/05/06, all done): [archive/handoff-2026-11-07.md]
 - MVP 2: custom SMTP account before anyone but the owner can sign in.
 - Supabase keys are in `.env` (2026-10-31); a database password or access token may also be needed for migrations. Telegram bot token and chat id: repo-root `.env` and a NAS copy. Key names unverified: a deny rule blocks reading `.env`.
 
-## V2-06 cutover state (2026-11-07)
-Done: (a) env secret set, (b) Pages project `minifighunt` created, (d) `admin-people` redeployed (CORS: both origins 204, other 403), (e) release PR #38 merged, master run all 4 jobs success, `minifighunt.pages.dev` 200. (f) domain attached via API with the wrangler OAuth token (`POST /accounts/<id>/pages/projects/minifighunt/domains`); owner added CNAME `@` to `minifighunt.pages.dev` (proxied); domain `active`; `https://minifighunt.com/` 200 with all five headers (CSP, HSTS, nosniff, Referrer-Policy, Permissions-Policy). (c) Supabase URL config: owner confirmed. `telegram-alert` redeployed v3 (SITE_URL minifighunt.com). (g) owner: sign-in and `#admin` work on PC. `www`: proxied record + Redirect Rule, `https://www.minifighunt.com/abc?q=1` 301 to `https://minifighunt.com/abc?q=1`; `http://www` still 522 until SSL/TLS > Edge Certificates > Always Use HTTPS is on. Android showed NXDOMAIN (www missing then; negative TTL 1800 s). Then telegram-alert deploy, (g), (h).
-
-## V2-06 owner steps (Cloudflare Pages, origin https://minifighunt.com)
-Branch `feature/V2-06-cloudflare-pages`. Code ready; nothing deployed, no Supabase setting touched. Order matters.
-1. (a) GitHub environment `cloudflare-pages`, limited to branch `master`, holds secret `CLOUDFLARE_API_TOKEN` (the agent creates the environment; move the secret from repo secrets into it and delete the repo-level copy). Token: Custom token, permission Account > Cloudflare Pages > Edit, this account only, no zone or DNS permissions, expiry 1 year. Never the Global API Key.
-2. (b) Create the Pages project once (CI cannot create it): name `minifighunt`, production branch `master`. `npx wrangler pages project create minifighunt --production-branch=master` or dashboard Workers & Pages > Create > Pages > Direct Upload.
-3. (c) Supabase Authentication > URL Configuration: Site URL `https://minifighunt.com/`; Redirect URLs exactly `https://minifighunt.com/` and `https://adisch79.github.io/lego-minifigures-sets/`. No wildcard.
-4. (d) Deploy `admin-people` now (accepts both origins during cutover): `npx --yes supabase functions deploy admin-people --remote=iagnfgedasxkqqjbsoeg --yes`. Deploy `telegram-alert` only after step (f) (its SITE_URL points at the new domain): `npx --yes supabase functions deploy telegram-alert --remote=iagnfgedasxkqqjbsoeg --yes`.
-5. (e) Merge the release PR into master. The `deploy-cloudflare` job publishes to `minifighunt.pages.dev`; the GitHub Pages deploy still runs.
-6. (f) Dashboard Workers & Pages > minifighunt > Custom domains: attach `minifighunt.com` (DNS record is added automatically). `www` only as a 301 redirect to `https://minifighunt.com/`, never a second serving domain. Then deploy `telegram-alert` (see d).
-7. (g) Smoke: `node scripts/smoke_auth.mjs`, then `send <email>` and `verify-link '<link>' <other-email>` (redirect check expects `https://minifighunt.com/`); open `https://minifighunt.com/#admin`. Header gate, required before (h): `curl -sI https://minifighunt.com/ | grep -i "content-security\|strict-transport\|nosniff\|referrer\|permissions-policy"` must show all five.
-8. (h) Done 2026-11-07: PR #39 into dev, release PR #40 merged (master run: build, deploy-cloudflare success; apex 200). GitHub Pages unpublished by agent (`gh api -X DELETE .../pages`; old URL 404). `admin-people` redeployed by agent: minifighunt.com 204, adisch79.github.io 403. Owner removed the GitHub URL from the Supabase redirect list and turned on Always Use HTTPS (2026-11-07). V2-06 then done; next story per backlog. Original text: Only after (g) passes: GitHub repo Settings > Pages > Unpublish site; remove the GitHub URL from the Supabase redirect list and `https://adisch79.github.io` from `ALLOWED_ORIGINS` in `supabase/functions/admin-people/logic.ts` (redeploy); redirect `minifighunt.pages.dev/*` to `https://minifighunt.com/` with a Cloudflare Bulk Redirect. Follow-up PR deletes the `deploy` job and `pages-origin-guard` (the guard protects `adisch79.github.io` until then).
-
 ## Rules worth keeping at hand
 - Agent merges feature PRs into dev after code-reviewer and qa pass on the final diff (`gh pr merge <n> --merge`). The auto classifier refuses it otherwise.
 - Re-render cards: `python scripts/build_cards.py <ids>` (no args builds only missing cards).
 - Figure images: `img.bricklink.com/ItemImage/SN/0/<code>-<n>.png`. 71049 has no code and keeps v1 images.
 - Logos: only files with real alpha (memory `feedback-asset-search`).
 
-## Tests (2026-11-04)
-`node --test scripts/smoke_auth.test.mjs`: 14 pass. `npx vitest run` in `app/`: 71 pass, 4 files; `npm ci` first if `node_modules` is empty. `python -m pytest tests`: 95 pass.
+## Tests (2026-11-08, dev + docs branch)
+`npx vitest run` in `app/`: 235 pass. `python -m pytest tests`: 95 pass (97 on `feature/V2-13-front-photos`). `npm test` in `supabase/`: 84 pass (dev after PR #44).
+Older (2026-11-04): `node --test scripts/smoke_auth.test.mjs`: 14 pass. `npx vitest run` in `app/`: 71 pass, 4 files; `npm ci` first if `node_modules` is empty. `python -m pytest tests`: 95 pass.
 
 ## Open questions
 - Ages unreadable for 8909, 8805, 8684; no age is printed on their cards.
