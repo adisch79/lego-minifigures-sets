@@ -144,7 +144,7 @@ function FilterEmpty({ filter, query, onAll }: { filter: SeriesFilter; query: st
             Tap <b>Want</b> under any figure and its series shows up here.
           </>
         ) : (
-          'You own every figure of every series shown. Hunt complete.'
+          'Hunt complete. You own every figure of every series shown.'
         )}
       </p>
       <button type="button" className="again" onClick={onAll}>
