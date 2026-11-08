@@ -12,3 +12,7 @@ Found by Brick Owl crawl (hunt 1) and a Google Images pass in Chrome (hunt 2). P
 - 8831-1.jpg — SOURCE: https://i.ebayimg.com/images/g/fYcAAOSwtP1oF5Xc/s-l1200.jpg (mapping unconfirmed)
 - 8833-1.png — SOURCE: https://i.ebayimg.com/images/g/jK8AAOSwmnVoF5Rk/s-l1200.png (mapping unconfirmed)
 Still missing: 8683, 8684, 71002, 8909 (next: Brickset/Brick Owl/BrickLink set pages, Bing; fallback composite from own cut-outs).
+- 8683-2.jpg (3500x1458) — PAGE: http://lego.razfill.ru/all-lego/lego-8683-minifigures-series-1 SOURCE: http://lego.razfill.ru/images/lego/86/8683/8683_lineup.jpg — official-style render, true crowd, white bg, no watermark
+- 71002-1.png (2000x2000) — PAGE: https://marvellousminifigures.com (product CompleteSet) SOURCE: https://marvellousminifigures.com/cdn/shop/files/CompleteSet_0c415c17-eb60-486f-bd1c-bca13495261e.png — official render of all 16, true crowd, blue gradient bg needs crop/cut-out
+- 8909-1.jpg (1024x546) — PAGE: https://toysnbricks.com/ (LEGO-8909-Team-GB-Minifigures) SOURCE: https://toysnbricks.com/wp-content/uploads/2012/05/LEGO-8909-Team-GB-Minifigures-Toysnbricks.jpg — official render, true crowd, white bg, 9 figures (set has 9)
+- 8684: none found (Brickset 8684-17 is a stand grid, rejected)

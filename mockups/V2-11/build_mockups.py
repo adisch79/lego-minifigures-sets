@@ -2,6 +2,7 @@
 
 Usage: python mockups/V2-11/build_mockups.py      (all variants)
        python mockups/V2-11/build_mockups.py e    (variant E and sheet_e only)
+       python mockups/V2-11/build_mockups.py f    (A and F for IDS_F, sheet_f)
 Output: mockups/V2-11/{a,b,c}-<id>.png for 71053 and 71052, plus mockups/V2-11/sheet.png.
         mockups/V2-11/d-<id>.png for 71053, 71052, 71023, 8683, plus mockups/V2-11/sheet_d.png.
         mockups/V2-11/e-<id>.png for 71053, 71052, 71023, 71045, plus mockups/V2-11/sheet_e.png.
@@ -65,14 +66,14 @@ def group(s):
     return f'<img class="group" src="{bc.uri(bc.GROUP / (s["id"] + ".png"))}">'
 
 
-def page_a(s):
+def page_a(s, logo_h=104, logo_w=470):
     """A, box stack: badge top right, logo right under it (top 126), group full width from y 234."""
-    bg, ink, theme, band = parts(s, 104, 470)
+    bg, ink, theme, band = parts(s, logo_h, logo_w)
     return f"""<!DOCTYPE html><meta charset="utf-8"><style>{BASE}
 .card{{background:{bg};color:{ink}}}
 .meta{{position:absolute;left:30px;top:24px;line-height:1;font-weight:800}}
 .badge{{position:absolute;right:14px;top:10px}}
-.theme{{position:absolute;left:0;right:0;top:126px;text-align:center}}
+.theme{{position:absolute;left:0;right:0;top:126px;text-align:center;line-height:0;z-index:2}}
 .group{{position:absolute;left:0;top:234px;width:600px;height:476px;object-fit:contain;object-position:center bottom}}
 .band{{position:absolute;left:0;right:0;bottom:0;height:80px;background:#0b0b0b;display:flex;align-items:center;padding:0 30px}}
 </style><div class="card"><div class="meta">{meta(s)}</div>{badge(s, 104)}
@@ -203,6 +204,49 @@ def page_e(s):
 <div class="band">{band}</div></div>"""
 
 
+# F (owner 2026-11-09: "leave A + enlarge logo"): A exactly, logo box enlarged from 470x104 to 580x150 (near full width, as on the box).
+# Logo top stays at A's 126; it reaches up to y 276 and is drawn over the top of the crowd (A's group starts at 234).
+F_LOGO_W, F_LOGO_H = 580, 150
+IDS_F = ["71053", "71052", "71045"]
+
+
+def page_f(s):
+    """F: variant A with the series logo enlarged to B's size, layered over the crowd."""
+    return page_a(s, F_LOGO_H, F_LOGO_W)
+
+
+def sheet_f():
+    """One row per series: original, A, F."""
+    w, h, cap = 300, 400, 28
+    rows = [[(f"{sid} {lab}", src) for lab, src in (
+        ("original", ROOT / f"originals/{sid}/{sid}-0.jpg"), ("A", OUT / f"a-{sid}.png"),
+        ("F", OUT / f"f-{sid}.png"))] for sid in IDS_F]
+    img = Image.new("RGB", (3 * (w + 8) + 8, len(rows) * (h + cap + 8) + 8), (255, 255, 255))
+    draw = ImageDraw.Draw(img)
+    font = ImageFont.truetype("arialbd.ttf", 18)
+    for r, row in enumerate(rows):
+        for c, (label, src) in enumerate(row):
+            if not src.exists():
+                continue
+            tile = Image.open(src).convert("RGB")
+            tile.thumbnail((w, h))
+            x, y = 8 + c * (w + 8), 8 + r * (h + cap + 8)
+            img.paste(tile, (x + (w - tile.width) // 2, y + cap + (h - tile.height) // 2))
+            draw.text((x, y + 4), label, fill=(0, 0, 0), font=font)
+    img.save(OUT / "sheet_f.png")
+
+
+def main_f():
+    """Render A and F for IDS_F, then sheet_f."""
+    series = {s["id"]: s for s in json.loads((ROOT / "app/public/catalog.json").read_text(encoding="utf-8"))["series"]}
+    TMP.mkdir(parents=True, exist_ok=True)
+    for sid in IDS_F:
+        render(f"a-{sid}", page_a(series[sid]))
+        render(f"f-{sid}", page_f(series[sid]))
+        print(f"f-{sid}", flush=True)
+    sheet_f()
+
+
 def render(name, html_text):
     html = TMP / f"{name}.html"
     html.write_text(html_text, encoding="utf-8")
@@ -297,4 +341,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main_e() if sys.argv[1:] == ["e"] else main()
+    {"e": main_e, "f": main_f}.get((sys.argv[1:] or [""])[0], main)()
