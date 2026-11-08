@@ -6,7 +6,7 @@ Inputs: mockups/assets/group/<id>.png, mockups/assets/logos, site/img/<id>/<id>-
 """
 import base64, concurrent.futures, json, math, pathlib, re, subprocess, sys
 import numpy as np
-from PIL import Image
+from PIL import Image, ImageFont
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 OUT = ROOT / "app/public/cards"
@@ -70,21 +70,40 @@ def label(x, y, size, value, squeeze, fill, stroke=0, skew=0, spacing=0):
     return f'<text transform="{move}" text-anchor="middle" style="{style}">{value}</text>'
 
 
+# Count mark geometry in badge units. SOURCE: OWNER-SUPPLIED assembly mockups/V2-11/elements/mine.png (2026-11-09).
+COUNT_SIZE, COUNT_X, COUNT_BASE = 128, 170, 168
+CHECK_X, CHECK_Y = 107, 145
+COLLECT_X, COLLECT_BASE = 171.5, 194.5
+BADGE_TILT = 13
+
+
+def count_fit(count):
+    """Squeeze and centre x for the count. The owner laid out 12, whose "1" foot sits right of the checkbox. A count
+    that starts with another digit (9, 20, 22) has its foot at the bottom left, under the checkbox: keep the right
+    edge where 12 ends, narrow the count until its left edge clears the checkbox (CHECK_X + 24 + 4 px gap) and centre
+    it in that space."""
+    if str(count)[0] == "1":
+        return 0.66, COUNT_X
+    font = ImageFont.truetype("ariblk.ttf", COUNT_SIZE)
+    l, _, r, _ = font.getbbox("12")
+    right = COUNT_X + 0.66 * (r - l) / 2                      # right edge of 12, badge units
+    left = CHECK_X + 24 + 4
+    l2, _, r2, _ = font.getbbox(str(count))
+    squeeze = min(0.66, (right - left) / (r2 - l2))
+    return round(squeeze, 3), round((left + right) / 2, 1)   # centred in the space right of the checkbox
+
+
 def count_mark(count):
-    """Checkbox + count + TO COLLECT, centred as one block in the head (head box x 92-252, y 55-205, centre 172).
-    Layout per the owner's bag screenshot, 2026-11-09: checkbox touches the count on its left, the pair is centred,
-    TO COLLECT is centred under it and stays inside the head."""
-    size = 92 if len(str(count)) < 3 else 70                   # count font size; 3 digits shrink to fit the head
-    count_w = 0.6 * size * 0.66 * len(str(count)) - 5          # drawn digit width about 0.6 em (measured at 3x), squeeze 0.66, spacing -5
-    box, gap = 24, 3
-    left = 172 - (box + gap + count_w) / 2
-    cx = left + box + gap + count_w / 2
-    base = 144                                                 # count baseline; cap top about base - 0.72 * size
-    by = base - 0.36 * size - box / 2 + 4                      # checkbox centred on the count, a little low as on the bag
-    return f"""<rect x="{left:.0f}" y="{by:.0f}" width="{box}" height="{box}" rx="6" fill="#fff" stroke="{RED}" stroke-width="4"/>
-<path d="M{left + 5:.0f} {by + 12:.0f} l6 7 l18 -18" fill="none" stroke="#111" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
-{label(round(cx), base, size, count, 0.66, RED, 4, -8, -5)}
-{label(172, base + 36, 25, "TO COLLECT", 0.6, RED, 1, -6)}"""
+    """Checkbox, count and TO COLLECT inside the head (head box x 92-252, y 55-205).
+    Layout copied from the owner's own assembly, mockups/V2-11/elements/mine.png (2026-11-09): big count filling the
+    face, checkbox at the bottom left touching the count's foot, TO COLLECT under both. Positions below are badge
+    units measured on that image (un-tilted, 4x) and calibrated by re-rendering."""
+    size = COUNT_SIZE if len(str(count)) < 3 else round(COUNT_SIZE * 0.7)
+    squeeze, cx = count_fit(count)
+    return f"""<rect x="{CHECK_X}" y="{CHECK_Y}" width="24" height="24" rx="6" fill="#fff" stroke="{RED}" stroke-width="4"/>
+<path d="M{CHECK_X + 5} {CHECK_Y + 12} l6 7 l18 -18" fill="none" stroke="#111" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+{label(cx, COUNT_BASE, size, count, squeeze, RED, 4, -8, -5)}
+{label(COLLECT_X, COLLECT_BASE, 25, "TO COLLECT", 0.6, RED, 1, -6)}"""
 
 
 def badge(number, count):
@@ -96,7 +115,7 @@ def badge(number, count):
 {label(58, 95, 52, number, 0.72, NAVY, 2)}"""
     # Geometry measured from the owner's screenshot, 2026-11-02.
     return f"""<svg class="badge" width="240" height="218" viewBox="0 0 270 245">{frame}
-<g transform="rotate(12 172 130)">
+<g transform="rotate({BADGE_TILT} 172 130)">
 <rect x="132" y="26" width="80" height="38" rx="4" fill="{HEAD_DARK}"/>
 <rect x="116" y="196" width="112" height="32" rx="4" fill="{HEAD_DARK}"/>
 <rect x="92" y="55" width="160" height="150" rx="34" fill="{HEAD}"/>
