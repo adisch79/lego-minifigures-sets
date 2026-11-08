@@ -7,6 +7,7 @@
 """
 
 import os
+from pathlib import Path
 
 import numpy as np
 from PIL import Image
@@ -84,8 +85,36 @@ def prepare_group(img, max_width):
     return img
 
 
+# Series whose figure images come from the front-facing Rebrickable photo (<set>.fig.jpg),
+# background removed by the edge flood fill in cutout.py. SOURCE: owner request V2-13.
+FRONT_PHOTO_SERIES = {"71052"}
+FRONT_MAX_H = 480  # same height as the BrickLink cut-outs this replaces
+
+
+def front_source(series_id, fig_no, originals_dir):
+    """Path of the front photo to use for a figure, or None to keep the current pipeline."""
+    if series_id not in FRONT_PHOTO_SERIES:
+        return None
+    p = Path(originals_dir) / series_id / f"{series_id}-{fig_no}.fig.jpg"
+    return p if p.exists() else None
+
+
+def prepare_front(src, max_h=FRONT_MAX_H):
+    """Front photo -> RGBA cut-out (white border region transparent), tight crop, height <= max_h."""
+    from cutout import cutout
+    out = cutout(src)
+    if out.size[1] > max_h:
+        out = out.resize((max(1, round(out.size[0] * max_h / out.size[1])), max_h), Image.LANCZOS)
+    return out
+
+
 def process_file(src, dest, kind):
-    """Process one downloaded file to WebP. kind: 'bag' | 'figure' | 'figure_set' | 'group'."""
+    """Process one downloaded file to WebP. kind: 'bag' | 'figure' | 'figure_set' | 'figure_front' | 'group'."""
+    if kind == "figure_front":
+        out = prepare_front(src)
+        dest.parent.mkdir(parents=True, exist_ok=True)
+        out.save(dest, "WEBP", quality=82, method=5)
+        return
     with Image.open(src) as img:
         if kind == "bag":
             out = flatten_bag(img, 700)
