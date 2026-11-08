@@ -1,0 +1,76 @@
+<!doctype html>
+<!-- V2-12 icon sheet: each direction as a browser tab icon (light and dark), at 16/32/180 px,
+     a 16 px raster blown up x4, and in the site header brand block. Screenshot: sheet.png -->
+<html lang="en"><head><meta charset="utf-8"><title>V2-12 Minifig Hunt icon directions</title>
+<link rel="stylesheet" href="../../app/src/index.css">
+<style>
+body { background:#F6F6F4; }
+.sheet { padding:40px 48px 56px; }
+.sheet > h1 { font-size:34px; letter-spacing:-.03em; margin:0 0 4px; }
+.sheet > p { margin:0 0 28px; color:var(--grey-500); font-size:15px; }
+.dir { display:grid; grid-template-columns:200px 1fr 1fr 330px; gap:22px; align-items:stretch; background:#fff; border-radius:20px; padding:22px; margin-bottom:20px; box-shadow:0 1px 0 rgba(0,0,0,.06); }
+.lab b { display:block; font-size:22px; font-weight:800; letter-spacing:-.02em; }
+.lab span { display:block; font-size:13px; color:var(--grey-500); line-height:1.45; margin-top:6px; }
+.lab i { font-style:normal; display:inline-block; font-size:12px; font-weight:800; letter-spacing:.12em; background:var(--ink); color:var(--lego-yellow); border-radius:999px; padding:3px 10px; margin-bottom:10px; }
+.mode { border-radius:14px; padding:12px 14px 16px; }
+.mode.light { background:#DEE1E6; color:#1F1F1F; }
+.mode.dark { background:#202124; color:#E8EAED; }
+.tabs { display:flex; align-items:flex-end; gap:2px; height:38px; }
+.tab { display:flex; align-items:center; gap:8px; height:34px; padding:0 12px; border-radius:10px 10px 0 0; font-size:12.5px; width:190px; white-space:nowrap; overflow:hidden; }
+.light .tab.on { background:#fff; } .light .tab.off { opacity:.75; }
+.dark .tab.on { background:#35363A; } .dark .tab.off { opacity:.7; }
+.tab img { width:16px; height:16px; flex:none; }
+.tab .g { width:16px; height:16px; border-radius:50%; background:currentColor; opacity:.35; flex:none; }
+.sizes { display:flex; align-items:flex-end; gap:22px; margin-top:16px; }
+.sizes figure { margin:0; text-align:center; font-size:11px; font-weight:700; letter-spacing:.08em; opacity:.8; }
+.sizes figcaption { margin-top:6px; }
+.sizes .z { width:64px; height:64px; image-rendering:pixelated; display:block; }
+.hdr { background:var(--lego-yellow); border-radius:14px; display:flex; flex-direction:column; justify-content:center; gap:18px; padding:22px; }
+.hdr .brand-mark { background:none; width:36px; height:36px; border-radius:0; }
+.hdr .brand-mark img { width:36px; height:36px; display:block; }
+.hdr .old { opacity:.55; }
+.hdr .tag { font-size:11px; font-weight:800; letter-spacing:.12em; text-transform:uppercase; opacity:.6; margin-bottom:-10px; }
+</style></head>
+<body><div class="sheet">
+<h1>Minifig Hunt site icon</h1>
+<p>Three original directions in the lego.com palette (#FFCF00, #E3000B, black, white). Real sizes, rendered at 1x. The "x4" tile is the 16 px raster enlarged to show what the browser tab actually draws.</p>
+<div id="rows"></div>
+</div>
+<script>
+// Directions: file, name, one-line idea
+var DIRS = [
+  ['a.svg', 'A', 'Lens head', 'A magnifier whose lens is a minifig head, stud on top. Says "hunt" and "minifig" in one shape.'],
+  ['b.svg', 'B', 'In the sights', 'A minifig head inside a red crosshair on an ink tile. The boldest silhouette at 16 px.'],
+  ['c.svg', 'C', 'MH brick', 'A red 1x2 brick with studs and an MH monogram. Brand initials, no character.']
+];
+function mode(cls, f) {
+  return '<div class="mode ' + cls + '"><div class="tabs">' +
+    '<div class="tab on"><img src="' + f + '" alt="">Minifig Hunt</div>' +
+    '<div class="tab off"><span class="g"></span>Inbox (3)</div></div>' +
+    '<div class="sizes">' +
+    '<figure><img src="' + f + '" width="16" height="16" alt=""><figcaption>16</figcaption></figure>' +
+    '<figure><img src="' + f + '" width="32" height="32" alt=""><figcaption>32</figcaption></figure>' +
+    '<figure><canvas class="z" width="16" height="16" data-src="' + f + '"></canvas><figcaption>16 x4</figcaption></figure>' +
+    '<figure><img src="' + f + '" width="180" height="180" alt=""><figcaption>180</figcaption></figure>' +
+    '</div></div>';
+}
+var html = '';
+DIRS.forEach(function (d) {
+  html += '<section class="dir"><div class="lab"><i>' + d[1] + '</i><b>' + d[2] + '</b><span>' + d[3] + '</span></div>' +
+    mode('light', d[0]) + mode('dark', d[0]) +
+    '<div class="hdr"><div class="tag">Header</div>' +
+    '<a class="brand" href="#"><span class="brand-mark"><img src="' + d[0] + '" alt=""></span>' +
+    '<span><b>Minifig Hunt</b><small>Collectible Minifigures</small></span></a>' +
+    '<div class="tag">Today</div>' +
+    '<a class="brand old" href="#"><span class="brand-mark" style="background:var(--lego-red);border-radius:9px;display:grid;place-items:center"><i></i></span>' +
+    '<span><b>Minifig Hunt</b><small>Collectible Minifigures</small></span></a></div></section>';
+});
+document.getElementById('rows').innerHTML = html;
+// Rasterise each SVG at 16x16, then show it enlarged with pixelated scaling
+document.querySelectorAll('canvas[data-src]').forEach(function (c) {
+  var im = new Image();
+  im.onload = function () { c.getContext('2d').drawImage(im, 0, 0, 16, 16); };
+  im.src = c.getAttribute('data-src');
+});
+</script>
+</body></html>

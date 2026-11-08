@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- V2-12 C "MH brick": a red 1x2 brick with two studs and an "MH" monogram drawn as strokes. Original drawing. -->
+  <!-- SOURCE: palette #FFCF00 / #E3000B / black / white, OWNER-SUPPLIED (lego.com palette in the V2-12 brief) -->
+  <rect x="10" y="5" width="15" height="12" rx="3" fill="#E3000B" stroke="#000" stroke-width="4"/>
+  <rect x="39" y="5" width="15" height="12" rx="3" fill="#E3000B" stroke="#000" stroke-width="4"/>
+  <rect x="3" y="15" width="58" height="46" rx="9" fill="#E3000B" stroke="#000" stroke-width="4"/>
+  <path d="M13 51V27l8.5 12L30 27v24M37 27v24M51 27v24M37 39h14" fill="none" stroke="#FFCF00" stroke-width="6" stroke-linejoin="round" stroke-linecap="round"/>
+</svg>
