@@ -194,9 +194,10 @@ h1[tabindex]:focus { outline:none; }
 .adm-link::after { content:""; position:absolute; right:18px; top:50%; width:9px; height:9px; margin-top:-5px;
   border-top:2.6px solid var(--ink); border-right:2.6px solid var(--ink); transform:rotate(45deg); transition:transform .25s var(--ease); }
 .adm-link:hover { background:var(--grey-100); }
+.adm-link:hover small { color:var(--ink); } /* keeps the subtitle above 4.5:1 on the darker hover tile */
 .adm-link:hover svg { transform:rotate(-6deg) scale(1.05); }
 .adm-link:hover::after { transform:translateX(4px) rotate(45deg); }
-.adm-link:focus-visible { outline:3px solid var(--ink); outline-offset:3px; border-radius:16px; }
+.adm-link:focus-visible { outline:3px solid var(--ink); outline-offset:3px; }
 @media (prefers-reduced-motion:reduce) {
   /* No tilt or slide; the background change alone marks hover */
   .adm-link:hover svg { transform:none; }
