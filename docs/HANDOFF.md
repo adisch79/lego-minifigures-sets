@@ -34,9 +34,8 @@ Previous next-step text (V2-04/05/06, all done): [archive/handoff-2026-11-07.md]
 - Figure images: `img.bricklink.com/ItemImage/SN/0/<code>-<n>.png`. 71049 has no code and keeps v1 images.
 - Logos: only files with real alpha (memory `feedback-asset-search`).
 
-## Tests (2026-11-08, dev + docs branch)
+## Tests (2026-11-08 wrap, dev incl. V2-10/V2-12)
 `npx vitest run` in `app/`: 235 pass. `python -m pytest tests`: 95 pass (97 on `feature/V2-13-front-photos`). `npm test` in `supabase/`: 84 pass (dev after PR #44).
-Older (2026-11-04): `node --test scripts/smoke_auth.test.mjs`: 14 pass. `npx vitest run` in `app/`: 71 pass, 4 files; `npm ci` first if `node_modules` is empty. `python -m pytest tests`: 95 pass.
 
 ## Open questions
 - Ages unreadable for 8909, 8805, 8684; no age is printed on their cards.
