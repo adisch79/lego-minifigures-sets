@@ -19,7 +19,6 @@ Docs PR #42 merged. Untracked leftover `mockups/V2-11/tmp/` in worktree agent-a1
 Previous next-step text (V2-04/05/06, all done): [archive/handoff-2026-11-07.md](archive/handoff-2026-11-07.md).
 
 ## Owner-needed
-- Hosting move decided 2026-11-07: Cloudflare Pages (story V2-06, after V2-05 release). Owner step 1 done 2026-11-07 (account + 2FA). Owner step 2 in progress: account API token, policy Entire Account > Developer Platform > Pages > Edit, expiry 1 year, saved as repo secret `CLOUDFLARE_API_TOKEN`. Account ID `2e5bef97d31f8048a95d39221f12f214` (not secret; becomes repo variable `CLOUDFLARE_ACCOUNT_ID`).
 - Supabase Authentication > URL Configuration: Site URL and redirect list exactly `https://minifighunt.com/`, no wildcard.
 - MVP 2: custom SMTP account before anyone but the owner can sign in.
 - Supabase keys are in `.env` (2026-10-31); a database password or access token may also be needed for migrations. Telegram bot token and chat id: repo-root `.env` and a NAS copy. Key names unverified: a deny rule blocks reading `.env`.
