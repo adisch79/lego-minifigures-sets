@@ -71,6 +71,9 @@ Legend: **UI** = needs approved direction first. **Owner** = needs something onl
 | V2-12 | Site icon | Favicon and header mark fit Minifig Hunt (no purple Vite lightning); SVG + PNG sizes | S | senior-frontend-dev | UI | Mockups |
 | V2-13 | Front-facing figure photos | Series-page figures face the front where a real photo exists (official or not); one series to full depth first, then all; sources in SOURCES.md | M | haiku hunt + sonnet | | In progress: 71052 built (`feature/V2-13-front-photos`), owner sign-off pending |
 | V2-14 | Mock regular user | Owner can sign in as a non-admin user to see the collector view: Gmail plus-address `adisch79+user@gmail.com` on the allowlist (owner adds it in #admin; not needed after V2-09) | S | — | Owner | Ready |
+| V2-15 | Contact + Buy me a coffee pages | "Contact me" page (form or mail link, no address scraping) and "Buy me a coffee" page with the owner's payment link; both in the site design, linked from header or footer | M | senior-frontend-dev | UI, Owner (coffee account link, contact address) | Ready |
+| V2-16 | Branded auth emails | Sign-in emails come from the site (Minifig Hunt sender name and domain, site design), with no Supabase name, logo or link; custom SMTP on minifighunt.com + Supabase email templates | M | sonnet + security review | UI, Owner (SMTP provider, DNS SPF/DKIM) | Ready |
+| V2-17 | Business model discussion | One-page options paper: ways to earn from the site (affiliate links on price offers, donations, ads, premium features), effort, expected income, legal/ToS limits; owner decides | S | opus | Owner (decision) | Ready |
 
 ## MVP 3 — Lowest prices · demo: price chip on every series/figure
 | ID | Title | Acceptance criteria | Size | Model | Flags | Status |

@@ -18,6 +18,7 @@ Queue (backlog MVP 2.1). Work is already built for 1-5; present them in this ord
 6. **V2-13 front photos.** 71052 done on `feature/V2-13-front-photos` (5e0b34f): `.fig.jpg` (Rebrickable, front) cut out by `scripts/cutout.py`; switch `FRONT_PHOTO_SERIES` in scripts/process_images.py; `python scripts/apply_front.py <id>`. Screenshot `mockups/V2-13/71052-1280.png`. Owner sign-off, then all series (older ones have grey backgrounds: check cut-outs).
 7. **V2-14 mock user.** Owner adds `adisch79+user@gmail.com` in https://minifighunt.com/#admin and signs in with it in a private window (not needed after V2-09).
 8. **V2-09 open sign-up.** Not started. Design + security review: drop allowlist trigger (migration 20261102 `enforce_allowlist`), `shouldCreateUser: true` (app/src/auth.ts:91), admin lists all users. Owner: Supabase "Allow new users to sign up" and custom SMTP (built-in mail 2 per hour).
+9. **V2-15 contact + coffee pages**, 10. **V2-16 branded auth emails** (pairs with V2-09 custom SMTP), 11. **V2-17 business model discussion**. Added by owner 2026-11-08, not started.
 Also: docs PR #42 (backlog MVP 2.1) open; the classifier blocked the agent merge ("Merge Without Review"); owner runs `! gh pr merge 42 --merge`. Untracked leftover `mockups/V2-11/tmp/` in worktree agent-a11b373be5017f407 (delete was denied).
 Previous next-step text (V2-04/05/06, all done): [archive/handoff-2026-11-07.md](archive/handoff-2026-11-07.md).
 
