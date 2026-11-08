@@ -12,7 +12,7 @@ Owner rule (memory `feedback-one-fix-at-a-time`): each message covers exactly on
 Queue (backlog MVP 2.1). Work is already built for 1-5; present them in this order:
 1. **V2-08 alerts pause.** DONE 2026-11-08: owner ran the two `drop trigger` lines in the Supabase SQL Editor (live). Re-enable SQL: header of `supabase/migrations/20261108000000_v2_08_pause_wanted_alerts.sql`. Code on master via PR #46.
 2. **V2-07 rename to Minifig Hunt.** DONE 2026-11-08: release PR #46 (dev into master, with V2-08 code) merged by owner; deploy build + deploy-cloudflare success; live title and bundle show "Minifig Hunt".
-3. **V2-10 admin link.** Cause: `.adm-link` (app/src/Account.tsx:277) has no CSS. Mockups A/B/C: branch `feature/V2-10-12-mockups`, `mockups/V2-10/{a,b,c}.png`. Recommend B (yellow brick). Owner picks, then senior-frontend-dev builds.
+3. **V2-10 admin link.** DONE on dev 2026-11-08: owner picked A (ink tile); PR #47 merged (CSS only, app/src/index.css). Live with the next release into master.
 4. **V2-12 site icon.** Same branch, `mockups/V2-12/sheet.png` (A lens head, B head in crosshair, C MH brick). Recommend B.
 5. **V2-11 card layout v5.** Branch `feature/V2-11-mockups`, `mockups/V2-11/sheet.png` (A box stack, B logo crown, C full bleed; renderer `mockups/V2-11/build_mockups.py`). Recommend A. Known: about 90 px gap in 71052 for A/B. Then rebuild 52 cards.
 6. **V2-13 front photos.** 71052 done on `feature/V2-13-front-photos` (5e0b34f): `.fig.jpg` (Rebrickable, front) cut out by `scripts/cutout.py`; switch `FRONT_PHOTO_SERIES` in scripts/process_images.py; `python scripts/apply_front.py <id>`. Screenshot `mockups/V2-13/71052-1280.png`. Owner sign-off, then all series (older ones have grey backgrounds: check cut-outs).
