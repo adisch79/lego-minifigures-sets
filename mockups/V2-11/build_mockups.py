@@ -1,8 +1,10 @@
 """V2-11 mockups: three card layouts with a bigger figure group and a badge about the logo height.
 
-Usage: python mockups/V2-11/build_mockups.py
+Usage: python mockups/V2-11/build_mockups.py      (all variants)
+       python mockups/V2-11/build_mockups.py e    (variant E and sheet_e only)
 Output: mockups/V2-11/{a,b,c}-<id>.png for 71053 and 71052, plus mockups/V2-11/sheet.png.
         mockups/V2-11/d-<id>.png for 71053, 71052, 71023, 8683, plus mockups/V2-11/sheet_d.png.
+        mockups/V2-11/e-<id>.png for 71053, 71052, 71023, 71045, plus mockups/V2-11/sheet_e.png.
 Reuses the live card machinery in scripts/build_cards.py; live output in app/public/cards is not touched.
 """
 import json, pathlib, subprocess, sys
@@ -144,6 +146,47 @@ def page_d(s):
 <div class="band">{band}</div></div>"""
 
 
+# E geometry: group exactly as A (box 600x476 at top 234, contain, bottom aligned, so it ends at y 710),
+# logo at B size (max 540x124) stacked directly on top of the visible group, never above E_LOGO_MIN_TOP.
+IDS_E = IDS + ["71023", "71045"]
+A_GROUP_TOP, A_GROUP_W, A_GROUP_H = 234, 600, 476
+E_LOGO_H, E_LOGO_W = 124, 540      # B's logo box
+E_TALL_RATIO, E_TALL_H = 2.0, 190  # logos narrower than 2:1 (71023 LEGO Movie 2) get a taller box
+E_GAP = 6                          # space between logo bottom and the tallest figure
+E_LOGO_MIN_TOP = 26                # B's logo top; the stack never pushes the logo higher
+
+
+def e_layout(s):
+    """Logo box (max h, max w), logo top and rendered sizes for E, from the real image sizes."""
+    sid = s["id"]
+    logo = bc.LOGOS / (bc.LOGO[sid] if sid in bc.LOGO else "lego-minifigures-lockup.png")
+    lw0, lh0 = Image.open(logo).size
+    gw0, gh0 = Image.open(bc.GROUP / (sid + ".png")).size
+    box_h = E_TALL_H if lw0 / lh0 < E_TALL_RATIO else E_LOGO_H
+    k = min(box_h / lh0, E_LOGO_W / lw0)
+    lw, lh = round(lw0 * k), round(lh0 * k)
+    gh = min(A_GROUP_H, A_GROUP_W * gh0 / gw0)          # visible group height inside A's box
+    group_top = A_GROUP_TOP + A_GROUP_H - gh
+    logo_top = max(E_LOGO_MIN_TOP, round(group_top - E_GAP - lh))
+    return box_h, logo_top, lw, lh, round(group_top), round(gh)
+
+
+def page_e(s):
+    """E: A's meta, badge, group and band; B's large logo sitting directly on the group."""
+    box_h, logo_top, *_ = e_layout(s)
+    bg, ink, theme, band = parts(s, box_h, E_LOGO_W)
+    return f"""<!DOCTYPE html><meta charset="utf-8"><style>{BASE}
+.card{{background:{bg};color:{ink}}}
+.meta{{position:absolute;left:30px;top:24px;line-height:1;font-weight:800;z-index:3}}
+.badge{{position:absolute;right:14px;top:10px;z-index:3}}
+.theme{{position:absolute;left:0;right:0;top:{logo_top}px;text-align:center;line-height:0;z-index:2}}
+.group{{position:absolute;left:0;top:{A_GROUP_TOP}px;width:{A_GROUP_W}px;height:{A_GROUP_H}px;object-fit:contain;object-position:center bottom;z-index:1}}
+.band{{position:absolute;left:0;right:0;bottom:0;height:80px;background:#0b0b0b;display:flex;align-items:center;padding:0 30px;z-index:3}}
+</style><div class="card"><div class="meta">{meta(s)}</div>{badge(s, 104)}
+<div class="theme">{theme}</div>{group(s)}
+<div class="band">{band}</div></div>"""
+
+
 def render(name, html_text):
     html = TMP / f"{name}.html"
     html.write_text(html_text, encoding="utf-8")
@@ -192,6 +235,36 @@ def sheet_d():
     img.save(OUT / "sheet_d.png")
 
 
+def sheet_e():
+    """Rows 71053 and 71052: original, current, A, B, E. Last row: E for 71023 and 71045."""
+    w, h, cap = 300, 400, 28
+    rows = [[(f"{sid} {lab}", src) for lab, src in (
+        ("original", ROOT / f"originals/{sid}/{sid}-0.jpg"), ("current", ROOT / f"app/public/cards/{sid}.png"),
+        ("A", OUT / f"a-{sid}.png"), ("B", OUT / f"b-{sid}.png"), ("E", OUT / f"e-{sid}.png"))] for sid in IDS]
+    rows.append([(f"{sid} E", OUT / f"e-{sid}.png") for sid in IDS_E[2:]])
+    img = Image.new("RGB", (5 * (w + 8) + 8, len(rows) * (h + cap + 8) + 8), (255, 255, 255))
+    draw = ImageDraw.Draw(img)
+    font = ImageFont.truetype("arialbd.ttf", 18)
+    for r, row in enumerate(rows):
+        for c, (label, src) in enumerate(row):
+            tile = Image.open(src).convert("RGB")
+            tile.thumbnail((w, h))
+            x, y = 8 + c * (w + 8), 8 + r * (h + cap + 8)
+            img.paste(tile, (x + (w - tile.width) // 2, y + cap + (h - tile.height) // 2))
+            draw.text((x, y + 4), label, fill=(0, 0, 0), font=font)
+    img.save(OUT / "sheet_e.png")
+
+
+def main_e():
+    """Render only variant E and its sheet (A and B pngs must already exist)."""
+    series = {s["id"]: s for s in json.loads((ROOT / "app/public/catalog.json").read_text(encoding="utf-8"))["series"]}
+    TMP.mkdir(parents=True, exist_ok=True)
+    for sid in IDS_E:
+        render(f"e-{sid}", page_e(series[sid]))
+        print(f"e-{sid}", e_layout(series[sid]), flush=True)
+    sheet_e()
+
+
 def main():
     series = {s["id"]: s for s in json.loads((ROOT / "app/public/catalog.json").read_text(encoding="utf-8"))["series"]}
     TMP.mkdir(parents=True, exist_ok=True)
@@ -204,7 +277,8 @@ def main():
         render(f"d-{sid}", page_d(series[sid]))
         print(f"d-{sid}", flush=True)
     sheet_d()
+    main_e()
 
 
 if __name__ == "__main__":
-    main()
+    main_e() if sys.argv[1:] == ["e"] else main()
