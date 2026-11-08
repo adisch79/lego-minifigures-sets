@@ -182,6 +182,26 @@ h1[tabindex]:focus { outline:none; }
 .full { font-size:16px; font-weight:800; overflow-wrap:anywhere; margin:0 0 16px; }
 .out { width:100%; height:44px; border-radius:999px; border:2px solid var(--ink); background:var(--white); color:var(--ink); font:inherit; font-size:14px; font-weight:800; cursor:pointer; transition:background .2s, color .2s; }
 .out:hover { background:var(--ink); color:var(--lego-yellow); }
+/* V2-10 admin link, approved direction A "Ink tile" (scratchpad V2-10/a.html): grey settings row,
+   ink icon square with the yellow shield, chevron drawn with ::after that slides on hover */
+.adm-link { position:relative; display:flex; align-items:center; gap:14px; margin:0 0 14px; padding:12px 44px 12px 12px;
+  border-radius:16px; background:var(--grey-50); color:var(--ink); text-decoration:none; transition:background .2s var(--ease); }
+.adm-link svg { flex:none; box-sizing:border-box; width:42px; height:42px; padding:11px; border-radius:12px;
+  background:var(--ink); color:var(--lego-yellow); transition:transform .3s var(--ease); }
+.adm-link span { min-width:0; }
+.adm-link b { display:block; font-size:15.5px; font-weight:800; letter-spacing:-.01em; line-height:1.2; }
+.adm-link small { display:block; font-size:13px; font-weight:600; color:var(--grey-500); margin-top:2px; }
+.adm-link::after { content:""; position:absolute; right:18px; top:50%; width:9px; height:9px; margin-top:-5px;
+  border-top:2.6px solid var(--ink); border-right:2.6px solid var(--ink); transform:rotate(45deg); transition:transform .25s var(--ease); }
+.adm-link:hover { background:var(--grey-100); }
+.adm-link:hover svg { transform:rotate(-6deg) scale(1.05); }
+.adm-link:hover::after { transform:translateX(4px) rotate(45deg); }
+.adm-link:focus-visible { outline:3px solid var(--ink); outline-offset:3px; border-radius:16px; }
+@media (prefers-reduced-motion:reduce) {
+  /* No tilt or slide; the background change alone marks hover */
+  .adm-link:hover svg { transform:none; }
+  .adm-link:hover::after { transform:rotate(45deg); }
+}
 
 /* Link error: a full-bleed red strip directly under the header row (the band clips the x overflow) */
 .linkbar { margin:0 calc(50% - 50vw); background:var(--lego-red); color:var(--white); animation:drop .35s var(--ease) both; }
