@@ -9,8 +9,9 @@ import { PGlite } from '@electric-sql/pglite';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const migDir = path.join(here, '..', 'migrations');
-// Trigger behaviour is tested on the schema before V2-08 pauses the triggers (see pause.test.js).
-const PAUSE = '20261108';
+// Trigger behaviour needs the triggers: every migration except the V2-08 pause is loaded, so later
+// migrations stay covered. The paused state is tested in pause.test.js.
+const isPause = (n) => n.includes('v2_08_pause');
 const A = '00000000-0000-4000-8000-00000000000a';
 const B = '00000000-0000-4000-8000-00000000000b';
 let db;
@@ -22,7 +23,7 @@ const sent = async () => (await q('select user_id, kind, target_id from public.s
 before(async () => {
   db = new PGlite();
   await db.exec(readFileSync(path.join(here, 'stub.sql'), 'utf8'));
-  for (const f of readdirSync(migDir).filter((n) => n.endsWith('.sql') && n < PAUSE).sort()) {
+  for (const f of readdirSync(migDir).filter((n) => n.endsWith('.sql') && !isPause(n)).sort()) {
     await db.exec(readFileSync(path.join(migDir, f), 'utf8'));
   }
 });
