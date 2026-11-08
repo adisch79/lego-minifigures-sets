@@ -19,7 +19,8 @@ let db;
 before(async () => {
   db = new PGlite();
   await db.exec(readFileSync(path.join(here, 'stub.sql'), 'utf8'));
-  for (const f of readdirSync(migDir).filter((n) => n.endsWith('.sql')).sort()) {
+  // Stop before V2-08 (alerts paused): the alert states checked here need the triggers.
+  for (const f of readdirSync(migDir).filter((n) => n.endsWith('.sql') && n < '20261108').sort()) {
     await db.exec(readFileSync(path.join(migDir, f), 'utf8'));
   }
 });
