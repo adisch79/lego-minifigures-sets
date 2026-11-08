@@ -70,6 +70,23 @@ def label(x, y, size, value, squeeze, fill, stroke=0, skew=0, spacing=0):
     return f'<text transform="{move}" text-anchor="middle" style="{style}">{value}</text>'
 
 
+def count_mark(count):
+    """Checkbox + count + TO COLLECT, centred as one block in the head (head box x 92-252, y 55-205, centre 172).
+    Layout per the owner's bag screenshot, 2026-11-09: checkbox touches the count on its left, the pair is centred,
+    TO COLLECT is centred under it and stays inside the head."""
+    size = 92 if len(str(count)) < 3 else 70                   # count font size; 3 digits shrink to fit the head
+    count_w = 0.6 * size * 0.66 * len(str(count)) - 5          # drawn digit width about 0.6 em (measured at 3x), squeeze 0.66, spacing -5
+    box, gap = 24, 3
+    left = 172 - (box + gap + count_w) / 2
+    cx = left + box + gap + count_w / 2
+    base = 144                                                 # count baseline; cap top about base - 0.72 * size
+    by = base - 0.36 * size - box / 2 + 4                      # checkbox centred on the count, a little low as on the bag
+    return f"""<rect x="{left:.0f}" y="{by:.0f}" width="{box}" height="{box}" rx="6" fill="#fff" stroke="{RED}" stroke-width="4"/>
+<path d="M{left + 5:.0f} {by + 12:.0f} l6 7 l18 -18" fill="none" stroke="#111" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+{label(round(cx), base, size, count, 0.66, RED, 4, -8, -5)}
+{label(172, base + 36, 25, "TO COLLECT", 0.6, RED, 1, -6)}"""
+
+
 def badge(number, count):
     """Bag badge per the owner's example: SERIES and number in a round frame, count in a tilted head."""
     frame = ""
@@ -83,10 +100,7 @@ def badge(number, count):
 <rect x="132" y="26" width="80" height="38" rx="4" fill="{HEAD_DARK}"/>
 <rect x="116" y="196" width="112" height="32" rx="4" fill="{HEAD_DARK}"/>
 <rect x="92" y="55" width="160" height="150" rx="34" fill="{HEAD}"/>
-<rect x="99" y="112" width="24" height="24" rx="7" fill="#fff" stroke="{RED}" stroke-width="4"/>
-<path d="M104 124 l6 7 l20 -19" fill="none" stroke="#111" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
-{label(183, 158, 112, count, 0.66, RED, 5, -8, -7)}
-{label(172, 190, 27, "TO COLLECT", 0.62, RED, 1, -6)}
+{count_mark(count)}
 </g></svg>"""
 
 
