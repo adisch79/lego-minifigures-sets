@@ -52,7 +52,7 @@ afterEach(() => {
 describe('App', () => {
   it('renders the brand and the page title', async () => {
     render(<App />)
-    expect(screen.getByRole('link', { name: 'Minifig Vault home' })).toBeTruthy()
+    expect(screen.getByRole('link', { name: 'Minifig Hunt home' })).toBeTruthy()
     expect(screen.getByRole('heading', { level: 1 }).textContent).toContain('Every series.')
     await screen.findByText('Shrek')
   })
