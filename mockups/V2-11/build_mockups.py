@@ -2,6 +2,7 @@
 
 Usage: python mockups/V2-11/build_mockups.py
 Output: mockups/V2-11/{a,b,c}-<id>.png for 71053 and 71052, plus mockups/V2-11/sheet.png.
+        mockups/V2-11/d-<id>.png for 71053, 71052, 71023, 8683, plus mockups/V2-11/sheet_d.png.
 Reuses the live card machinery in scripts/build_cards.py; live output in app/public/cards is not touched.
 """
 import json, pathlib, subprocess, sys
@@ -14,6 +15,8 @@ import build_cards as bc  # noqa: E402
 OUT = ROOT / "mockups/V2-11"
 TMP = OUT / "tmp"
 IDS = ["71053", "71052"]
+# D also renders one older grid-style series and one white cut-out series to prove it generalises.
+IDS_D = IDS + ["71023", "8683"]
 # Badge svg in build_cards is 240x218 px; drawn content fills about 95 % of its height (measured on 71052.png).
 BADGE_W, BADGE_H = 240, 218
 
@@ -107,6 +110,40 @@ background:linear-gradient(transparent,rgba(0,0,0,.85))}}
 <div class="band">{band}</div><div class="meta">{meta(s)}</div></div>"""
 
 
+# D geometry (card 600x800, band 80 px): group sits on the band and reaches up under the logo.
+D_LOGO_TOP, D_LOGO_H, D_LOGO_W = 116, 140, 540
+D_GROUP_BOTTOM = 720           # top edge of the black band
+D_GROUP_TOP = 190              # group top: logo overlaps the crowd by roughly half its height
+D_MAX_W = 760                  # widest group allowed: crops at most 80 px per side, as on the retail box
+
+
+def d_group_box(s):
+    """Group height and width for D: fill D_GROUP_TOP..band, unless that crops more than D_MAX_W allows."""
+    w, h = Image.open(bc.GROUP / (s["id"] + ".png")).size
+    gh = D_GROUP_BOTTOM - D_GROUP_TOP
+    gw = gh * w / h
+    if gw > D_MAX_W:
+        gw, gh = D_MAX_W, D_MAX_W * h / w
+    return round(gw), round(gh)
+
+
+def page_d(s):
+    """D, retail box: A's meta, badge and band; big logo on top overlapping a crowd cropped at the sides."""
+    bg, ink, theme, band = parts(s, D_LOGO_H, D_LOGO_W)
+    gw, gh = d_group_box(s)
+    return f"""<!DOCTYPE html><meta charset="utf-8"><style>{BASE}
+.card{{background:{bg};color:{ink}}}
+.meta{{position:absolute;left:30px;top:24px;line-height:1;font-weight:800;z-index:3}}
+.badge{{position:absolute;right:14px;top:10px;z-index:3}}
+.group{{position:absolute;left:{(600 - gw) // 2}px;top:{D_GROUP_BOTTOM - gh}px;width:{gw}px;height:{gh}px;z-index:1}}
+.theme{{position:absolute;left:0;right:0;top:{D_LOGO_TOP}px;text-align:center;z-index:2}}
+.theme img{{filter:drop-shadow(0 4px 6px rgba(0,0,0,.45))}}
+.band{{position:absolute;left:0;right:0;bottom:0;height:80px;background:#0b0b0b;display:flex;align-items:center;padding:0 30px;z-index:3}}
+</style><div class="card"><div class="meta">{meta(s)}</div>{badge(s, 104)}
+{group(s)}<div class="theme">{theme}</div>
+<div class="band">{band}</div></div>"""
+
+
 def render(name, html_text):
     html = TMP / f"{name}.html"
     html.write_text(html_text, encoding="utf-8")
@@ -135,6 +172,26 @@ def sheet():
     img.save(OUT / "sheet.png")
 
 
+def sheet_d():
+    """Rows 71053 and 71052: original, current, A, D. Last row: D for 71023 and 8683."""
+    w, h, cap = 300, 400, 28
+    rows = [[(f"{sid} {lab}", src) for lab, src in (
+        ("original", ROOT / f"originals/{sid}/{sid}-0.jpg"), ("current", ROOT / f"app/public/cards/{sid}.png"),
+        ("A", OUT / f"a-{sid}.png"), ("D", OUT / f"d-{sid}.png"))] for sid in IDS]
+    rows.append([(f"{sid} D", OUT / f"d-{sid}.png") for sid in IDS_D[2:]])
+    img = Image.new("RGB", (4 * (w + 8) + 8, len(rows) * (h + cap + 8) + 8), (255, 255, 255))
+    draw = ImageDraw.Draw(img)
+    font = ImageFont.truetype("arialbd.ttf", 18)
+    for r, row in enumerate(rows):
+        for c, (label, src) in enumerate(row):
+            tile = Image.open(src).convert("RGB")
+            tile.thumbnail((w, h))
+            x, y = 8 + c * (w + 8), 8 + r * (h + cap + 8)
+            img.paste(tile, (x + (w - tile.width) // 2, y + cap + (h - tile.height) // 2))
+            draw.text((x, y + 4), label, fill=(0, 0, 0), font=font)
+    img.save(OUT / "sheet_d.png")
+
+
 def main():
     series = {s["id"]: s for s in json.loads((ROOT / "app/public/catalog.json").read_text(encoding="utf-8"))["series"]}
     TMP.mkdir(parents=True, exist_ok=True)
@@ -143,6 +200,10 @@ def main():
             render(f"{v}-{sid}", fn(series[sid]))
             print(f"{v}-{sid}", flush=True)
     sheet()
+    for sid in IDS_D:
+        render(f"d-{sid}", page_d(series[sid]))
+        print(f"d-{sid}", flush=True)
+    sheet_d()
 
 
 if __name__ == "__main__":
