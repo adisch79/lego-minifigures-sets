@@ -57,8 +57,23 @@ Legend: **UI** = needs approved direction first. **Owner** = needs something onl
 | V2-02 | Invite-only sign-in | Email magic link; addresses not on the allowlist are refused; sign-out | M | sonnet | | Done |
 | V2-03 | Mark owned / wanted | Per figure and per whole series; progress (e.g. 12/20 owned); filter "my wanted" / "missing" | M | sonnet + senior-frontend-dev | UI | Done (PR into dev) |
 | V2-04 | Telegram alert on wanted | New wanted mark → one Telegram message (who, what, link) within 1 min; repeat clicks not re-sent; token only in Supabase secrets | S | sonnet + security review | Owner (bot token) | Done (PR #26, deployed and verified live 2026-11-06) |
-| V2-05 | Admin page | Owner manages the allowlist and sees all wanted items | S | sonnet | UI | Ready |
-| V2-06 | Move hosting to Cloudflare Pages | Site served from `minifighunt.com` (Cloudflare Pages custom domain) by CI on push to master; `_headers` with CSP incl. `frame-ancestors 'none'`, HSTS, nosniff, Referrer-Policy; Supabase Site URL and redirect list exact new URL; `admin-people` ALLOWED_ORIGIN, `telegram-alert` SITE_URL, smoke script updated; sign-in and admin smoke pass on new URL; GitHub Pages then switched off | M | sonnet + security review | Owner (Cloudflare account, API token, Supabase URL settings) | Ready |
+| V2-05 | Admin page | Owner manages the allowlist and sees all wanted items | S | sonnet | UI | Done (PR #33, released PR #35) |
+| V2-06 | Move hosting to Cloudflare Pages | Site served from `minifighunt.com` (Cloudflare Pages custom domain) by CI on push to master; `_headers` with CSP incl. `frame-ancestors 'none'`, HSTS, nosniff, Referrer-Policy; Supabase Site URL and redirect list exact new URL; `admin-people` ALLOWED_ORIGIN, `telegram-alert` SITE_URL, smoke script updated; sign-in and admin smoke pass on new URL; GitHub Pages then switched off | M | sonnet + security review | Owner (Cloudflare account, API token, Supabase URL settings) | Done |
+
+## MVP 2.1 — Owner fixes before MVP 3 (owner list, 2026-11-08) · demo: https://minifighunt.com/
+| ID | Title | Acceptance criteria | Size | Model | Flags | Status |
+|---|---|---|---|---|---|---|
+| V2-07 | Rename to Minifig Hunt | Every visible "Minifig Vault" / "vault" string, page titles and aria labels read "Minifig Hunt"; tests updated | S | sonnet | | Done (PR #43 into dev) |
+| V2-08 | Pause Telegram alerts | Wanted marks send no Telegram message; migration drops the two alert triggers and keeps the function and secrets, so re-enabling is one migration | S | sonnet + security review | Owner (paste SQL) | Done in code (PR #44 into dev); owner SQL paste pending |
+| V2-09 | Open sign-up | Anyone can create an account with the email link (no allowlist check); admin page lists all users; rate limits and SMTP documented | M | opus design + security review | Owner (Supabase "Allow new users to sign up", custom SMTP) | Ready |
+| V2-10 | Admin menu link look | Admin row in the account popover is styled like the popover (icon, title, sub-line, hover, focus); fixes the unstyled `.adm-link` | S | senior-frontend-dev | UI | Mockups |
+| V2-11 | Card layout v5 | Group image bigger; round series frame + yellow head about the height of the series logo; logo moved up, as on the original Shrek / Series 29 box; all 52 cards rebuilt | M | opus + sonnet | UI | Mockups |
+| V2-12 | Site icon | Favicon and header mark fit Minifig Hunt (no purple Vite lightning); SVG + PNG sizes | S | senior-frontend-dev | UI | Mockups |
+| V2-13 | Front-facing figure photos | Series-page figures face the front where a real photo exists (official or not); one series to full depth first, then all; sources in SOURCES.md | M | haiku hunt + sonnet | | In progress: 71052 built (`feature/V2-13-front-photos`), owner sign-off pending |
+| V2-14 | Mock regular user | Owner can sign in as a non-admin user to see the collector view: Gmail plus-address `adisch79+user@gmail.com` on the allowlist (owner adds it in #admin; not needed after V2-09) | S | — | Owner | Ready |
+| V2-15 | Contact + Buy me a coffee pages | "Contact me" page (form or mail link, no address scraping) and "Buy me a coffee" page with the owner's payment link; both in the site design, linked from header or footer | M | senior-frontend-dev | UI, Owner (coffee account link, contact address) | Ready |
+| V2-16 | Branded auth emails | Sign-in emails come from the site (Minifig Hunt sender name and domain, site design), with no Supabase name, logo or link; custom SMTP on minifighunt.com + Supabase email templates | M | sonnet + security review | UI, Owner (SMTP provider, DNS SPF/DKIM) | Ready |
+| V2-17 | Business model discussion | One-page options paper: ways to earn from the site (affiliate links on price offers, donations, ads, premium features), effort, expected income, legal/ToS limits; owner decides | S | opus | Owner (decision) | Ready |
 
 ## MVP 3 — Lowest prices · demo: price chip on every series/figure
 | ID | Title | Acceptance criteria | Size | Model | Flags | Status |

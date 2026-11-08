@@ -19,7 +19,9 @@ let db;
 before(async () => {
   db = new PGlite();
   await db.exec(readFileSync(path.join(here, 'stub.sql'), 'utf8'));
-  for (const f of readdirSync(migDir).filter((n) => n.endsWith('.sql')).sort()) {
+  // Skip only the V2-08 pause (see pause.test.js): the alert states checked here need the triggers;
+  // later migrations are still loaded.
+  for (const f of readdirSync(migDir).filter((n) => n.endsWith('.sql') && !n.includes('v2_08_pause')).sort()) {
     await db.exec(readFileSync(path.join(migDir, f), 'utf8'));
   }
 });
