@@ -146,41 +146,56 @@ def page_d(s):
 <div class="band">{band}</div></div>"""
 
 
-# E geometry: group exactly as A (box 600x476 at top 234, contain, bottom aligned, so it ends at y 710),
-# logo at B size (max 540x124) stacked directly on top of the visible group, never above E_LOGO_MIN_TOP.
+# E geometry: logo at B's top (y 26), centred in the band between the age/set block and the badge.
+# Group starts from A (box 600x476 at top 234, contain, bottom aligned at y 710); if A leaves an empty band
+# under the logo, the group is moved up to logo bottom + E_GAP and scaled up, side crop capped at 80 px per side.
 IDS_E = IDS + ["71023", "71045"]
 A_GROUP_TOP, A_GROUP_W, A_GROUP_H = 234, 600, 476
-E_LOGO_H, E_LOGO_W = 124, 540      # B's logo box
-E_TALL_RATIO, E_TALL_H = 2.0, 190  # logos narrower than 2:1 (71023 LEGO Movie 2) get a taller box
-E_GAP = 6                          # space between logo bottom and the tallest figure
-E_LOGO_MIN_TOP = 26                # B's logo top; the stack never pushes the logo higher
+GROUP_BOTTOM = A_GROUP_TOP + A_GROUP_H   # 710, as A
+E_LOGO_TOP = 26                          # B's logo top
+E_LOGO_H = 124                           # B's logo height
+E_TALL_RATIO, E_TALL_H = 2.0, 190        # logos narrower than 2:1 (71023 LEGO Movie 2) may grow to 190 px
+META_RIGHT = 102                         # right edge of the age rule / set number block (left 30 + rule 72)
+BADGE_LEFT = 600 - 14 - round(round(104 / 0.95) * BADGE_W / BADGE_H)   # 466: badge box left edge
+E_CLEAR = 10                             # clearance to age block and badge
+E_BAND_L, E_BAND_R = META_RIGHT + E_CLEAR, BADGE_LEFT - E_CLEAR       # 112..456, 344 px wide
+E_GAP = 10                               # logo bottom to group top
+E_MAX_GW = 760                           # widest group: 80 px crop per side
 
 
 def e_layout(s):
-    """Logo box (max h, max w), logo top and rendered sizes for E, from the real image sizes."""
+    """Logo box and size, group box for E, from the real image sizes."""
     sid = s["id"]
     logo = bc.LOGOS / (bc.LOGO[sid] if sid in bc.LOGO else "lego-minifigures-lockup.png")
     lw0, lh0 = Image.open(logo).size
     gw0, gh0 = Image.open(bc.GROUP / (sid + ".png")).size
     box_h = E_TALL_H if lw0 / lh0 < E_TALL_RATIO else E_LOGO_H
-    k = min(box_h / lh0, E_LOGO_W / lw0)
+    box_w = E_BAND_R - E_BAND_L
+    k = min(box_h / lh0, box_w / lw0)
     lw, lh = round(lw0 * k), round(lh0 * k)
-    gh = min(A_GROUP_H, A_GROUP_W * gh0 / gw0)          # visible group height inside A's box
-    group_top = A_GROUP_TOP + A_GROUP_H - gh
-    logo_top = max(E_LOGO_MIN_TOP, round(group_top - E_GAP - lh))
-    return box_h, logo_top, lw, lh, round(group_top), round(gh)
+    logo_bottom = E_LOGO_TOP + lh
+    gh = min(A_GROUP_H, A_GROUP_W * gh0 / gw0)            # A's visible group height
+    if GROUP_BOTTOM - gh > logo_bottom + E_GAP:            # empty band under the logo: grow the group upward
+        gh = GROUP_BOTTOM - logo_bottom - E_GAP
+    gw = gh * gw0 / gh0
+    if gw > E_MAX_GW:                                       # crop cap reached: keep the bottom, accept a gap
+        gw, gh = E_MAX_GW, E_MAX_GW * gh0 / gw0
+    if gw < A_GROUP_W and gh < A_GROUP_H:                   # never smaller than A
+        gw, gh = A_GROUP_W, A_GROUP_W * gh0 / gw0
+    return dict(box_h=box_h, box_w=box_w, lw=lw, lh=lh, logo_bottom=logo_bottom,
+                gw=round(gw), gh=round(gh), group_top=round(GROUP_BOTTOM - gh), gap=round(GROUP_BOTTOM - gh - logo_bottom))
 
 
 def page_e(s):
-    """E: A's meta, badge, group and band; B's large logo sitting directly on the group."""
-    box_h, logo_top, *_ = e_layout(s)
-    bg, ink, theme, band = parts(s, box_h, E_LOGO_W)
+    """E: A's meta, badge and band; B's logo at the top between them; A's group grown to meet the logo."""
+    L = e_layout(s)
+    bg, ink, theme, band = parts(s, L["box_h"], L["box_w"])
     return f"""<!DOCTYPE html><meta charset="utf-8"><style>{BASE}
 .card{{background:{bg};color:{ink}}}
 .meta{{position:absolute;left:30px;top:24px;line-height:1;font-weight:800;z-index:3}}
 .badge{{position:absolute;right:14px;top:10px;z-index:3}}
-.theme{{position:absolute;left:0;right:0;top:{logo_top}px;text-align:center;line-height:0;z-index:2}}
-.group{{position:absolute;left:0;top:{A_GROUP_TOP}px;width:{A_GROUP_W}px;height:{A_GROUP_H}px;object-fit:contain;object-position:center bottom;z-index:1}}
+.theme{{position:absolute;left:{E_BAND_L}px;width:{L["box_w"]}px;top:{E_LOGO_TOP}px;text-align:center;line-height:0;z-index:2}}
+.group{{position:absolute;left:{(600 - L["gw"]) // 2}px;top:{L["group_top"]}px;width:{L["gw"]}px;height:{L["gh"]}px;z-index:1}}
 .band{{position:absolute;left:0;right:0;bottom:0;height:80px;background:#0b0b0b;display:flex;align-items:center;padding:0 30px;z-index:3}}
 </style><div class="card"><div class="meta">{meta(s)}</div>{badge(s, 104)}
 <div class="theme">{theme}</div>{group(s)}
