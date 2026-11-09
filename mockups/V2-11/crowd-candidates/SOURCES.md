@@ -16,3 +16,6 @@ Still missing: 8683, 8684, 71002, 8909 (next: Brickset/Brick Owl/BrickLink set p
 - 71002-1.png (2000x2000) — PAGE: https://marvellousminifigures.com (product CompleteSet) SOURCE: https://marvellousminifigures.com/cdn/shop/files/CompleteSet_0c415c17-eb60-486f-bd1c-bca13495261e.png — official render of all 16, true crowd, blue gradient bg needs crop/cut-out
 - 8909-1.jpg (1024x546) — PAGE: https://toysnbricks.com/ (LEGO-8909-Team-GB-Minifigures) SOURCE: https://toysnbricks.com/wp-content/uploads/2012/05/LEGO-8909-Team-GB-Minifigures-Toysnbricks.jpg — official render, true crowd, white bg, 9 figures (set has 9)
 - 8684: none found (Brickset 8684-17 is a stand grid, rejected)
+- 71031-0.png — previous card image mockups/assets/group/71031.png (see mockups/assets/group/SOURCES.md), kept as the zoom source.
+Hunt 3 (2026-11-09): 8684 and 71008 none found (Brickset 8684-17 and 71008-17 are stand grids; Brickset Series 13 promo has podiums and text). 71031: no better packed render than the current one.
+Used for cards 2026-11-09 by scripts/prep_group.py: 8683-2, 8803-1, 8805-1, 8831-1, 8833-1, 71000-2, 8909-1, 71002-1, 71007-1, 71017-1 (top crowd), 71023-1 (watermark cropped), 71031-0.
