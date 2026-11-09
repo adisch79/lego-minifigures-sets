@@ -38,8 +38,15 @@ LOGO = {
 }
 # Dark bags photographed on white: the white surround must not win the count.
 DARK_BAG = {"71010", "71000"}
-# Tall logos sit higher and larger than wide ones: id -> (width, top). Layout by eye against the overview sheet.
-TALL_LOGO = {"71030": (210, 100), "71026": (200, 110), "71014": (160, 110), "8909": (170, 110), "71023": (215, 100)}
+# V2-11 layout F (owner OK 2026-11-09, mockups/V2-11/build_mockups.py page_f): layout A with the logo box
+# enlarged to 580x150, layered over the crowd. SOURCE: OWNER-SUPPLIED (sheet_f.png sign-off).
+LOGO_W, LOGO_H, LOGO_TOP = 580, 150, 126
+# Logos narrower than 2:1 (DC, Looney Tunes, DFB, Team GB, LEGO Movie 2) would shrink below their v4 size in a
+# 150 px box: they get 190 px, as in mockup E (TALL ratio and height from build_mockups.py E_TALL_*).
+TALL_RATIO, TALL_H = 2.0, 190
+# Badge drawn height matches A's 104 px logo row; drawn content fills about 95 % of the svg (measured on 71052.png).
+BADGE_H = round(104 / 0.95)
+GROUP_TOP, GROUP_H = 234, 476
 DARK_HALO = "filter:drop-shadow(0 0 3px #000) drop-shadow(0 0 8px rgba(0,0,0,.8));"
 # Logos with white parts that vanish on their bag colour.
 HALO = {"71033", "71038", "8909"}
@@ -137,33 +144,34 @@ def page(s):
     lum = sum(int(bg[i:i + 2], 16) * w for i, w in zip((1, 3, 5), (.299, .587, .114)))
     ink = "#111" if lum > 150 else "#fff"
     lockup = uri(LOGOS / "lego-minifigures-lockup.png")
+    logo = LOGOS / (LOGO[sid] if sid in LOGO else "lego-minifigures-lockup.png")
+    lw, lh = Image.open(logo).size
+    size = f"max-height:{TALL_H if lw / lh < TALL_RATIO else LOGO_H}px;max-width:{LOGO_W}px"
     if sid in LOGO:
-        width, top = TALL_LOGO.get(sid, (None, None))
-        size = f"width:{width}px" if width else "max-width:430px;max-height:120px"
         halo = DARK_HALO if sid in HALO else ""
         theme = f'<img src="{uri(LOGOS / LOGO[sid])}" style="{halo}{size}">'
-        theme_top = top or 232
         band = f'<img class="lockup" src="{lockup}">'
     else:
-        theme = f'<img src="{lockup}" style="width:490px">'
-        theme_top = 232
+        theme = f'<img src="{lockup}" style="{size}">'
         band = '<div class="word">COLLECTIBLE MINIFIGURES</div>'
     age = f'<div class="age">{s["age"]}</div><div class="rule"></div>' if s.get("age") else ""
+    svg = badge(series_number(s), s["figureCount"])
+    svg = svg.replace('width="240" height="218"', f'width="{round(BADGE_H * 240 / 218)}" height="{BADGE_H}"')
     return f"""<!DOCTYPE html><meta charset="utf-8"><style>
 *{{margin:0;box-sizing:border-box}} html,body{{width:600px;height:800px;overflow:hidden}}
 body{{font-family:"Segoe UI",Arial,sans-serif}}
-.card{{position:relative;width:600px;height:800px;background:{bg};color:{ink}}}
-.meta{{position:absolute;left:34px;top:30px;line-height:1;font-weight:800}}
-.age{{font-size:50px}} .rule{{width:90px;height:3px;background:currentColor;margin:8px 0}} .num{{font-size:26px}}
-.badge{{position:absolute;right:12px;top:14px}}
+.card{{position:relative;width:600px;height:800px;overflow:hidden;background:{bg};color:{ink}}}
+.meta{{position:absolute;left:30px;top:24px;line-height:1;font-weight:800}}
+.age{{font-size:40px}} .rule{{width:72px;height:3px;background:currentColor;margin:6px 0}} .num{{font-size:22px}}
+.badge{{position:absolute;right:14px;top:10px}}
 .badge text{{font-family:'Arial Black',Arial,sans-serif;font-weight:900}}
-.theme{{position:absolute;left:0;right:0;top:{theme_top}px;text-align:center}}
-.group{{position:absolute;left:18px;bottom:96px;height:335px;width:564px;object-fit:contain;object-position:center}}
-.band{{position:absolute;left:0;right:0;bottom:0;height:88px;background:#0b0b0b;display:flex;align-items:center;padding:0 30px}}
-.lockup{{width:340px}} .word{{color:#fff;font-family:"Arial Black",Arial,sans-serif;font-size:20px;letter-spacing:.1em}}
+.theme{{position:absolute;left:0;right:0;top:{LOGO_TOP}px;text-align:center;line-height:0;z-index:2}}
+.group{{position:absolute;left:0;top:{GROUP_TOP}px;width:600px;height:{GROUP_H}px;object-fit:contain;object-position:center bottom}}
+.band{{position:absolute;left:0;right:0;bottom:0;height:80px;background:#0b0b0b;display:flex;align-items:center;padding:0 30px}}
+.lockup{{width:300px}} .word{{color:#fff;font-family:"Arial Black",Arial,sans-serif;font-size:20px;letter-spacing:.1em}}
 </style><div class="card">
 <div class="meta">{age}<div class="num">{sid}</div></div>
-{badge(series_number(s), s["figureCount"])}
+{svg}
 <div class="theme">{theme}</div>
 <img class="group" src="{uri(GROUP / (sid + '.png'))}">
 <div class="band">{band}</div></div>"""
