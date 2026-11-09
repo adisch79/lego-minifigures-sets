@@ -32,8 +32,9 @@ PREP = {
     "71007": ("71007-1.jpg", None, "white", None),
     "71017": ("71017-1.png", (0, 0.08, 1, 0.455), "white", None),
     "71023": ("71023-1.jpg", (0, 0.2, 1, 0.9), "grabcut", None),
-    # 71031: the previous card image (already transparent), zoomed in on the crowd below the flying heroes.
-    "71031": ("71031-0.png", None, "alpha", (0, 0.45, 1, 1)),
+    # 71031: the previous card image (already transparent); only the largest part (the ground crowd) is kept, which
+    # drops the flying heroes above it.
+    "71031": ("71031-0.png", None, "alpha", None),
 }
 
 
@@ -46,13 +47,41 @@ def keep_big(fg, share=0.002):
     return np.isin(labels, 1 + np.flatnonzero(sizes >= share * labels.size))
 
 
-def white_mask(rgb, white_min=226, spread=22):
-    """Foreground = everything not in the near-white region connected to the image border."""
-    white = (rgb.min(axis=2) >= white_min) & (rgb.max(axis=2).astype(int) - rgb.min(axis=2) <= spread)
+def white_mask(rgb, white_min=226, spread=22, hole_min=250, hole_share=0.0004):
+    """Foreground = not background. Background = near-white region touching the border, plus enclosed pure-white
+    holes between figures above hole_share of the image (small white highlights on figures stay)."""
+    lo, hi = rgb.min(axis=2), rgb.max(axis=2).astype(int)
+    white = (lo >= white_min) & (hi - lo <= spread)
     labels, _ = ndimage.label(white)
     edge = np.unique(np.concatenate([labels[0], labels[-1], labels[:, 0], labels[:, -1]]))
     bg = np.isin(labels, edge[edge > 0])
+    pure = (lo >= hole_min) & (hi - lo <= 8) & ~bg
+    plabels, n = ndimage.label(pure)
+    if n:
+        sizes = ndimage.sum(np.ones_like(plabels), plabels, range(1, n + 1))
+        holes = np.isin(plabels, 1 + np.flatnonzero(sizes >= hole_share * plabels.size))
+        bg |= ndimage.binary_dilation(holes, iterations=1) & white
     return ndimage.binary_opening(~bg, iterations=1)
+
+
+def unmix_white(rgb, fg, band=2):
+    """Soft alpha on the edge band from whiteness, with the white spill removed from the colour (no white halo)."""
+    a = np.where(fg, 1.0, 0.0)
+    edge = fg & ~ndimage.binary_erosion(fg, iterations=band)
+    c = rgb.astype(float)
+    soft = (255 - c.min(axis=2)) / 255 * 2.5          # light fringe pixels become see-through
+    a[edge] = np.clip(soft[edge], 0, 1)
+    k = np.maximum(a, 1e-3)[..., None]
+    out = np.clip(255 - (255 - c) / k, 0, 255)
+    out[~edge] = c[~edge]
+    return out.astype(np.uint8), (a * 255).astype(np.uint8)
+
+
+def gap_cut(alpha, x, window):
+    """Column near x (within window) with the least figure coverage, so a crop edge falls between figures."""
+    cover = (alpha > 127).sum(axis=0)
+    lo, hi = max(0, x - window), min(len(cover) - 1, x + window)
+    return lo + int(np.argmin(cover[lo:hi + 1]))
 
 
 def grabcut_mask(rgb, border=0.03, iterations=6):
@@ -67,8 +96,8 @@ def grabcut_mask(rgb, border=0.03, iterations=6):
 
 
 # Crowds wider than this are centre-cropped to it, so a big set shows part of the crowd with larger figures, as the
-# owner's references do (71033 is 1.48, 71039 1.42). SOURCE: OWNER-SUPPLIED rule 2026-11-09, ratio by eye.
-ZOOM_ASPECT = 1.4
+# owner's references do (71009 is 1.64, 71051 1.62). SOURCE: OWNER-SUPPLIED rule 2026-11-09, ratio by eye.
+ZOOM_ASPECT = 1.7
 # Small sets keep every figure: Team GB has 9.
 NO_ZOOM = {"8909"}
 
@@ -87,19 +116,27 @@ def prep(sid):
     rgb = np.asarray(im)
     if method == "alpha":
         fg = np.asarray(src)[:, :, 3] > 127
+        labels, n = ndimage.label(fg)
+        if n > 1:                                          # keep the largest part only
+            sizes = ndimage.sum(fg, labels, range(1, n + 1))
+            fg = labels == 1 + int(np.argmax(sizes))
+        out = src.copy()
+        out.putalpha(Image.fromarray((fg * 255).astype(np.uint8)).filter(ImageFilter.GaussianBlur(0.6)))
     else:
         fg = keep_big(white_mask(rgb) if method == "white" else grabcut_mask(rgb))
-    solid = Image.fromarray((fg * 255).astype(np.uint8))
-    out = im.convert("RGBA")
-    out.putalpha(solid.filter(ImageFilter.GaussianBlur(0.8)))
-    out = out.crop(solid.getbbox())
+        colour, alpha = unmix_white(rgb, fg) if method == "white" else (rgb, (fg * 255).astype(np.uint8))
+        out = Image.fromarray(colour).convert("RGBA")
+        out.putalpha(Image.fromarray(alpha).filter(ImageFilter.GaussianBlur(0.5)))
+    out = out.crop(Image.fromarray((fg * 255).astype(np.uint8)).getbbox())
     if zoom:
         out = out.crop(frac_box(out.size, zoom))
         out = out.crop(out.split()[-1].getbbox())
     w, h = out.size
     if w / h > ZOOM_ASPECT and sid not in NO_ZOOM:
+        a = np.asarray(out.split()[-1])
         x0 = round((w - ZOOM_ASPECT * h) / 2)
-        out = out.crop((x0, 0, w - x0, h))
+        win = round(0.08 * w)
+        out = out.crop((gap_cut(a, x0, win), 0, gap_cut(a, w - x0, win), h))
         out = out.crop(out.split()[-1].getbbox())
     out.save(OUT / f"{sid}.png", optimize=True)
     return sid, out.size
