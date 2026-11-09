@@ -102,6 +102,21 @@ ZOOM_ASPECT = 1.7
 NO_ZOOM = {"8909"}
 
 
+def drop_fragments(im, share=0.01):
+    """The zoom cut can slice a figure and leave a loose piece at the edge (71023: a 640 px yellow fragment top
+    right). Clear alpha parts under share of the largest part."""
+    a = np.asarray(im.split()[-1])
+    labels, n = ndimage.label(a > 127)
+    if n < 2:
+        return im
+    sizes = ndimage.sum(a > 127, labels, range(1, n + 1))
+    small = np.isin(labels, 1 + np.flatnonzero(sizes < share * sizes.max()))
+    small = ndimage.binary_dilation(small, iterations=2)       # include the soft alpha rim
+    out = im.copy()
+    out.putalpha(Image.fromarray(np.where(small, 0, a).astype(np.uint8)))
+    return out
+
+
 def frac_box(size, box):
     w, h = size
     return round(box[0] * w), round(box[1] * h), round(box[2] * w), round(box[3] * h)
@@ -137,6 +152,7 @@ def prep(sid):
         x0 = round((w - ZOOM_ASPECT * h) / 2)
         win = round(0.08 * w)
         out = out.crop((gap_cut(a, x0, win), 0, gap_cut(a, w - x0, win), h))
+        out = drop_fragments(out)
         out = out.crop(out.split()[-1].getbbox())
     out.save(OUT / f"{sid}.png", optimize=True)
     return sid, out.size
