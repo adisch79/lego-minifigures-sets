@@ -29,6 +29,8 @@ PREP = {
     "71000": ("71000-2.jpg", None, "white", None),
     "8909": ("8909-1.jpg", None, "white", None),
     "71002": ("71002-1.png", None, "grabcut", None),
+    # 8684: official box-back art (blue "?" background); crop drops the bottom logo row and the "16" badge.
+    "8684": ("8684-1.jpg", (0.06, 0.27, 0.93, 0.74), "blue", None),
     "71007": ("71007-1.jpg", None, "white", None),
     "71017": ("71017-1.png", (0, 0.08, 1, 0.455), "white", None),
     "71023": ("71023-1.jpg", (0, 0.2, 1, 0.9), "grabcut", None),
@@ -36,6 +38,11 @@ PREP = {
     # drops the flying heroes above it.
     "71031": ("71031-0.png", None, "alpha", None),
 }
+
+# id -> boxes (fractions of the source) painted as background before masking: printed badges on box art.
+# 8684: the red "Series 2" badge (x 124-180, y 126-187 of 690x480), its white hook and rod, top left. Boxes set by eye against the source.
+ERASE = {"8684": [(0.1797, 0.2625, 0.2609, 0.3896), (0.1406, 0.302, 0.1797, 0.454), (0.171, 0.3896, 0.1855, 0.4833)]}
+ERASE_FILL = (0, 70, 190)                                  # deep blue: keyed out by blue_mask
 
 
 def keep_big(fg, share=0.002):
@@ -100,6 +107,22 @@ def gap_cut(alpha, x, window):
     return lo + int(np.argmin(cover[lo:hi + 1]))
 
 
+def blue_mask(rgb, margin=28, b_min=60, hole_max=0.004):
+    """Box art on a blue background (8684): background = blue-dominant pixels. Enclosed blue parts smaller than
+    hole_max of the image (blue stripes on a figure) are filled back in as figure."""
+    r, g, b = (rgb[:, :, i].astype(int) for i in range(3))
+    # b_min: black parts with a blue sheen (8684 ringmaster hat, b about 20) stay figure; background b is 125+.
+    bg = (b > r + margin) & (b > g + margin // 3) & (b > b_min)
+    bg = ndimage.binary_opening(bg, iterations=1)
+    fg = ~bg
+    holes = ndimage.binary_fill_holes(fg) & ~fg
+    labels, n = ndimage.label(holes)
+    if n:
+        sizes = ndimage.sum(holes, labels, range(1, n + 1))
+        fg |= np.isin(labels, 1 + np.flatnonzero(sizes < hole_max * fg.size))
+    return ndimage.binary_opening(fg, iterations=1)
+
+
 def grabcut_mask(rgb, border=0.03, iterations=6):
     import cv2
     h, w = rgb.shape[:2]
@@ -141,6 +164,8 @@ def frac_box(size, box):
 def prep(sid):
     name, pre, method, zoom = PREP[sid]
     src = Image.open(SRC / name).convert("RGBA")
+    for box in ERASE.get(sid, []):
+        src.paste(ERASE_FILL + (255,), frac_box(src.size, box))
     if pre:
         src = src.crop(frac_box(src.size, pre))
     im = src.convert("RGB")
@@ -154,9 +179,10 @@ def prep(sid):
         out = src.copy()
         out.putalpha(Image.fromarray((fg * 255).astype(np.uint8)).filter(ImageFilter.GaussianBlur(0.6)))
     else:
-        masks = {"white": white_mask, "shadow": shadow_mask, "grabcut": grabcut_mask}
+        masks = {"white": white_mask, "shadow": shadow_mask, "grabcut": grabcut_mask,
+                 "blue": blue_mask}
         fg = keep_big(masks[method](rgb))
-        colour, alpha = unmix_white(rgb, fg) if method != "grabcut" else (rgb, (fg * 255).astype(np.uint8))
+        colour, alpha = unmix_white(rgb, fg) if method not in ("grabcut", "blue") else (rgb, (fg * 255).astype(np.uint8))
         out = Image.fromarray(colour).convert("RGBA")
         out.putalpha(Image.fromarray(alpha).filter(ImageFilter.GaussianBlur(0.5)))
     out = out.crop(Image.fromarray((fg * 255).astype(np.uint8)).getbbox())
