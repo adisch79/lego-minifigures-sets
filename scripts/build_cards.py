@@ -57,7 +57,8 @@ FIG_TARGET = 111
 # Per-card factor on FIG_TARGET where props or overlap skew the area measure. Set 2026-11-14 by eye: head width on a
 # 0.5x crowd sheet against a 37 px marker (reference heads 34-40 px); factor = 35 / measured head px.
 FIG_ADJ = {"71002": 1.2, "71020": 1.3, "71022": 1.3, "71027": 1.2, "71029": 1.2,
-           "71001": 1.12, "71008": 1.12, "71018": 1.12, "71021": 1.12, "71000": 0.7}
+           "71001": 1.12, "71008": 1.12, "71018": 1.12, "71000": 0.7}
+# 71021 (was 1.12) dropped 2026-11-15: its shadow inflated the area; SHADOW_DROP now clears it.
 # 8833 (was 1.3), 8827 and 71025 (were 1.12) dropped 2026-11-14: owner "8833 too zoomed in"; 8827/71025 have new sources.
 # Horizontal crowd shift in card px (negative = left). OWNER-SUPPLIED 2026-11-14: "71038 move a little to the left".
 GROUP_DX = {"71038": -30}
@@ -155,8 +156,8 @@ def badge(number, count):
 
 # Official transparent crowd PNGs that keep a soft grey/white floor shadow and glow in their alpha. Owner round 2,
 # 2026-11-14: "71037 71038 71039 71045 71046 71047 all have shadow!". Measured 2026-11-14: 5-10 % of their pixels are
-# semi-transparent and grey (references 71009/71051: 1 %). 71012 added 2026-11-15 (owner "71012 not good"; 9 % grey).
-SHADOW_DROP = {"71012", "71037", "71038", "71039", "71045", "71046", "71047"}
+# semi-transparent and grey (references 71009/71051: 1 %). 71012 and 71021 added 2026-11-15 (owner "not good"; 9 % and 15 % grey).
+SHADOW_DROP = {"71012", "71021", "71037", "71038", "71039", "71045", "71046", "71047"}
 SHADOW_ALPHA, SHADOW_SAT = 200, 30
 
 
