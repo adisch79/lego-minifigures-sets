@@ -2,6 +2,7 @@
 import json
 import os
 import sys
+import shutil
 import tempfile
 import unittest
 from pathlib import Path
@@ -181,10 +182,30 @@ class KindTest(unittest.TestCase):
         items = [{"set_num": "71002-1", "orig": orig, "source": "fig"},
                  {"set_num": "71002-2", "orig": orig, "source": "set"}]
         cat = [{"id": "71002", "bag": None, "group": None, "figures": items}]
-        with mock.patch.object(fetch_data, "SITE", site),                 mock.patch.object(fetch_data, "IMG", site / "img"),                 mock.patch.object(process_images, "safe_process_file", return_value=True) as p:
+        with mock.patch.object(fetch_data, "SITE", site),                 mock.patch.object(fetch_data, "IMG", site / "img"),                 mock.patch.object(fetch_data, "ORIG", site.parent / "no_originals"),                 mock.patch.object(process_images, "safe_process_file", return_value=True) as p:
             fetch_data.process_all(cat)
         kinds = sorted(c.args[2] for c in p.call_args_list)
         self.assertEqual(kinds, ["figure", "figure_set"])
+
+
+class FrontRoutingTest(unittest.TestCase):
+    def test_front_photo_wins_over_bricklink(self):
+        root = Path(tempfile.mkdtemp())
+        self.addCleanup(shutil.rmtree, root, True)
+        site = root / "site"
+        orig = root / "o.png"
+        orig.write_bytes(b"x")
+        (root / "originals" / "71002").mkdir(parents=True)
+        front = root / "originals" / "71002" / "71002-1.fig.jpg"
+        front.write_bytes(b"x")
+        items = [{"set_num": "71002-1", "orig": orig, "source": "fig"},
+                 {"set_num": "71002-2", "orig": orig, "source": "fig"}]
+        cat = [{"id": "71002", "bag": None, "group": None, "figures": items}]
+        with mock.patch.object(fetch_data, "SITE", site),                 mock.patch.object(fetch_data, "IMG", site / "img"),                 mock.patch.object(fetch_data, "ORIG", root / "originals"),                 mock.patch.object(process_images, "safe_process_file", return_value=True) as p:
+            fetch_data.process_all(cat)
+        got = {c.args[1].name: (c.args[0], c.args[2]) for c in p.call_args_list}
+        self.assertEqual(got["71002-1.webp"], (front, "figure_front"))
+        self.assertEqual(got["71002-2.webp"], (orig, "figure"))
 
 
 class MainTest(unittest.TestCase):
@@ -261,7 +282,9 @@ class MainTest(unittest.TestCase):
             old = json.loads(dj.read_text(encoding="utf-8"))
             del old[0]["figures"][0]["src"]  # old rembg-era output had no src
             dj.write_text(json.dumps(old), encoding="utf-8")
-            with mock.patch.object(process_images, "safe_process_file", return_value=True) as p:
+            # Downloaded fig originals share the front-photo name; test BrickLink routing only.
+            with mock.patch.object(process_images, "front_source", return_value=None), \
+                    mock.patch.object(process_images, "safe_process_file", return_value=True) as p:
                 self.run_main(root, _rows(), lambda *a, **k: data)
             self.assertEqual(p.call_count, 1)
 

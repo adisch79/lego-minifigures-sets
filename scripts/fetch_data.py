@@ -320,7 +320,7 @@ def process_all(catalog, rebuild=False, prev_src=None):
     is newer than it, or whose figure source (fig/set) differs from prev_src[set_num]
     (from the previous data.json), or all of them with rebuild=True."""
     prev_src = prev_src or {}
-    from process_images import color_hex, safe_process_file
+    from process_images import color_hex, front_source, safe_process_file
 
     todo = []
     for s in catalog:
@@ -333,11 +333,18 @@ def process_all(catalog, rebuild=False, prev_src=None):
                         kind_ = "figure_set"
                     else:
                         kind_ = kind
+                    src = item["orig"]
                     changed = (kind == "figure" and item.get("source") is not None
                                and prev_src.get(item["set_num"]) != item["source"])
+                    if kind == "figure":
+                        # A front photo wins over the BrickLink pipeline, so a fetch never overwrites it.
+                        fig_no = str(item["set_num"]).rsplit("-", 1)[-1]
+                        front = front_source(s["id"], fig_no, ORIG)
+                        if front is not None:
+                            src, kind_, changed = front, "figure_front", False
                     if (rebuild or changed or not dest.exists()
-                            or dest.stat().st_mtime < Path(item["orig"]).stat().st_mtime):
-                        todo.append((item["orig"], dest, kind_, item))
+                            or dest.stat().st_mtime < Path(src).stat().st_mtime):
+                        todo.append((src, dest, kind_, item))
     print(f"Processing {len(todo)} images")
     errors = 0
     for i, (src, dest, kind, item) in enumerate(todo, 1):
