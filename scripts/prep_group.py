@@ -32,6 +32,8 @@ PREP = {
     # 8684: official box-back art (blue "?" background); crop drops the bottom logo row and the "16" badge.
     "8684": ("8684-1.jpg", (0.06, 0.27, 0.93, 0.74), "blue", None),
     "71007": ("71007-1.jpg", None, "white", None),
+    # 71008: official render from Brickipedia (owner pointer 2026-11-14); the PNG alpha is fully opaque, white bg.
+    "71008": ("71008-1.png", None, "shadow", None),
     "71017": ("71017-1.png", (0, 0.08, 1, 0.455), "white", None),
     "71023": ("71023-1.jpg", (0, 0.2, 1, 0.9), "grabcut", None),
     # 71031: the previous card image (already transparent); only the largest part (the ground crowd) is kept, which
