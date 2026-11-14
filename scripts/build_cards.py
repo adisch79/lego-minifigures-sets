@@ -57,12 +57,7 @@ FIG_TARGET = 111
 # Per-card factor on FIG_TARGET where props or overlap skew the area measure. Set 2026-11-14 by eye: head width on a
 # 0.5x crowd sheet against a 37 px marker (reference heads 34-40 px); factor = 35 / measured head px.
 FIG_ADJ = {"71002": 1.2, "71020": 1.3, "71022": 1.3, "71027": 1.2, "71029": 1.2,
-           "71001": 1.12, "71008": 1.12, "71018": 1.12, "71000": 0.7, "71024": 1.35}
-# Taller crowd box (card px, bottom stays at GROUP_TOP + GROUP_H) for crowds stacked in three rows, which the default
-# height leaves with small heads. The extra height runs up behind the logo (logo over crowd, layout F). 71024 added
-# 2026-11-15: owner "71024 not good"; heads 28 px against 34-40 on the references; no wider official crowd found
-# (hunt7: Brickset, Brick Owl, Brothers Brick review). 560 chosen over 600, where the logo covered back-row faces.
-GROUP_H_X = {"71024": 560}
+           "71001": 1.12, "71008": 1.12, "71018": 1.12, "71000": 0.7}
 # 71021 (was 1.12) dropped 2026-11-15: its shadow inflated the area; SHADOW_DROP now clears it.
 # 8833 (was 1.3), 8827 and 71025 (were 1.12) dropped 2026-11-14: owner "8833 too zoomed in"; 8827/71025 have new sources.
 # Horizontal crowd shift in card px (negative = left). OWNER-SUPPLIED 2026-11-14: "71038 move a little to the left".
@@ -184,8 +179,7 @@ def group_fit(sid, count):
     w, h = im.size
     cut = False
     area = int((np.asarray(im)[:, :, 3] > 127).sum())
-    box_h = GROUP_H_X.get(sid, GROUP_H)
-    scale = min(FIG_TARGET * FIG_ADJ.get(sid, 1) / math.sqrt(area / count), box_h / h)
+    scale = min(FIG_TARGET * FIG_ADJ.get(sid, 1) / math.sqrt(area / count), GROUP_H / h)
     if sid in NO_ZOOM:
         scale = min(scale, 600 / w)
     if w * scale > 600:
@@ -200,8 +194,8 @@ def group_fit(sid, count):
         # "the grouped image ends on both sides before the edges of the card"). The gap snap and fragment drop can
         # narrow it, so fit the width exactly; if that makes it too tall, keep the height cap and trim the sides.
         scale = 600 / w
-        if h * scale > box_h:
-            scale = box_h / h
+        if h * scale > GROUP_H:
+            scale = GROUP_H / h
             keep = round(600 / scale)
             x0 = (w - keep) // 2
             im = im.crop((x0, 0, x0 + keep, h))
