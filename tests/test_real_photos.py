@@ -283,7 +283,8 @@ class MainTest(unittest.TestCase):
             del old[0]["figures"][0]["src"]  # old rembg-era output had no src
             dj.write_text(json.dumps(old), encoding="utf-8")
             # Downloaded fig originals share the front-photo name; test BrickLink routing only.
-            with mock.patch.object(process_images, "front_source", return_value=None), \n                    mock.patch.object(process_images, "safe_process_file", return_value=True) as p:
+            with mock.patch.object(process_images, "front_source", return_value=None), \
+                    mock.patch.object(process_images, "safe_process_file", return_value=True) as p:
                 self.run_main(root, _rows(), lambda *a, **k: data)
             self.assertEqual(p.call_count, 1)
 
