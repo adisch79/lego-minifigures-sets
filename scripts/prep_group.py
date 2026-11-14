@@ -33,8 +33,8 @@ PREP = {
     "71000": ("71000-2.jpg", None, "white", None),
     "8909": ("8909-1.jpg", None, "white", None),
     "71002": ("71002-1.png", None, "grabcut", None),
-    # 8684: official box-back art (blue "?" background); crop drops the bottom logo row and the "16" badge.
-    "8684": ("8684-1.jpg", (0.06, 0.27, 0.93, 0.74), "blue", None),
+    # 8684: official crowd render on white (owner source 2026-11-14); replaces the box-back art 8684-1 (method "blue").
+    "8684": ("8684-2.jpg", None, "white", None),
     "71007": ("71007-1.jpg", None, "shadow", None),
     # 71008: official render from Brickipedia (owner pointer 2026-11-14); the PNG alpha is fully opaque, white bg.
     "71008": ("71008-1.png", None, "shadow", None),
@@ -46,8 +46,9 @@ PREP = {
 }
 
 # id -> boxes (fractions of the source) painted as background before masking: printed badges on box art.
-# 8684: the red "Series 2" badge (x 124-180, y 126-187 of 690x480), its white hook and rod, top left. Boxes set by eye against the source.
-ERASE = {"8684": [(0.1797, 0.2625, 0.2609, 0.3896), (0.1406, 0.302, 0.1797, 0.454), (0.171, 0.3896, 0.1855, 0.4833)]}
+# Was used for the 8684 box art (8684-1.jpg, red "Series 2" badge): {"8684": [(0.1797, 0.2625, 0.2609, 0.3896),
+# (0.1406, 0.302, 0.1797, 0.454), (0.171, 0.3896, 0.1855, 0.4833)]}. 8684 now uses 8684-2.jpg, no badge.
+ERASE = {}
 ERASE_FILL = (0, 70, 190)                                  # deep blue: keyed out by blue_mask
 
 

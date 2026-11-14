@@ -27,3 +27,5 @@ Hunt 6 (2026-11-14, Brickipedia set pages via the MediaWiki API; owner pointer).
 - 8831-2.jpg (3000x2000) — PAGE: https://brickipedia.fandom.com/wiki/8831_Minifigures_Series_7 SOURCE: https://static.wikia.nocookie.net/lego/images/7/76/Series7Pic.jpg — official crowd, replaces 8831-1.
 - 8827-0.png — previous card image (transparent, white floor kept), floor removed with method "shadow".
 Rejected: 8827 Series_6.jpg and 8833 8833.png/alt (figures on stands), 71007 (no crowd on the page).
+Owner sources 2026-11-14 (docs/V2-11-owner-fixes-2026-11-14.md), raw downloads in crowd-candidates/owner/:
+- 8684-2.jpg (600x431) — SOURCE: OWNER-SUPPLIED https://gadgetsin.com/uploads/2010/08/lego_minifigures_8683_series_2_now_available_for_preorder_1.jpg — official Series 2 crowd render, white bg, method "white"; replaces 8684-1 box art.
