@@ -171,7 +171,16 @@ def group_fit(sid, count):
         im = drop_fragments(im.crop((gap_cut(a, x0, win), 0, gap_cut(a, w - x0, win), h)))
         im = im.crop(im.split()[-1].getbbox())
         w, h = im.size
-        scale = min(scale, 600 / w)                         # the gap snap can widen the cut a little
+        # A cut crowd must bleed to both card edges, or the straight cut shows inside the card (owner 2026-11-14:
+        # "the grouped image ends on both sides before the edges of the card"). The gap snap and fragment drop can
+        # narrow it, so fit the width exactly; if that makes it too tall, keep the height cap and trim the sides.
+        scale = 600 / w
+        if h * scale > GROUP_H:
+            scale = GROUP_H / h
+            keep = round(600 / scale)
+            x0 = (w - keep) // 2
+            im = im.crop((x0, 0, x0 + keep, h))
+            w = keep
         cut = True
     return im, round(w * scale), round(h * scale), cut
 
