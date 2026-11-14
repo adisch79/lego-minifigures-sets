@@ -1,5 +1,7 @@
 # telegram-alert
 
+**Paused since V2-08 (2026-11-08):** the `marks_wanted_alert_*` triggers are dropped, so this function is not called. Re-enable SQL: section "Alerts paused (V2-08)" in [supabase/README.md](../../README.md).
+
 Edge Function (Deno) that sends one plain-text Telegram message when a user marks a figure or series as wanted (story V2-04). Only this function talks to Telegram, because the bot token is part of the API URL.
 
 ## How it works

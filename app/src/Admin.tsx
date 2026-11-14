@@ -155,7 +155,7 @@ function Band({ children, full = false }: { children?: ReactNode; full?: boolean
           <Brand href={HOME_HREF} />
           <span className="aw-tag">Admin</span>
           <a className="back" href={HOME_HREF}>
-            <span aria-hidden="true">&larr;</span> <span className="back-t">Back to the vault</span>
+            <span aria-hidden="true">&larr;</span> <span className="back-t">Back to the hunt</span>
           </a>
           <AccountControl />
         </div>
@@ -178,7 +178,7 @@ function Gate({ kind, onSignIn, onRecheck }: { kind: GateKind; onSignIn: () => v
         <section className="aw-gate" aria-busy="true">
           <div className="aw-gate-i wait" aria-hidden="true" />
           <h1 tabIndex={-1}>Checking your access</h1>
-          <p role="status">One moment while the vault confirms this account is an admin.</p>
+          <p role="status">One moment while Minifig Hunt confirms this account is an admin.</p>
         </section>
       </Band>
     )
@@ -187,7 +187,7 @@ function Gate({ kind, onSignIn, onRecheck }: { kind: GateKind; onSignIn: () => v
     disabled: {
       icon: <LockIcon />,
       title: 'Admin is off on this build',
-      text: 'Sign-in is not configured here, so there is no admin page. Open the published vault to manage collectors.',
+      text: 'Sign-in is not configured here, so there is no admin page. Open the published site to manage collectors.',
     },
     'signed-out': {
       icon: <LockIcon />,
@@ -196,7 +196,7 @@ function Gate({ kind, onSignIn, onRecheck }: { kind: GateKind; onSignIn: () => v
           Sign in to <em>continue</em>
         </>
       ),
-      text: 'The admin page is for the owner of this vault. Sign in with the admin address to see what collectors want.',
+      text: 'The admin page is for the owner of Minifig Hunt. Sign in with the admin address to see what collectors want.',
       action: (
         <button type="button" className="aw-btn" onClick={onSignIn}>
           Sign in
@@ -206,7 +206,7 @@ function Gate({ kind, onSignIn, onRecheck }: { kind: GateKind; onSignIn: () => v
     'not-admin': {
       icon: <ShieldIcon />,
       title: 'Not available',
-      text: 'This account is not an admin of the vault. Your own owned and wanted marks are on the series pages.',
+      text: 'This account is not an admin of Minifig Hunt. Your own owned and wanted marks are on the series pages.',
     },
     error: {
       icon: <AlertIcon />,
@@ -230,7 +230,7 @@ function Gate({ kind, onSignIn, onRecheck }: { kind: GateKind; onSignIn: () => v
         <div className="aw-acts">
           {s.action}
           <a className="aw-btn light" href={HOME_HREF}>
-            Back to the vault
+            Back to the hunt
           </a>
         </div>
       </section>

@@ -144,7 +144,7 @@ function FilterEmpty({ filter, query, onAll }: { filter: SeriesFilter; query: st
             Tap <b>Want</b> under any figure and its series shows up here.
           </>
         ) : (
-          'You own every figure of every series shown. A complete vault.'
+          'Hunt complete. You own every figure of every series shown.'
         )}
       </p>
       <button type="button" className="again" onClick={onAll}>
@@ -394,14 +394,14 @@ export default function App() {
 
   useEffect(() => {
     if (route.page === 'admin') {
-      document.title = 'Admin - Minifig Vault'
+      document.title = 'Admin - Minifig Hunt'
     } else if (seriesId === null) {
-      document.title = 'Minifig Vault'
+      document.title = 'Minifig Hunt'
     } else if (load.status === 'ready') {
       const found = findSeries(load.series, seriesId)
       document.title = found
-        ? `${found.id} ${found.name} - Minifig Vault`
-        : 'Series not found - Minifig Vault'
+        ? `${found.id} ${found.name} - Minifig Hunt`
+        : 'Series not found - Minifig Hunt'
     }
   }, [route.page, seriesId, load])
 
