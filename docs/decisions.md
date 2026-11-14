@@ -90,3 +90,4 @@
 - 2026-11-09 — Supabase URL Configuration verified in dashboard: Site URL and redirect list exactly `https://minifighunt.com/` (1 URL). Removed from owner-needed.
 - 2026-11-09 — V2-11 F: logos narrower than 2:1 get a 190 px box instead of 150 px. Reason: in 150 px DC, Looney Tunes, DFB, Team GB shrank below their v4 size. Default, owner may override.
 - 2026-11-09 — V2-11 card crowds: owner picked option A, light zoom to 1.7:1 with edges at the narrowest gap (not full crowd). Reason: figures big like references 71009/71051.
+2026-11-14 | V2-11 cards: crowd scaled to the figure size of the owner references (71009 71033 71039 71051, FIG_TARGET 111, per-card FIG_ADJ by eye) replaces the fixed 1.7 zoom; logo ink capped at the Muppets reference (35535 px) | owner: some crowds too big/far, some logos too big
