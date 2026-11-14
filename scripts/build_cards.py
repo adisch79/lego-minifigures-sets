@@ -61,7 +61,12 @@ FIG_ADJ = {"71002": 1.2, "71020": 1.3, "71022": 1.3, "71027": 1.2, "71029": 1.2,
 # 71021 (was 1.12) dropped 2026-11-15: its shadow inflated the area; SHADOW_DROP now clears it.
 # 8833 (was 1.3), 8827 and 71025 (were 1.12) dropped 2026-11-14: owner "8833 too zoomed in"; 8827/71025 have new sources.
 # Horizontal crowd shift in card px (negative = left). OWNER-SUPPLIED 2026-11-14: "71038 move a little to the left".
-GROUP_DX = {"71038": -30}
+GROUP_DX = {}
+# Assets with empty margins around the crowd: trim to the crowd (alpha > 127) before the side crop, so the crop is
+# centred on the figures, not on the canvas. 71038 added 2026-11-15 (owner "71038 still not good!"): its crowd spans
+# x 232-1376 of 1400, so the canvas-centred crop cut the right end and the old GROUP_DX -30 shift (2026-11-14) left
+# a straight cut inside the card on the right. The shift is dropped.
+TRIM_TO_CROWD = {"71038"}
 # Thin outline around the crowd so figures in the bag colour stay readable (owner 2026-11-14: orange on 8804, red on
 # 8831, black on 8833/71000, green on 71008, yellow on 71009 "take over" figure parts). Default chosen 2026-11-14
 # (docs/decisions.md): 2 px white; dark on light bags (luminance over OUTLINE_LIGHT) where white would vanish.
@@ -176,6 +181,8 @@ def group_fit(sid, count):
     im = Image.open(GROUP / f"{sid}.png").convert("RGBA")
     if sid in SHADOW_DROP:
         im = drop_shadow(im)
+    if sid in TRIM_TO_CROWD:
+        im = im.crop(im.split()[-1].point(lambda v: 255 if v > 127 else 0).getbbox())
     w, h = im.size
     cut = False
     area = int((np.asarray(im)[:, :, 3] > 127).sum())
