@@ -1,1 +1,5 @@
 opencv-python==4.13.0.92
+# BiRefNet remote code needs these (scripts/seg_model.py); torch + transformers are installed separately.
+timm==1.0.15
+kornia==0.8.1
+einops==0.8.1

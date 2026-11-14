@@ -34,7 +34,7 @@ PREP = {
     "8909": ("8909-1.jpg", None, "white", None),
     "71002": ("71002-1.png", None, "grabcut", None),
     # 8684: official crowd render on white (owner source 2026-11-14); replaces the box-back art 8684-1 (method "blue").
-    "8684": ("8684-2.jpg", None, "white", None),
+    "8684": ("8684-2.jpg", None, "model", None),
     "71007": ("71007-1.jpg", None, "shadow", None),
     # 71008: official render from Brickipedia (owner pointer 2026-11-14); the PNG alpha is fully opaque, white bg.
     "71008": ("71008-1.png", None, "shadow", None),
@@ -183,6 +183,18 @@ def prep(sid):
             fg = labels == 1 + int(np.argmax(sizes))
         out = src.copy()
         out.putalpha(Image.fromarray((fg * 255).astype(np.uint8)).filter(ImageFilter.GaussianBlur(0.6)))
+    elif method == "model":
+        # Segmentation model (scripts/seg_model.py): keeps white figure parts that the colour masks cut away.
+        from seg_model import model_alpha
+        a = model_alpha(rgb)
+        fg = keep_big(a > 0.5)
+        a = np.where(ndimage.binary_dilation(fg, iterations=3), a, 0)
+        k = np.maximum(a, 1e-3)[..., None]
+        edge = (a > 0.02) & (a < 0.98)
+        colour = rgb.astype(float)
+        colour[edge] = np.clip(255 - (255 - colour[edge]) / k[edge], 0, 255)   # remove white spill on soft edges
+        out = Image.fromarray(colour.astype(np.uint8)).convert("RGBA")
+        out.putalpha(Image.fromarray((a * 255).astype(np.uint8)))
     else:
         masks = {"white": white_mask, "shadow": shadow_mask, "grabcut": grabcut_mask,
                  "blue": blue_mask}
