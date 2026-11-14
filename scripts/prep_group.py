@@ -21,28 +21,31 @@ OUT = ROOT / "mockups/assets/group"
 # id -> (source file, pre-crop box as fractions of the source (x0, y0, x1, y1) or None, method,
 #        zoom box as fractions of the trimmed cut-out or None). Boxes set by eye against the card sheet.
 PREP = {
-    "8683": ("8683-2.jpg", None, "white", None),
-    "8803": ("8803-1.png", None, "shadow", None),
-    "8804": ("8804-1.jpg", None, "shadow", None),
-    "8805": ("8805-2.jpg", None, "shadow", None),
-    # 8827: the previous card image (transparent, but with the white studio floor kept): composited on white, then
-    # the floor is removed like a studio shadow.
-    "8827": ("8827-0.png", None, "shadow", None),
-    "8831": ("8831-2.jpg", None, "shadow", None),
-    "8833": ("8833-1.png", None, "shadow", None),
-    "71000": ("71000-2.jpg", None, "white", None),
-    "8909": ("8909-1.jpg", None, "white", None),
-    "71002": ("71002-1.png", None, "grabcut", None),
-    # 8684: official crowd render on white (owner source 2026-11-14); replaces the box-back art 8684-1 (method "blue").
+    # All cut-outs use the segmentation model (method "model", scripts/seg_model.py) since 2026-11-14: the colour
+    # masks below ("white", "shadow", "blue", "grabcut") cut white or light figure parts away (owner rejection).
+    "8683": ("8683-2.jpg", None, "model", None),
+    # 8803, 8827, 8831, 71004, 71023, 71025, 71031, 71032, 71050: OWNER-SUPPLIED sources 2026-11-14
+    # (docs/V2-11-owner-fixes-2026-11-14.md), saved as <id>-o.png.
+    "8803": ("8803-o.png", None, "model", None),
+    "8804": ("8804-1.jpg", None, "model", None),
+    "8805": ("8805-2.jpg", None, "model", None),
+    "8827": ("8827-o.png", None, "model", None),
+    "8831": ("8831-o.png", None, "model", None),
+    "8833": ("8833-1.png", None, "model", None),
+    "71000": ("71000-2.jpg", None, "model", None),
+    "8909": ("8909-1.jpg", None, "model", None),
+    "71002": ("71002-1.png", None, "model", None),
     "8684": ("8684-2.jpg", None, "model", None),
-    "71007": ("71007-1.jpg", None, "shadow", None),
-    # 71008: official render from Brickipedia (owner pointer 2026-11-14); the PNG alpha is fully opaque, white bg.
-    "71008": ("71008-1.png", None, "shadow", None),
-    "71017": ("71017-1.png", (0, 0.08, 1, 0.455), "white", None),
-    "71023": ("71023-1.jpg", (0, 0.2, 1, 0.9), "grabcut", None),
-    # 71031: the previous card image (already transparent); only the largest part (the ground crowd) is kept, which
-    # drops the flying heroes above it.
-    "71031": ("71031-0.png", None, "alpha", None),
+    "71004": ("71004-o.png", None, "model", None),
+    "71007": ("71007-1.jpg", None, "model", None),
+    "71008": ("71008-1.png", None, "model", None),
+    "71017": ("71017-1.png", (0, 0.08, 1, 0.455), "model", None),
+    # 71023: crop drops "The LEGO Movie 2" logo top right.
+    "71023": ("71023-o.png", (0, 0, 0.83, 1), "model", None),
+    "71025": ("71025-o.png", None, "model", None),
+    "71031": ("71031-o.png", None, "model", None),
+    "71032": ("71032-o.png", None, "model", None),
+    "71050": ("71050-o.png", None, "model", None),
 }
 
 # id -> boxes (fractions of the source) painted as background before masking: printed badges on box art.

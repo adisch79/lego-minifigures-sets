@@ -29,3 +29,15 @@ Hunt 6 (2026-11-14, Brickipedia set pages via the MediaWiki API; owner pointer).
 Rejected: 8827 Series_6.jpg and 8833 8833.png/alt (figures on stands), 71007 (no crowd on the page).
 Owner sources 2026-11-14 (docs/V2-11-owner-fixes-2026-11-14.md), raw downloads in crowd-candidates/owner/:
 - 8684-2.jpg (600x431) — SOURCE: OWNER-SUPPLIED https://gadgetsin.com/uploads/2010/08/lego_minifigures_8683_series_2_now_available_for_preorder_1.jpg — official Series 2 crowd render, white bg, method "white"; replaces 8684-1 box art.
+- <id>-o.png (2026-11-14): OWNER-SUPPLIED sources, converted to PNG, cut with method "model" (BiRefNet):
+  8803 https://img.brickowl.com/files/image_cache/larger/lego-series-3-collectable-minifigures-random-pack-set-8803-0-56272.jpg ;
+  8827 https://static.wikia.nocookie.net/lego/images/f/ff/8827_Minifigures_S%C3%A9rie_6.png (fr wiki) ;
+  8831 https://bricker.ru/images/store/thumbs/xlarge/album1/d8497_tail_3(12).jpg ;
+  71004 Google Images thumbnail (encrypted-tbn0.gstatic.com, ANd9GcSBitnIZsQ0MItjW1vhqj6mvDOhNVNf7NzBPQahRMEvL2AzAWddC4YoeAc), 738x415, figures cut at the frame edge ;
+  71023 https://sirtroys.com/cdn/shop/files/61E_AHElwpL._AC_SL1000.jpg (logo cropped) ;
+  71025 https://i.ebayimg.com/images/g/rS4AAOSwm~thAYkN/s-l1200.jpg ;
+  71031 https://static.wikia.nocookie.net/marvelmovies/images/f/f9/71031_MCU_Minifigs-1.png ;
+  71032 https://www.lego.com/cdn/cs/set/assets/blt65bb8b098c075262/71032.png ;
+  71050 https://cdn.rebrickable.com/media/thumbs/sets/71050-13/159254.jpg/1000x800p.jpg
+- Official transparent PNGs (mockups/assets/group/SOURCES.md) were re-checked against the model on 2026-11-14: the
+  model-only pixels are floor shadows, not figure parts, so their own alpha is kept.

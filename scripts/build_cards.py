@@ -56,8 +56,15 @@ GROUP_TOP, GROUP_H = 234, 476
 FIG_TARGET = 111
 # Per-card factor on FIG_TARGET where props or overlap skew the area measure. Set 2026-11-14 by eye: head width on a
 # 0.5x crowd sheet against a 37 px marker (reference heads 34-40 px); factor = 35 / measured head px.
-FIG_ADJ = {"8833": 1.3, "71002": 1.2, "71020": 1.3, "71022": 1.3, "71027": 1.2, "71029": 1.2,
-           "71001": 1.12, "71008": 1.12, "71018": 1.12, "71021": 1.12, "71025": 1.12, "8827": 1.12, "71000": 0.7}
+FIG_ADJ = {"71002": 1.2, "71020": 1.3, "71022": 1.3, "71027": 1.2, "71029": 1.2,
+           "71001": 1.12, "71008": 1.12, "71018": 1.12, "71021": 1.12, "71000": 0.7}
+# 8833 (was 1.3), 8827 and 71025 (were 1.12) dropped 2026-11-14: owner "8833 too zoomed in"; 8827/71025 have new sources.
+# Horizontal crowd shift in card px (negative = left). OWNER-SUPPLIED 2026-11-14: "71038 move a little to the left".
+GROUP_DX = {"71038": -30}
+# Thin outline around the crowd so figures in the bag colour stay readable (owner 2026-11-14: orange on 8804, red on
+# 8831, black on 8833/71000, green on 71008, yellow on 71009 "take over" figure parts). Default chosen 2026-11-14
+# (docs/decisions.md): 2 px white; dark on light bags (luminance over OUTLINE_LIGHT) where white would vanish.
+OUTLINE_PX, OUTLINE_LIGHT = 2, 200
 # Small sets keep every figure: Team GB has 9 (contain, no side crop).
 NO_ZOOM = {"8909"}
 # Logo ink (opaque px as drawn) cap. Owner 2026-11-14: "some has too big logo". SOURCE: largest reference logo by ink
@@ -196,6 +203,8 @@ def page(s):
     lw, lh = logo_size(logo)
     size = f"width:{lw}px;height:{lh}px"
     crowd, gw, gh = group_fit(sid, s["figureCount"])
+    oc, o = ("#1a1a1a" if lum > OUTLINE_LIGHT else "#fff"), OUTLINE_PX
+    outline = " ".join(f"drop-shadow({x}px {y}px 0 {oc})" for x, y in ((o, 0), (-o, 0), (0, o), (0, -o)))
     crowd_png = TMP / f"{sid}-group.png"
     crowd.save(crowd_png)
     if sid in LOGO:
@@ -217,7 +226,7 @@ body{{font-family:"Segoe UI",Arial,sans-serif}}
 .badge{{position:absolute;right:14px;top:10px}}
 .badge text{{font-family:'Arial Black',Arial,sans-serif;font-weight:900}}
 .theme{{position:absolute;left:0;right:0;top:{LOGO_TOP}px;text-align:center;line-height:0;z-index:2}}
-.group{{position:absolute;left:{(600 - gw) // 2}px;top:{GROUP_TOP + GROUP_H - gh}px;width:{gw}px;height:{gh}px}}
+.group{{position:absolute;filter:{outline};left:{(600 - gw) // 2 + GROUP_DX.get(sid, 0)}px;top:{GROUP_TOP + GROUP_H - gh}px;width:{gw}px;height:{gh}px}}
 .band{{position:absolute;left:0;right:0;bottom:0;height:80px;background:#0b0b0b;display:flex;align-items:center;padding:0 30px}}
 .lockup{{width:300px}} .word{{color:#fff;font-family:"Arial Black",Arial,sans-serif;font-size:20px;letter-spacing:.1em}}
 </style><div class="card">
