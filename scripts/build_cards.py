@@ -155,9 +155,10 @@ def badge(number, count):
 
 def group_fit(sid, count):
     """Scale the crowd to FIG_TARGET and crop its sides to the card width at the emptiest columns.
-    Returns (image, drawn width, drawn height)."""
+    Returns (image, drawn width, drawn height, sides cut)."""
     im = Image.open(GROUP / f"{sid}.png").convert("RGBA")
     w, h = im.size
+    cut = False
     area = int((np.asarray(im)[:, :, 3] > 127).sum())
     scale = min(FIG_TARGET * FIG_ADJ.get(sid, 1) / math.sqrt(area / count), GROUP_H / h)
     if sid in NO_ZOOM:
@@ -171,7 +172,28 @@ def group_fit(sid, count):
         im = im.crop(im.split()[-1].getbbox())
         w, h = im.size
         scale = min(scale, 600 / w)                         # the gap snap can widen the cut a little
-    return im, round(w * scale), round(h * scale)
+        cut = True
+    return im, round(w * scale), round(h * scale), cut
+
+
+def outline(crowd, colour, cut):
+    """Crowd at drawn size with an OUTLINE_PX ring, padded by OUTLINE_PX on every side.
+    Same four axial shifts as the old CSS drop-shadow, but baked in, so the ring can be left off the left and right
+    padding when the sides were cropped: there the crop edge is a straight cut through figures, and a ring along it
+    showed as a white vertical stripe (owner round 2, 2026-11-14: 71018 and 71027 "left/right side stripes")."""
+    o = OUTLINE_PX
+    a = np.pad(np.asarray(crowd)[:, :, 3], o)
+    ring = a.copy()
+    for dx, dy in ((o, 0), (-o, 0), (0, o), (0, -o)):
+        ring = np.maximum(ring, np.roll(a, (dy, dx), axis=(0, 1)))
+    if cut:
+        ring[:, :o] = 0
+        ring[:, -o:] = 0
+    rgb = tuple(int(colour[i:i + 2], 16) for i in (1, 3, 5))
+    out = Image.new("RGBA", (ring.shape[1], ring.shape[0]), rgb + (0,))
+    out.putalpha(Image.fromarray(ring))
+    out.alpha_composite(crowd, (o, o))
+    return out
 
 
 def logo_size(path):
@@ -202,9 +224,10 @@ def page(s):
     logo = LOGOS / (LOGO[sid] if sid in LOGO else "lego-minifigures-lockup.png")
     lw, lh = logo_size(logo)
     size = f"width:{lw}px;height:{lh}px"
-    crowd, gw, gh = group_fit(sid, s["figureCount"])
-    oc, o = ("#1a1a1a" if lum > OUTLINE_LIGHT else "#fff"), OUTLINE_PX
-    outline = " ".join(f"drop-shadow({x}px {y}px 0 {oc})" for x, y in ((o, 0), (-o, 0), (0, o), (0, -o)))
+    crowd, gw, gh, cut = group_fit(sid, s["figureCount"])
+    oc, o = ("#1a1a1a" if lum > OUTLINE_LIGHT else "#ffffff"), OUTLINE_PX
+    crowd = outline(crowd.resize((gw, gh), Image.LANCZOS), oc, cut)
+    gx, gy = (600 - gw) // 2 + GROUP_DX.get(sid, 0) - o, GROUP_TOP + GROUP_H - gh - o
     crowd_png = TMP / f"{sid}-group.png"
     crowd.save(crowd_png)
     if sid in LOGO:
@@ -226,7 +249,7 @@ body{{font-family:"Segoe UI",Arial,sans-serif}}
 .badge{{position:absolute;right:14px;top:10px}}
 .badge text{{font-family:'Arial Black',Arial,sans-serif;font-weight:900}}
 .theme{{position:absolute;left:0;right:0;top:{LOGO_TOP}px;text-align:center;line-height:0;z-index:2}}
-.group{{position:absolute;filter:{outline};left:{(600 - gw) // 2 + GROUP_DX.get(sid, 0)}px;top:{GROUP_TOP + GROUP_H - gh}px;width:{gw}px;height:{gh}px}}
+.group{{position:absolute;left:{gx}px;top:{gy}px;width:{gw + 2 * o}px;height:{gh + 2 * o}px}}
 .band{{position:absolute;left:0;right:0;bottom:0;height:80px;background:#0b0b0b;display:flex;align-items:center;padding:0 30px}}
 .lockup{{width:300px}} .word{{color:#fff;font-family:"Arial Black",Arial,sans-serif;font-size:20px;letter-spacing:.1em}}
 </style><div class="card">
