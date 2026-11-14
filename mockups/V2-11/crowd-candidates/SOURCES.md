@@ -1,0 +1,43 @@
+# V2-11 crowd photo candidates (not yet approved)
+Owner rule 2026-11-08: no grids of single figures on stands; each series needs a packed crowd photo.
+Found by Brick Owl crawl (hunt 1) and a Google Images pass in Chrome (hunt 2). Personal non-commercial use.
+- 71007-1.jpg — SOURCE: https://img.brickowl.com/files/image_cache/larger/lego-series-12-collectable-minifigures-complete-set-71007-17-1004213.jpg (700x700, white, crop)
+- 8805-1.jpg — SOURCE: https://img.brickowl.com/files/image_cache/larger/lego-series-5-collectable-minifigures-complete-set-8805-17-1000735.jpg (700x700, white, crop)
+- 71000-1.jpg — SOURCE: https://i.ebayimg.com/images/g/pyEAAOSwCBJoF5XH/s-l1200.jpg (1200x900, one overlapping row)
+- 71000-2.jpg — SOURCE: https://i.ebayimg.com/images/g/~x8AAOSwQqNk57Ah/s-l1200.jpg (partial cluster)
+- 71017-1.png — SOURCE: https://i.ebayimg.com/images/g/wtoAAOSwfjhkbXr3/s-l1200.png (two crowds + caption, crop)
+- 71017-2.jpg — SOURCE: https://jaysbrickblog.com/wp-content/uploads/2016/11/LEGO-Batman-Movie-Minifigures.jpg (series 1+2, crop top band; file-URL mapping unconfirmed)
+- 71023-1.jpg — SOURCE: https://media-cdn.brothers-brick.com/wp-content/uploads/2019/01/LEGO-Movie-2-71023-Collectible-Minifigures-Review-2.jpg (grey bg, watermark bottom right)
+- 8803-1.png — SOURCE: https://imrickjamesbricks.com.au/cdn/shop/files/WebsitePics-2024-06-21T143501.614.png (mapping unconfirmed)
+- 8831-1.jpg — SOURCE: https://i.ebayimg.com/images/g/fYcAAOSwtP1oF5Xc/s-l1200.jpg (mapping unconfirmed)
+- 8833-1.png — SOURCE: https://i.ebayimg.com/images/g/jK8AAOSwmnVoF5Rk/s-l1200.png (mapping unconfirmed)
+Still missing: 8683, 8684, 71002, 8909 (next: Brickset/Brick Owl/BrickLink set pages, Bing; fallback composite from own cut-outs).
+- 8683-2.jpg (3500x1458) — PAGE: http://lego.razfill.ru/all-lego/lego-8683-minifigures-series-1 SOURCE: http://lego.razfill.ru/images/lego/86/8683/8683_lineup.jpg — official-style render, true crowd, white bg, no watermark
+- 71002-1.png (2000x2000) — PAGE: https://marvellousminifigures.com (product CompleteSet) SOURCE: https://marvellousminifigures.com/cdn/shop/files/CompleteSet_0c415c17-eb60-486f-bd1c-bca13495261e.png — official render of all 16, true crowd, blue gradient bg needs crop/cut-out
+- 8909-1.jpg (1024x546) — PAGE: https://toysnbricks.com/ (LEGO-8909-Team-GB-Minifigures) SOURCE: https://toysnbricks.com/wp-content/uploads/2012/05/LEGO-8909-Team-GB-Minifigures-Toysnbricks.jpg — official render, true crowd, white bg, 9 figures (set has 9)
+- 8684: none found (Brickset 8684-17 is a stand grid, rejected)
+- 71031-0.png — previous card image mockups/assets/group/71031.png (see mockups/assets/group/SOURCES.md), kept as the zoom source.
+Hunt 3 (2026-11-09): 8684 and 71008 none found (Brickset 8684-17 and 71008-17 are stand grids; Brickset Series 13 promo has podiums and text). 71031: no better packed render than the current one.
+Used for cards 2026-11-09 by scripts/prep_group.py: 8683-2, 8803-1, 8805-1, 8831-1, 8833-1, 71000-2, 8909-1, 71002-1, 71007-1, 71017-1 (top crowd), 71023-1 (watermark cropped), 71031-0.
+- 8684-1.jpg (690x480) — PAGE: https://lego.razfill.ru/all-lego/lego-8684-minifigures-series-2 SOURCE: https://images.brickset.com/sets/images/8684-18.jpg — official box-back art, true crowd of 16 on blue "?" background; Series 2 badge erased, blue keyed out (prep_group.py method "blue"). Hunt 5 (2026-11-11, Bing Images): 71008 none found (Brickset 71008-17 stand grid, eBay 5x3 grid on white).
+- 71008-1.png (1000x460) — PAGE: https://brickipedia.fandom.com/wiki/71008_Minifigures_Series_13 (owner pointer 2026-11-14) SOURCE: https://static.wikia.nocookie.net/lego/images/b/b5/Series_13.png — official render, true crowd of 16; PNG alpha fully opaque (white bg), cut with method "shadow".
+Hunt 6 (2026-11-14, Brickipedia set pages via the MediaWiki API; owner pointer). Used:
+- 8804-1.jpg (3000x2000) — PAGE: https://brickipedia.fandom.com/wiki/8804_Minifigures_Series_4 SOURCE: https://static.wikia.nocookie.net/lego/images/8/8f/8804.jpg — official crowd, white bg, method "shadow".
+- 8805-2.jpg (3500x2000) — PAGE: https://brickipedia.fandom.com/wiki/8805_Minifigures_Series_5 SOURCE: https://static.wikia.nocookie.net/lego/images/a/a9/Lego-8805-Minifiguren-Serie-5.jpg — official crowd, replaces the 700 px 8805-1 (white gaps).
+- 8831-2.jpg (3000x2000) — PAGE: https://brickipedia.fandom.com/wiki/8831_Minifigures_Series_7 SOURCE: https://static.wikia.nocookie.net/lego/images/7/76/Series7Pic.jpg — official crowd, replaces 8831-1.
+- 8827-0.png — previous card image (transparent, white floor kept), floor removed with method "shadow".
+Rejected: 8827 Series_6.jpg and 8833 8833.png/alt (figures on stands), 71007 (no crowd on the page).
+Owner sources 2026-11-14 (docs/V2-11-owner-fixes-2026-11-14.md), raw downloads in crowd-candidates/owner/:
+- 8684-2.jpg (600x431) — SOURCE: OWNER-SUPPLIED https://gadgetsin.com/uploads/2010/08/lego_minifigures_8683_series_2_now_available_for_preorder_1.jpg — official Series 2 crowd render, white bg, method "white"; replaces 8684-1 box art.
+- <id>-o.png (2026-11-14): OWNER-SUPPLIED sources, converted to PNG, cut with method "model" (BiRefNet):
+  8803 https://img.brickowl.com/files/image_cache/larger/lego-series-3-collectable-minifigures-random-pack-set-8803-0-56272.jpg ;
+  8827 https://static.wikia.nocookie.net/lego/images/f/ff/8827_Minifigures_S%C3%A9rie_6.png (fr wiki) ;
+  8831 https://bricker.ru/images/store/thumbs/xlarge/album1/d8497_tail_3(12).jpg ;
+  71004 Google Images thumbnail (encrypted-tbn0.gstatic.com, ANd9GcSBitnIZsQ0MItjW1vhqj6mvDOhNVNf7NzBPQahRMEvL2AzAWddC4YoeAc), 738x415, figures cut at the frame edge ;
+  71023 https://sirtroys.com/cdn/shop/files/61E_AHElwpL._AC_SL1000.jpg (logo cropped) ;
+  71025 https://i.ebayimg.com/images/g/rS4AAOSwm~thAYkN/s-l1200.jpg ;
+  71031 https://static.wikia.nocookie.net/marvelmovies/images/f/f9/71031_MCU_Minifigs-1.png ;
+  71032 https://www.lego.com/cdn/cs/set/assets/blt65bb8b098c075262/71032.png ;
+  71050 https://cdn.rebrickable.com/media/thumbs/sets/71050-13/159254.jpg/1000x800p.jpg
+- Official transparent PNGs (mockups/assets/group/SOURCES.md) were re-checked against the model on 2026-11-14: the
+  model-only pixels are floor shadows, not figure parts, so their own alpha is kept.

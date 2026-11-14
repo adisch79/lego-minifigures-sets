@@ -20,12 +20,12 @@ const STAGGER_MAX_TILES = 12
 
 export function Brand({ href }: { href: string }) {
   return (
-    <a className="brand" href={href} aria-label="Minifig Vault home">
+    <a className="brand" href={href} aria-label="Minifig Hunt home">
       <span className="brand-mark" aria-hidden="true">
-        <i />
+        <img src="/favicon.svg" alt="" width={36} height={36} />
       </span>
       <span>
-        <b>Minifig Vault</b>
+        <b>Minifig Hunt</b>
         <small>Collectible Minifigures</small>
       </span>
     </a>

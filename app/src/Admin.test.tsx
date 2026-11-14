@@ -140,10 +140,10 @@ describe('Admin gate screens', () => {
     expect(recheck).toHaveBeenCalledTimes(1)
   })
 
-  it('offers a way back to the vault on every gate screen', () => {
+  it('offers a way back to the hunt on every gate screen', () => {
     gateState.current = 'not-admin'
     renderAdmin()
-    const links = screen.getAllByRole('link', { name: /Back to the vault/ })
+    const links = screen.getAllByRole('link', { name: /Back to the hunt/ })
     expect(links.every((a) => a.getAttribute('href') === '#')).toBe(true)
   })
 })
