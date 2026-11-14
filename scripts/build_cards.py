@@ -4,9 +4,11 @@ Usage: python scripts/build_cards.py [<seriesId> ...]   (default: every series)
 Output: app/public/cards/<id>.png and docs/spike/V1-07-cards-all.png (overview).
 Inputs: mockups/assets/group/<id>.png, mockups/assets/logos, site/img/<id>/<id>-0.webp (bag colour).
 """
-import base64, concurrent.futures, json, math, pathlib, re, subprocess, sys
+import base64, concurrent.futures, functools, json, math, os, pathlib, re, subprocess, sys
 import numpy as np
-from PIL import Image
+from PIL import Image, ImageFont
+
+from prep_group import drop_fragments, gap_cut
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 OUT = ROOT / "app/public/cards"
@@ -14,8 +16,8 @@ TMP = ROOT / "docs/spike/V1-07-tmp"
 OVERVIEW = ROOT / "docs/spike/V1-07-cards-all.png"
 LOGOS = ROOT / "mockups/assets/logos"
 GROUP = ROOT / "mockups/assets/group"
-# SOURCE: same Chrome path as docs/spike/V0-06-cards.py
-CHROME = r"C:/Program Files/Google/Chrome/Application/chrome.exe"
+# SOURCE: same Chrome path as docs/spike/V0-06-cards.py; override with the CHROME environment variable.
+CHROME = os.environ.get("CHROME") or r"C:/Program Files/Google/Chrome/Application/chrome.exe"
 # SOURCE: OWNER-SUPPLIED badge screenshot, 2026-11-02 (sampled pixels).
 RED = "#D80008"
 # SOURCE: OWNER-SUPPLIED badge screenshot, 2026-11-02 (sampled pixels).
@@ -38,8 +40,43 @@ LOGO = {
 }
 # Dark bags photographed on white: the white surround must not win the count.
 DARK_BAG = {"71010", "71000"}
-# Tall logos sit higher and larger than wide ones: id -> (width, top). Layout by eye against the overview sheet.
-TALL_LOGO = {"71030": (210, 100), "71026": (200, 110), "71014": (160, 110), "8909": (170, 110), "71023": (215, 100)}
+# V2-11 layout F (owner OK 2026-11-09, mockups/V2-11/build_mockups.py page_f): layout A with the logo box
+# enlarged to 580x150, layered over the crowd. SOURCE: OWNER-SUPPLIED (sheet_f.png sign-off).
+LOGO_W, LOGO_H, LOGO_TOP = 580, 150, 126
+# Logos narrower than 2:1 (DC, Looney Tunes, DFB, Team GB, LEGO Movie 2) would shrink below their v4 size in a
+# 150 px box: they get 190 px, as in mockup E (TALL ratio and height from build_mockups.py E_TALL_*).
+# SOURCE: mockups/V2-11/build_mockups.py E_TALL_* (owner-approved mockup E, 2026-11-09).
+TALL_RATIO, TALL_H = 2.0, 190
+# Badge drawn height matches A's 104 px logo row; drawn content fills about 95 % of the svg (measured on 71052.png).
+BADGE_H = round(104 / 0.95)
+GROUP_TOP, GROUP_H = 234, 476
+# Figure size on the card: crowd scale * sqrt(crowd alpha area / figure count), in card px. Every crowd is scaled to
+# this, then cropped at the sides to the card width (owner 2026-11-14: "some too big, some too small (far)").
+# SOURCE: mean of the owner's reference cards 71009 99.3, 71039 111.0, 71051 116.9, 71033 117.7 (measured 2026-11-14,
+# layout F + zoom A; references named by the owner 2026-11-09).
+FIG_TARGET = 111
+# Per-card factor on FIG_TARGET where props or overlap skew the area measure. Set 2026-11-14 by eye: head width on a
+# 0.5x crowd sheet against a 37 px marker (reference heads 34-40 px); factor = 35 / measured head px.
+FIG_ADJ = {"71002": 1.2, "71020": 1.3, "71022": 1.3, "71027": 1.2, "71029": 1.2,
+           "71001": 1.12, "71008": 1.12, "71018": 1.12, "71000": 0.7}
+# SOURCE: OWNER-SUPPLIED (owner review 2026-11-14, factors set by eye against the owner's reference heads).
+# 71021 (was 1.12) dropped 2026-11-15: its shadow inflated the area; SHADOW_DROP now clears it.
+# 8833 (was 1.3), 8827 and 71025 (were 1.12) dropped 2026-11-14: owner "8833 too zoomed in"; 8827/71025 have new sources.
+# Assets with empty margins around the crowd: trim to the crowd (alpha > 127) before the side crop, so the crop is
+# centred on the figures, not on the canvas. 71038 added 2026-11-15 (owner "71038 still not good!"): its crowd spans
+# x 232-1376 of 1400, so the canvas-centred crop cut the right end and the old GROUP_DX -30 shift (2026-11-14) left
+# a straight cut inside the card on the right. The shift is dropped.
+TRIM_TO_CROWD = {"71038"}
+# Thin outline around the crowd so figures in the bag colour stay readable (owner 2026-11-14: orange on 8804, red on
+# 8831, black on 8833/71000, green on 71008, yellow on 71009 "take over" figure parts). Default chosen 2026-11-14
+# (docs/decisions.md): 2 px white; dark on light bags (luminance over OUTLINE_LIGHT) where white would vanish.
+# SOURCE: OWNER-SUPPLIED (owner review 2026-11-14).
+OUTLINE_PX, OUTLINE_LIGHT = 2, 200
+# Small sets keep every figure: Team GB has 9 (contain, no side crop).
+NO_ZOOM = {"8909"}
+# Logo ink (opaque px as drawn) cap. Owner 2026-11-14: "some has too big logo". SOURCE: largest reference logo by ink
+# other than Marvel Studios (Muppets 71033: 35535 px; lockup 30311, Simpsons 33039), measured 2026-11-14.
+LOGO_INK_MAX = 35535
 DARK_HALO = "filter:drop-shadow(0 0 3px #000) drop-shadow(0 0 8px rgba(0,0,0,.8));"
 # Logos with white parts that vanish on their bag colour.
 HALO = {"71033", "71038", "8909"}
@@ -70,6 +107,51 @@ def label(x, y, size, value, squeeze, fill, stroke=0, skew=0, spacing=0):
     return f'<text transform="{move}" text-anchor="middle" style="{style}">{value}</text>'
 
 
+# Count mark geometry in badge units. SOURCE: OWNER-SUPPLIED assembly mockups/V2-11/elements/mine.png (2026-11-09).
+COUNT_SIZE, COUNT_X, COUNT_BASE = 128, 170, 168
+CHECK_X, CHECK_Y = 107, 145
+COLLECT_X, COLLECT_BASE = 171.5, 194.5
+BADGE_TILT = 13
+
+
+@functools.lru_cache(maxsize=None)
+def badge_font(size):
+    """Arial Black at size; stops with a clear message when the font is not installed."""
+    try:
+        return ImageFont.truetype("ariblk.ttf", size)
+    except OSError:
+        sys.exit("font ariblk.ttf (Arial Black) not found: install it, the badge count is measured with it")
+
+
+def count_fit(count):
+    """Squeeze and centre x for the count. The owner laid out 12, whose "1" foot sits right of the checkbox. A count
+    that starts with another digit (9, 20, 22) has its foot at the bottom left, under the checkbox: keep the right
+    edge where 12 ends, narrow the count until its left edge clears the checkbox (CHECK_X + 24 + 4 px gap) and centre
+    it in that space."""
+    if str(count)[0] == "1":
+        return 0.66, COUNT_X
+    font = badge_font(COUNT_SIZE)
+    l, _, r, _ = font.getbbox("12")
+    right = COUNT_X + 0.66 * (r - l) / 2                      # right edge of 12, badge units
+    left = CHECK_X + 24 + 4
+    l2, _, r2, _ = font.getbbox(str(count))
+    squeeze = min(0.66, (right - left) / (r2 - l2))
+    return round(squeeze, 3), round((left + right) / 2, 1)   # centred in the space right of the checkbox
+
+
+def count_mark(count):
+    """Checkbox, count and TO COLLECT inside the head (head box x 92-252, y 55-205).
+    Layout copied from the owner's own assembly, mockups/V2-11/elements/mine.png (2026-11-09): big count filling the
+    face, checkbox at the bottom left touching the count's foot, TO COLLECT under both. Positions below are badge
+    units measured on that image (un-tilted, 4x) and calibrated by re-rendering."""
+    size = COUNT_SIZE if len(str(count)) < 3 else round(COUNT_SIZE * 0.7)
+    squeeze, cx = count_fit(count)
+    return f"""<rect x="{CHECK_X}" y="{CHECK_Y}" width="24" height="24" rx="6" fill="#fff" stroke="{RED}" stroke-width="4"/>
+<path d="M{CHECK_X + 5} {CHECK_Y + 12} l6 7 l18 -18" fill="none" stroke="#111" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+{label(cx, COUNT_BASE, size, count, squeeze, RED, 4, -8, -5)}
+{label(COLLECT_X, COLLECT_BASE, 25, "TO COLLECT", 0.6, RED, 1, -6)}"""
+
+
 def badge(number, count):
     """Bag badge per the owner's example: SERIES and number in a round frame, count in a tilted head."""
     frame = ""
@@ -79,15 +161,109 @@ def badge(number, count):
 {label(58, 95, 52, number, 0.72, NAVY, 2)}"""
     # Geometry measured from the owner's screenshot, 2026-11-02.
     return f"""<svg class="badge" width="240" height="218" viewBox="0 0 270 245">{frame}
-<g transform="rotate(12 172 130)">
+<g transform="rotate({BADGE_TILT} 172 130)">
 <rect x="132" y="26" width="80" height="38" rx="4" fill="{HEAD_DARK}"/>
 <rect x="116" y="196" width="112" height="32" rx="4" fill="{HEAD_DARK}"/>
 <rect x="92" y="55" width="160" height="150" rx="34" fill="{HEAD}"/>
-<rect x="99" y="112" width="24" height="24" rx="7" fill="#fff" stroke="{RED}" stroke-width="4"/>
-<path d="M104 124 l6 7 l20 -19" fill="none" stroke="#111" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
-{label(183, 158, 112, count, 0.66, RED, 5, -8, -7)}
-{label(172, 190, 27, "TO COLLECT", 0.62, RED, 1, -6)}
+{count_mark(count)}
 </g></svg>"""
+
+
+# Official transparent crowd PNGs that keep a soft grey/white floor shadow and glow in their alpha. Owner round 2,
+# 2026-11-14: "71037 71038 71039 71045 71046 71047 all have shadow!". Measured 2026-11-14: 5-10 % of their pixels are
+# semi-transparent and grey (references 71009/71051: 1 %). 71012 and 71021 added 2026-11-15 (owner "not good"; 9 % and 15 % grey).
+SHADOW_DROP = {"71012", "71021", "71037", "71038", "71039", "71045", "71046", "71047"}
+# SOURCE: OWNER-SUPPLIED (owner review 2026-11-14; thresholds tuned against the measured grey share).
+SHADOW_ALPHA, SHADOW_SAT = 200, 30
+
+
+def drop_shadow(im):
+    """Clear semi-transparent, unsaturated pixels (the shadow and glow); coloured translucent parts stay."""
+    a = np.asarray(im).copy()
+    rgb = a[:, :, :3].astype(int)
+    sat = rgb.max(2) - rgb.min(2)
+    a[:, :, 3] = np.where((a[:, :, 3] < SHADOW_ALPHA) & (sat < SHADOW_SAT), 0, a[:, :, 3])
+    return Image.fromarray(a)
+
+
+def group_fit(sid, count):
+    """Scale the crowd to FIG_TARGET and crop its sides to the card width at the emptiest columns.
+    Returns (image, drawn width, drawn height, sides cut)."""
+    src = GROUP / f"{sid}.png"
+    if not src.exists():
+        sys.exit(f"{sid}: crowd image missing: {src} (run scripts/prep_group.py {sid})")
+    if not count or count < 1:
+        sys.exit(f"{sid}: figureCount is {count!r} in catalog.json, need a positive number")
+    im = Image.open(src).convert("RGBA")
+    if sid in SHADOW_DROP:
+        im = drop_shadow(im)
+    if sid in TRIM_TO_CROWD:
+        box = im.split()[-1].point(lambda v: 255 if v > 127 else 0).getbbox()
+        if box is None:
+            sys.exit(f"{sid}: crowd image has no opaque pixels, cannot trim to the crowd")
+        im = im.crop(box)
+    w, h = im.size
+    cut = False
+    area = int((np.asarray(im)[:, :, 3] > 127).sum())
+    if area == 0:
+        sys.exit(f"{sid}: crowd image has no opaque pixels (alpha > 127), cannot scale it")
+    scale = min(FIG_TARGET * FIG_ADJ.get(sid, 1) / math.sqrt(area / count), GROUP_H / h)
+    if sid in NO_ZOOM:
+        scale = min(scale, 600 / w)
+    if w * scale > 600:
+        a = np.asarray(im)[:, :, 3]
+        keep = 600 / scale
+        x0 = round((w - keep) / 2)
+        win = round(0.08 * keep)
+        im = drop_fragments(im.crop((gap_cut(a, x0, win), 0, gap_cut(a, w - x0, win), h)))
+        box = im.split()[-1].getbbox()
+        if box is None:
+            sys.exit(f"{sid}: crowd is empty after the side crop and fragment drop")
+        im = im.crop(box)
+        w, h = im.size
+        # A cut crowd must bleed to both card edges, or the straight cut shows inside the card (owner 2026-11-14:
+        # "the grouped image ends on both sides before the edges of the card"). The gap snap and fragment drop can
+        # narrow it, so fit the width exactly; if that makes it too tall, keep the height cap and trim the sides.
+        scale = 600 / w
+        if h * scale > GROUP_H:
+            scale = GROUP_H / h
+            keep = round(600 / scale)
+            x0 = (w - keep) // 2
+            im = im.crop((x0, 0, x0 + keep, h))
+            w = keep
+        cut = True
+    return im, round(w * scale), round(h * scale), cut
+
+
+def outline(crowd, colour, cut):
+    """Crowd at drawn size with an OUTLINE_PX ring, padded by OUTLINE_PX on every side.
+    Same four axial shifts as the old CSS drop-shadow, but baked in, so the ring can be left off the left and right
+    padding when the sides were cropped: there the crop edge is a straight cut through figures, and a ring along it
+    showed as a white vertical stripe (owner round 2, 2026-11-14: 71018 and 71027 "left/right side stripes")."""
+    o = OUTLINE_PX
+    a = np.pad(np.asarray(crowd)[:, :, 3], o)
+    ring = a.copy()
+    for dx, dy in ((o, 0), (-o, 0), (0, o), (0, -o)):
+        ring = np.maximum(ring, np.roll(a, (dy, dx), axis=(0, 1)))
+    if cut:
+        ring[:, :o] = 0
+        ring[:, -o:] = 0
+    rgb = tuple(int(colour[i:i + 2], 16) for i in (1, 3, 5))
+    out = Image.new("RGBA", (ring.shape[1], ring.shape[0]), rgb + (0,))
+    out.putalpha(Image.fromarray(ring))
+    out.alpha_composite(crowd, (o, o))
+    return out
+
+
+def logo_size(path):
+    """Drawn logo box: fit LOGO_W x (LOGO_H or TALL_H), then shrink so the ink stays under LOGO_INK_MAX."""
+    im = Image.open(path).convert("RGBA")
+    lw, lh = im.size
+    scale = min(LOGO_W / lw, (TALL_H if lw / lh < TALL_RATIO else LOGO_H) / lh)
+    ink = (np.asarray(im)[:, :, 3] > 127).sum() * scale * scale
+    if ink > LOGO_INK_MAX:
+        scale *= math.sqrt(LOGO_INK_MAX / ink)
+    return round(lw * scale), round(lh * scale)
 
 
 def series_number(s):
@@ -104,45 +280,55 @@ def page(s):
     lum = sum(int(bg[i:i + 2], 16) * w for i, w in zip((1, 3, 5), (.299, .587, .114)))
     ink = "#111" if lum > 150 else "#fff"
     lockup = uri(LOGOS / "lego-minifigures-lockup.png")
+    logo = LOGOS / (LOGO[sid] if sid in LOGO else "lego-minifigures-lockup.png")
+    lw, lh = logo_size(logo)
+    size = f"width:{lw}px;height:{lh}px"
+    crowd, gw, gh, cut = group_fit(sid, s["figureCount"])
+    oc, o = ("#1a1a1a" if lum > OUTLINE_LIGHT else "#ffffff"), OUTLINE_PX
+    crowd = outline(crowd.resize((gw, gh), Image.LANCZOS), oc, cut)
+    gx, gy = (600 - gw) // 2 - o, GROUP_TOP + GROUP_H - gh - o
+    crowd_png = TMP / f"{sid}-group.png"
+    crowd.save(crowd_png)
     if sid in LOGO:
-        width, top = TALL_LOGO.get(sid, (None, None))
-        size = f"width:{width}px" if width else "max-width:430px;max-height:120px"
         halo = DARK_HALO if sid in HALO else ""
         theme = f'<img src="{uri(LOGOS / LOGO[sid])}" style="{halo}{size}">'
-        theme_top = top or 232
         band = f'<img class="lockup" src="{lockup}">'
     else:
-        theme = f'<img src="{lockup}" style="width:490px">'
-        theme_top = 232
+        theme = f'<img src="{lockup}" style="{size}">'
         band = '<div class="word">COLLECTIBLE MINIFIGURES</div>'
     age = f'<div class="age">{s["age"]}</div><div class="rule"></div>' if s.get("age") else ""
+    svg = badge(series_number(s), s["figureCount"])
+    svg = svg.replace('width="240" height="218"', f'width="{round(BADGE_H * 240 / 218)}" height="{BADGE_H}"')
     return f"""<!DOCTYPE html><meta charset="utf-8"><style>
 *{{margin:0;box-sizing:border-box}} html,body{{width:600px;height:800px;overflow:hidden}}
 body{{font-family:"Segoe UI",Arial,sans-serif}}
-.card{{position:relative;width:600px;height:800px;background:{bg};color:{ink}}}
-.meta{{position:absolute;left:34px;top:30px;line-height:1;font-weight:800}}
-.age{{font-size:50px}} .rule{{width:90px;height:3px;background:currentColor;margin:8px 0}} .num{{font-size:26px}}
-.badge{{position:absolute;right:12px;top:14px}}
+.card{{position:relative;width:600px;height:800px;overflow:hidden;background:{bg};color:{ink}}}
+.meta{{position:absolute;left:30px;top:24px;line-height:1;font-weight:800}}
+.age{{font-size:40px}} .rule{{width:72px;height:3px;background:currentColor;margin:6px 0}} .num{{font-size:22px}}
+.badge{{position:absolute;right:14px;top:10px}}
 .badge text{{font-family:'Arial Black',Arial,sans-serif;font-weight:900}}
-.theme{{position:absolute;left:0;right:0;top:{theme_top}px;text-align:center}}
-.group{{position:absolute;left:18px;bottom:96px;height:335px;width:564px;object-fit:contain;object-position:center}}
-.band{{position:absolute;left:0;right:0;bottom:0;height:88px;background:#0b0b0b;display:flex;align-items:center;padding:0 30px}}
-.lockup{{width:340px}} .word{{color:#fff;font-family:"Arial Black",Arial,sans-serif;font-size:20px;letter-spacing:.1em}}
+.theme{{position:absolute;left:0;right:0;top:{LOGO_TOP}px;text-align:center;line-height:0;z-index:2}}
+.group{{position:absolute;left:{gx}px;top:{gy}px;width:{gw + 2 * o}px;height:{gh + 2 * o}px}}
+.band{{position:absolute;left:0;right:0;bottom:0;height:80px;background:#0b0b0b;display:flex;align-items:center;padding:0 30px}}
+.lockup{{width:300px}} .word{{color:#fff;font-family:"Arial Black",Arial,sans-serif;font-size:20px;letter-spacing:.1em}}
 </style><div class="card">
 <div class="meta">{age}<div class="num">{sid}</div></div>
-{badge(series_number(s), s["figureCount"])}
+{svg}
 <div class="theme">{theme}</div>
-<img class="group" src="{uri(GROUP / (sid + '.png'))}">
+<img class="group" src="{uri(crowd_png)}">
 <div class="band">{band}</div></div>"""
 
 
 def render(s):
     html = TMP / f"{s['id']}.html"
-    html.write_text(page(s), encoding="utf-8")
-    subprocess.run([CHROME, "--headless=new", "--disable-gpu", "--hide-scrollbars", "--force-device-scale-factor=1",
-                    f"--user-data-dir={TMP / ('chrome-' + s['id'])}", "--window-size=600,800",
-                    f"--screenshot={OUT / (s['id'] + '.png')}", html.as_uri()], check=True, capture_output=True, timeout=90)
-    html.unlink()
+    try:
+        html.write_text(page(s), encoding="utf-8")
+        subprocess.run([CHROME, "--headless=new", "--disable-gpu", "--hide-scrollbars", "--force-device-scale-factor=1",
+                        f"--user-data-dir={TMP / ('chrome-' + s['id'])}", "--window-size=600,800",
+                        f"--screenshot={OUT / (s['id'] + '.png')}", html.as_uri()], check=True, capture_output=True, timeout=90)
+    finally:
+        html.unlink(missing_ok=True)
+        (TMP / f"{s['id']}-group.png").unlink(missing_ok=True)
     return s["id"]
 
 
@@ -161,6 +347,8 @@ def main():
     unknown = set(ids) - {s["id"] for s in series}
     if unknown:
         sys.exit(f"unknown series id: {sorted(unknown)}")
+    if not pathlib.Path(CHROME).exists():
+        sys.exit(f"Chrome not found at {CHROME}: install it or set the CHROME environment variable")
     TMP.mkdir(parents=True, exist_ok=True)
     with concurrent.futures.ThreadPoolExecutor(4) as pool:
         for sid in pool.map(render, [s for s in series if s["id"] in ids]):
