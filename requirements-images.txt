@@ -1,5 +1,7 @@
 opencv-python==4.13.0.92
-# BiRefNet remote code needs these (scripts/seg_model.py); torch + transformers are installed separately.
+# BiRefNet remote code needs these (scripts/seg_model.py); torch is installed separately (see below); transformers is pinned.
 timm==1.0.15
 kornia==0.8.1
 einops==0.8.1
+transformers==5.5.3
+# torch==2.12.0.dev20260408+cu128 is installed here (nightly CUDA 12.8 build); on a CPU-only PC install the CPU torch build instead.

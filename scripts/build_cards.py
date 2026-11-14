@@ -4,7 +4,7 @@ Usage: python scripts/build_cards.py [<seriesId> ...]   (default: every series)
 Output: app/public/cards/<id>.png and docs/spike/V1-07-cards-all.png (overview).
 Inputs: mockups/assets/group/<id>.png, mockups/assets/logos, site/img/<id>/<id>-0.webp (bag colour).
 """
-import base64, concurrent.futures, json, math, pathlib, re, subprocess, sys
+import base64, concurrent.futures, functools, json, math, os, pathlib, re, subprocess, sys
 import numpy as np
 from PIL import Image, ImageFont
 
@@ -16,8 +16,8 @@ TMP = ROOT / "docs/spike/V1-07-tmp"
 OVERVIEW = ROOT / "docs/spike/V1-07-cards-all.png"
 LOGOS = ROOT / "mockups/assets/logos"
 GROUP = ROOT / "mockups/assets/group"
-# SOURCE: same Chrome path as docs/spike/V0-06-cards.py
-CHROME = r"C:/Program Files/Google/Chrome/Application/chrome.exe"
+# SOURCE: same Chrome path as docs/spike/V0-06-cards.py; override with the CHROME environment variable.
+CHROME = os.environ.get("CHROME") or r"C:/Program Files/Google/Chrome/Application/chrome.exe"
 # SOURCE: OWNER-SUPPLIED badge screenshot, 2026-11-02 (sampled pixels).
 RED = "#D80008"
 # SOURCE: OWNER-SUPPLIED badge screenshot, 2026-11-02 (sampled pixels).
@@ -45,6 +45,7 @@ DARK_BAG = {"71010", "71000"}
 LOGO_W, LOGO_H, LOGO_TOP = 580, 150, 126
 # Logos narrower than 2:1 (DC, Looney Tunes, DFB, Team GB, LEGO Movie 2) would shrink below their v4 size in a
 # 150 px box: they get 190 px, as in mockup E (TALL ratio and height from build_mockups.py E_TALL_*).
+# SOURCE: mockups/V2-11/build_mockups.py E_TALL_* (owner-approved mockup E, 2026-11-09).
 TALL_RATIO, TALL_H = 2.0, 190
 # Badge drawn height matches A's 104 px logo row; drawn content fills about 95 % of the svg (measured on 71052.png).
 BADGE_H = round(104 / 0.95)
@@ -58,10 +59,9 @@ FIG_TARGET = 111
 # 0.5x crowd sheet against a 37 px marker (reference heads 34-40 px); factor = 35 / measured head px.
 FIG_ADJ = {"71002": 1.2, "71020": 1.3, "71022": 1.3, "71027": 1.2, "71029": 1.2,
            "71001": 1.12, "71008": 1.12, "71018": 1.12, "71000": 0.7}
+# SOURCE: OWNER-SUPPLIED (owner review 2026-11-14, factors set by eye against the owner's reference heads).
 # 71021 (was 1.12) dropped 2026-11-15: its shadow inflated the area; SHADOW_DROP now clears it.
 # 8833 (was 1.3), 8827 and 71025 (were 1.12) dropped 2026-11-14: owner "8833 too zoomed in"; 8827/71025 have new sources.
-# Horizontal crowd shift in card px (negative = left). OWNER-SUPPLIED 2026-11-14: "71038 move a little to the left".
-GROUP_DX = {}
 # Assets with empty margins around the crowd: trim to the crowd (alpha > 127) before the side crop, so the crop is
 # centred on the figures, not on the canvas. 71038 added 2026-11-15 (owner "71038 still not good!"): its crowd spans
 # x 232-1376 of 1400, so the canvas-centred crop cut the right end and the old GROUP_DX -30 shift (2026-11-14) left
@@ -70,6 +70,7 @@ TRIM_TO_CROWD = {"71038"}
 # Thin outline around the crowd so figures in the bag colour stay readable (owner 2026-11-14: orange on 8804, red on
 # 8831, black on 8833/71000, green on 71008, yellow on 71009 "take over" figure parts). Default chosen 2026-11-14
 # (docs/decisions.md): 2 px white; dark on light bags (luminance over OUTLINE_LIGHT) where white would vanish.
+# SOURCE: OWNER-SUPPLIED (owner review 2026-11-14).
 OUTLINE_PX, OUTLINE_LIGHT = 2, 200
 # Small sets keep every figure: Team GB has 9 (contain, no side crop).
 NO_ZOOM = {"8909"}
@@ -113,6 +114,15 @@ COLLECT_X, COLLECT_BASE = 171.5, 194.5
 BADGE_TILT = 13
 
 
+@functools.lru_cache(maxsize=None)
+def badge_font(size):
+    """Arial Black at size; stops with a clear message when the font is not installed."""
+    try:
+        return ImageFont.truetype("ariblk.ttf", size)
+    except OSError:
+        sys.exit("font ariblk.ttf (Arial Black) not found: install it, the badge count is measured with it")
+
+
 def count_fit(count):
     """Squeeze and centre x for the count. The owner laid out 12, whose "1" foot sits right of the checkbox. A count
     that starts with another digit (9, 20, 22) has its foot at the bottom left, under the checkbox: keep the right
@@ -120,7 +130,7 @@ def count_fit(count):
     it in that space."""
     if str(count)[0] == "1":
         return 0.66, COUNT_X
-    font = ImageFont.truetype("ariblk.ttf", COUNT_SIZE)
+    font = badge_font(COUNT_SIZE)
     l, _, r, _ = font.getbbox("12")
     right = COUNT_X + 0.66 * (r - l) / 2                      # right edge of 12, badge units
     left = CHECK_X + 24 + 4
@@ -163,6 +173,7 @@ def badge(number, count):
 # 2026-11-14: "71037 71038 71039 71045 71046 71047 all have shadow!". Measured 2026-11-14: 5-10 % of their pixels are
 # semi-transparent and grey (references 71009/71051: 1 %). 71012 and 71021 added 2026-11-15 (owner "not good"; 9 % and 15 % grey).
 SHADOW_DROP = {"71012", "71021", "71037", "71038", "71039", "71045", "71046", "71047"}
+# SOURCE: OWNER-SUPPLIED (owner review 2026-11-14; thresholds tuned against the measured grey share).
 SHADOW_ALPHA, SHADOW_SAT = 200, 30
 
 
@@ -178,14 +189,24 @@ def drop_shadow(im):
 def group_fit(sid, count):
     """Scale the crowd to FIG_TARGET and crop its sides to the card width at the emptiest columns.
     Returns (image, drawn width, drawn height, sides cut)."""
-    im = Image.open(GROUP / f"{sid}.png").convert("RGBA")
+    src = GROUP / f"{sid}.png"
+    if not src.exists():
+        sys.exit(f"{sid}: crowd image missing: {src} (run scripts/prep_group.py {sid})")
+    if not count or count < 1:
+        sys.exit(f"{sid}: figureCount is {count!r} in catalog.json, need a positive number")
+    im = Image.open(src).convert("RGBA")
     if sid in SHADOW_DROP:
         im = drop_shadow(im)
     if sid in TRIM_TO_CROWD:
-        im = im.crop(im.split()[-1].point(lambda v: 255 if v > 127 else 0).getbbox())
+        box = im.split()[-1].point(lambda v: 255 if v > 127 else 0).getbbox()
+        if box is None:
+            sys.exit(f"{sid}: crowd image has no opaque pixels, cannot trim to the crowd")
+        im = im.crop(box)
     w, h = im.size
     cut = False
     area = int((np.asarray(im)[:, :, 3] > 127).sum())
+    if area == 0:
+        sys.exit(f"{sid}: crowd image has no opaque pixels (alpha > 127), cannot scale it")
     scale = min(FIG_TARGET * FIG_ADJ.get(sid, 1) / math.sqrt(area / count), GROUP_H / h)
     if sid in NO_ZOOM:
         scale = min(scale, 600 / w)
@@ -195,7 +216,10 @@ def group_fit(sid, count):
         x0 = round((w - keep) / 2)
         win = round(0.08 * keep)
         im = drop_fragments(im.crop((gap_cut(a, x0, win), 0, gap_cut(a, w - x0, win), h)))
-        im = im.crop(im.split()[-1].getbbox())
+        box = im.split()[-1].getbbox()
+        if box is None:
+            sys.exit(f"{sid}: crowd is empty after the side crop and fragment drop")
+        im = im.crop(box)
         w, h = im.size
         # A cut crowd must bleed to both card edges, or the straight cut shows inside the card (owner 2026-11-14:
         # "the grouped image ends on both sides before the edges of the card"). The gap snap and fragment drop can
@@ -262,7 +286,7 @@ def page(s):
     crowd, gw, gh, cut = group_fit(sid, s["figureCount"])
     oc, o = ("#1a1a1a" if lum > OUTLINE_LIGHT else "#ffffff"), OUTLINE_PX
     crowd = outline(crowd.resize((gw, gh), Image.LANCZOS), oc, cut)
-    gx, gy = (600 - gw) // 2 + GROUP_DX.get(sid, 0) - o, GROUP_TOP + GROUP_H - gh - o
+    gx, gy = (600 - gw) // 2 - o, GROUP_TOP + GROUP_H - gh - o
     crowd_png = TMP / f"{sid}-group.png"
     crowd.save(crowd_png)
     if sid in LOGO:
@@ -297,12 +321,14 @@ body{{font-family:"Segoe UI",Arial,sans-serif}}
 
 def render(s):
     html = TMP / f"{s['id']}.html"
-    html.write_text(page(s), encoding="utf-8")
-    subprocess.run([CHROME, "--headless=new", "--disable-gpu", "--hide-scrollbars", "--force-device-scale-factor=1",
-                    f"--user-data-dir={TMP / ('chrome-' + s['id'])}", "--window-size=600,800",
-                    f"--screenshot={OUT / (s['id'] + '.png')}", html.as_uri()], check=True, capture_output=True, timeout=90)
-    html.unlink()
-    (TMP / f"{s['id']}-group.png").unlink(missing_ok=True)
+    try:
+        html.write_text(page(s), encoding="utf-8")
+        subprocess.run([CHROME, "--headless=new", "--disable-gpu", "--hide-scrollbars", "--force-device-scale-factor=1",
+                        f"--user-data-dir={TMP / ('chrome-' + s['id'])}", "--window-size=600,800",
+                        f"--screenshot={OUT / (s['id'] + '.png')}", html.as_uri()], check=True, capture_output=True, timeout=90)
+    finally:
+        html.unlink(missing_ok=True)
+        (TMP / f"{s['id']}-group.png").unlink(missing_ok=True)
     return s["id"]
 
 
@@ -321,6 +347,8 @@ def main():
     unknown = set(ids) - {s["id"] for s in series}
     if unknown:
         sys.exit(f"unknown series id: {sorted(unknown)}")
+    if not pathlib.Path(CHROME).exists():
+        sys.exit(f"Chrome not found at {CHROME}: install it or set the CHROME environment variable")
     TMP.mkdir(parents=True, exist_ok=True)
     with concurrent.futures.ThreadPoolExecutor(4) as pool:
         for sid in pool.map(render, [s for s in series if s["id"] in ids]):

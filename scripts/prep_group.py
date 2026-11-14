@@ -170,6 +170,8 @@ def frac_box(size, box):
 
 def prep(sid):
     name, pre, method, zoom = PREP[sid]
+    if not (SRC / name).exists():
+        sys.exit(f"{sid}: source image missing: {SRC / name} (see mockups/V2-11/crowd-candidates/SOURCES.md)")
     src = Image.open(SRC / name).convert("RGBA")
     for box in ERASE.get(sid, []):
         src.paste(ERASE_FILL + (255,), frac_box(src.size, box))
