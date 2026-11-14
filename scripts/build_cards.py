@@ -153,10 +153,28 @@ def badge(number, count):
 </g></svg>"""
 
 
+# Official transparent crowd PNGs that keep a soft grey/white floor shadow and glow in their alpha. Owner round 2,
+# 2026-11-14: "71037 71038 71039 71045 71046 71047 all have shadow!". Measured 2026-11-14: 5-10 % of their pixels are
+# semi-transparent and grey (references 71009/71051: 1 %).
+SHADOW_DROP = {"71037", "71038", "71039", "71045", "71046", "71047"}
+SHADOW_ALPHA, SHADOW_SAT = 200, 30
+
+
+def drop_shadow(im):
+    """Clear semi-transparent, unsaturated pixels (the shadow and glow); coloured translucent parts stay."""
+    a = np.asarray(im).copy()
+    rgb = a[:, :, :3].astype(int)
+    sat = rgb.max(2) - rgb.min(2)
+    a[:, :, 3] = np.where((a[:, :, 3] < SHADOW_ALPHA) & (sat < SHADOW_SAT), 0, a[:, :, 3])
+    return Image.fromarray(a)
+
+
 def group_fit(sid, count):
     """Scale the crowd to FIG_TARGET and crop its sides to the card width at the emptiest columns.
     Returns (image, drawn width, drawn height, sides cut)."""
     im = Image.open(GROUP / f"{sid}.png").convert("RGBA")
+    if sid in SHADOW_DROP:
+        im = drop_shadow(im)
     w, h = im.size
     cut = False
     area = int((np.asarray(im)[:, :, 3] > 127).sum())
