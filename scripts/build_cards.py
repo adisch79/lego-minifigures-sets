@@ -8,6 +8,8 @@ import base64, concurrent.futures, json, math, pathlib, re, subprocess, sys
 import numpy as np
 from PIL import Image, ImageFont
 
+from prep_group import drop_fragments, gap_cut
+
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 OUT = ROOT / "app/public/cards"
 TMP = ROOT / "docs/spike/V1-07-tmp"
@@ -47,6 +49,20 @@ TALL_RATIO, TALL_H = 2.0, 190
 # Badge drawn height matches A's 104 px logo row; drawn content fills about 95 % of the svg (measured on 71052.png).
 BADGE_H = round(104 / 0.95)
 GROUP_TOP, GROUP_H = 234, 476
+# Figure size on the card: crowd scale * sqrt(crowd alpha area / figure count), in card px. Every crowd is scaled to
+# this, then cropped at the sides to the card width (owner 2026-11-14: "some too big, some too small (far)").
+# SOURCE: mean of the owner's reference cards 71009 99.3, 71039 111.0, 71051 116.9, 71033 117.7 (measured 2026-11-14,
+# layout F + zoom A; references named by the owner 2026-11-09).
+FIG_TARGET = 111
+# Per-card factor on FIG_TARGET where props or overlap skew the area measure. Set 2026-11-14 by eye: head width on a
+# 0.5x crowd sheet against a 37 px marker (reference heads 34-40 px); factor = 35 / measured head px.
+FIG_ADJ = {"8833": 1.3, "71002": 1.2, "71020": 1.3, "71022": 1.3, "71027": 1.2, "71029": 1.2,
+           "71001": 1.12, "71008": 1.12, "71018": 1.12, "71021": 1.12, "71025": 1.12, "8827": 1.12, "71000": 0.7}
+# Small sets keep every figure: Team GB has 9 (contain, no side crop).
+NO_ZOOM = {"8909"}
+# Logo ink (opaque px as drawn) cap. Owner 2026-11-14: "some has too big logo". SOURCE: largest reference logo by ink
+# other than Marvel Studios (Muppets 71033: 35535 px; lockup 30311, Simpsons 33039), measured 2026-11-14.
+LOGO_INK_MAX = 35535
 DARK_HALO = "filter:drop-shadow(0 0 3px #000) drop-shadow(0 0 8px rgba(0,0,0,.8));"
 # Logos with white parts that vanish on their bag colour.
 HALO = {"71033", "71038", "8909"}
@@ -130,6 +146,38 @@ def badge(number, count):
 </g></svg>"""
 
 
+def group_fit(sid, count):
+    """Scale the crowd to FIG_TARGET and crop its sides to the card width at the emptiest columns.
+    Returns (image, drawn width, drawn height)."""
+    im = Image.open(GROUP / f"{sid}.png").convert("RGBA")
+    w, h = im.size
+    area = int((np.asarray(im)[:, :, 3] > 127).sum())
+    scale = min(FIG_TARGET * FIG_ADJ.get(sid, 1) / math.sqrt(area / count), GROUP_H / h)
+    if sid in NO_ZOOM:
+        scale = min(scale, 600 / w)
+    if w * scale > 600:
+        a = np.asarray(im)[:, :, 3]
+        keep = 600 / scale
+        x0 = round((w - keep) / 2)
+        win = round(0.08 * keep)
+        im = drop_fragments(im.crop((gap_cut(a, x0, win), 0, gap_cut(a, w - x0, win), h)))
+        im = im.crop(im.split()[-1].getbbox())
+        w, h = im.size
+        scale = min(scale, 600 / w)                         # the gap snap can widen the cut a little
+    return im, round(w * scale), round(h * scale)
+
+
+def logo_size(path):
+    """Drawn logo box: fit LOGO_W x (LOGO_H or TALL_H), then shrink so the ink stays under LOGO_INK_MAX."""
+    im = Image.open(path).convert("RGBA")
+    lw, lh = im.size
+    scale = min(LOGO_W / lw, (TALL_H if lw / lh < TALL_RATIO else LOGO_H) / lh)
+    ink = (np.asarray(im)[:, :, 3] > 127).sum() * scale * scale
+    if ink > LOGO_INK_MAX:
+        scale *= math.sqrt(LOGO_INK_MAX / ink)
+    return round(lw * scale), round(lh * scale)
+
+
 def series_number(s):
     """Number on the frame: catalog seriesNo, or Series N at the end of a licensed name."""
     if s.get("seriesNo"):
@@ -145,8 +193,11 @@ def page(s):
     ink = "#111" if lum > 150 else "#fff"
     lockup = uri(LOGOS / "lego-minifigures-lockup.png")
     logo = LOGOS / (LOGO[sid] if sid in LOGO else "lego-minifigures-lockup.png")
-    lw, lh = Image.open(logo).size
-    size = f"max-height:{TALL_H if lw / lh < TALL_RATIO else LOGO_H}px;max-width:{LOGO_W}px"
+    lw, lh = logo_size(logo)
+    size = f"width:{lw}px;height:{lh}px"
+    crowd, gw, gh = group_fit(sid, s["figureCount"])
+    crowd_png = TMP / f"{sid}-group.png"
+    crowd.save(crowd_png)
     if sid in LOGO:
         halo = DARK_HALO if sid in HALO else ""
         theme = f'<img src="{uri(LOGOS / LOGO[sid])}" style="{halo}{size}">'
@@ -166,14 +217,14 @@ body{{font-family:"Segoe UI",Arial,sans-serif}}
 .badge{{position:absolute;right:14px;top:10px}}
 .badge text{{font-family:'Arial Black',Arial,sans-serif;font-weight:900}}
 .theme{{position:absolute;left:0;right:0;top:{LOGO_TOP}px;text-align:center;line-height:0;z-index:2}}
-.group{{position:absolute;left:0;top:{GROUP_TOP}px;width:600px;height:{GROUP_H}px;object-fit:contain;object-position:center bottom}}
+.group{{position:absolute;left:{(600 - gw) // 2}px;top:{GROUP_TOP + GROUP_H - gh}px;width:{gw}px;height:{gh}px}}
 .band{{position:absolute;left:0;right:0;bottom:0;height:80px;background:#0b0b0b;display:flex;align-items:center;padding:0 30px}}
 .lockup{{width:300px}} .word{{color:#fff;font-family:"Arial Black",Arial,sans-serif;font-size:20px;letter-spacing:.1em}}
 </style><div class="card">
 <div class="meta">{age}<div class="num">{sid}</div></div>
 {svg}
 <div class="theme">{theme}</div>
-<img class="group" src="{uri(GROUP / (sid + '.png'))}">
+<img class="group" src="{uri(crowd_png)}">
 <div class="band">{band}</div></div>"""
 
 
@@ -184,6 +235,7 @@ def render(s):
                     f"--user-data-dir={TMP / ('chrome-' + s['id'])}", "--window-size=600,800",
                     f"--screenshot={OUT / (s['id'] + '.png')}", html.as_uri()], check=True, capture_output=True, timeout=90)
     html.unlink()
+    (TMP / f"{s['id']}-group.png").unlink(missing_ok=True)
     return s["id"]
 
 

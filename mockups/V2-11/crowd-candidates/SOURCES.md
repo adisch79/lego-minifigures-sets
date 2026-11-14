@@ -21,3 +21,9 @@ Hunt 3 (2026-11-09): 8684 and 71008 none found (Brickset 8684-17 and 71008-17 ar
 Used for cards 2026-11-09 by scripts/prep_group.py: 8683-2, 8803-1, 8805-1, 8831-1, 8833-1, 71000-2, 8909-1, 71002-1, 71007-1, 71017-1 (top crowd), 71023-1 (watermark cropped), 71031-0.
 - 8684-1.jpg (690x480) — PAGE: https://lego.razfill.ru/all-lego/lego-8684-minifigures-series-2 SOURCE: https://images.brickset.com/sets/images/8684-18.jpg — official box-back art, true crowd of 16 on blue "?" background; Series 2 badge erased, blue keyed out (prep_group.py method "blue"). Hunt 5 (2026-11-11, Bing Images): 71008 none found (Brickset 71008-17 stand grid, eBay 5x3 grid on white).
 - 71008-1.png (1000x460) — PAGE: https://brickipedia.fandom.com/wiki/71008_Minifigures_Series_13 (owner pointer 2026-11-14) SOURCE: https://static.wikia.nocookie.net/lego/images/b/b5/Series_13.png — official render, true crowd of 16; PNG alpha fully opaque (white bg), cut with method "shadow".
+Hunt 6 (2026-11-14, Brickipedia set pages via the MediaWiki API; owner pointer). Used:
+- 8804-1.jpg (3000x2000) — PAGE: https://brickipedia.fandom.com/wiki/8804_Minifigures_Series_4 SOURCE: https://static.wikia.nocookie.net/lego/images/8/8f/8804.jpg — official crowd, white bg, method "shadow".
+- 8805-2.jpg (3500x2000) — PAGE: https://brickipedia.fandom.com/wiki/8805_Minifigures_Series_5 SOURCE: https://static.wikia.nocookie.net/lego/images/a/a9/Lego-8805-Minifiguren-Serie-5.jpg — official crowd, replaces the 700 px 8805-1 (white gaps).
+- 8831-2.jpg (3000x2000) — PAGE: https://brickipedia.fandom.com/wiki/8831_Minifigures_Series_7 SOURCE: https://static.wikia.nocookie.net/lego/images/7/76/Series7Pic.jpg — official crowd, replaces 8831-1.
+- 8827-0.png — previous card image (transparent, white floor kept), floor removed with method "shadow".
+Rejected: 8827 Series_6.jpg and 8833 8833.png/alt (figures on stands), 71007 (no crowd on the page).

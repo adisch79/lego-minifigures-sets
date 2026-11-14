@@ -23,15 +23,19 @@ OUT = ROOT / "mockups/assets/group"
 PREP = {
     "8683": ("8683-2.jpg", None, "white", None),
     "8803": ("8803-1.png", None, "shadow", None),
-    "8805": ("8805-1.jpg", None, "shadow", None),
-    "8831": ("8831-1.jpg", None, "white", None),
+    "8804": ("8804-1.jpg", None, "shadow", None),
+    "8805": ("8805-2.jpg", None, "shadow", None),
+    # 8827: the previous card image (transparent, but with the white studio floor kept): composited on white, then
+    # the floor is removed like a studio shadow.
+    "8827": ("8827-0.png", None, "shadow", None),
+    "8831": ("8831-2.jpg", None, "shadow", None),
     "8833": ("8833-1.png", None, "shadow", None),
     "71000": ("71000-2.jpg", None, "white", None),
     "8909": ("8909-1.jpg", None, "white", None),
     "71002": ("71002-1.png", None, "grabcut", None),
     # 8684: official box-back art (blue "?" background); crop drops the bottom logo row and the "16" badge.
     "8684": ("8684-1.jpg", (0.06, 0.27, 0.93, 0.74), "blue", None),
-    "71007": ("71007-1.jpg", None, "white", None),
+    "71007": ("71007-1.jpg", None, "shadow", None),
     # 71008: official render from Brickipedia (owner pointer 2026-11-14); the PNG alpha is fully opaque, white bg.
     "71008": ("71008-1.png", None, "shadow", None),
     "71017": ("71017-1.png", (0, 0.08, 1, 0.455), "white", None),
@@ -136,11 +140,8 @@ def grabcut_mask(rgb, border=0.03, iterations=6):
     return ndimage.binary_opening((mask == cv2.GC_FGD) | (mask == cv2.GC_PR_FGD), iterations=1)
 
 
-# Crowds wider than this are centre-cropped to it, so a big set shows part of the crowd with larger figures, as the
-# owner's references do (71009 is 1.64, 71051 1.62). SOURCE: OWNER-SUPPLIED rule 2026-11-09, ratio by eye.
-ZOOM_ASPECT = 1.7
-# Small sets keep every figure: Team GB has 9.
-NO_ZOOM = {"8909"}
+# The zoom (side crop) moved to scripts/build_cards.py group_fit() on 2026-11-14: it now follows a figure-size target
+# measured on the owner's reference cards instead of a fixed aspect ratio. This script writes the full cut-out.
 
 
 def drop_fragments(im, share=0.01):
@@ -170,7 +171,8 @@ def prep(sid):
         src.paste(ERASE_FILL + (255,), frac_box(src.size, box))
     if pre:
         src = src.crop(frac_box(src.size, pre))
-    im = src.convert("RGB")
+    # Transparent sources (8827-0) are put on white so their background reads as white; opaque ones are unchanged.
+    im = Image.alpha_composite(Image.new("RGBA", src.size, (255, 255, 255, 255)), src).convert("RGB")
     rgb = np.asarray(im)
     if method == "alpha":
         fg = np.asarray(src)[:, :, 3] > 127
@@ -190,14 +192,6 @@ def prep(sid):
     out = out.crop(Image.fromarray((fg * 255).astype(np.uint8)).getbbox())
     if zoom:
         out = out.crop(frac_box(out.size, zoom))
-        out = out.crop(out.split()[-1].getbbox())
-    w, h = out.size
-    if w / h > ZOOM_ASPECT and sid not in NO_ZOOM:
-        a = np.asarray(out.split()[-1])
-        x0 = round((w - ZOOM_ASPECT * h) / 2)
-        win = round(0.08 * w)
-        out = out.crop((gap_cut(a, x0, win), 0, gap_cut(a, w - x0, win), h))
-        out = drop_fragments(out)
         out = out.crop(out.split()[-1].getbbox())
     out.save(OUT / f"{sid}.png", optimize=True)
     return sid, out.size
