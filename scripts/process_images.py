@@ -93,7 +93,7 @@ FRONT_MAX_H = 480  # same height as the BrickLink cut-outs this replaces
 def front_source(series_id, fig_no, originals_dir):
     """Path of the front photo to use for a figure, or None to keep the current pipeline."""
     p = Path(originals_dir) / series_id / f"{series_id}-{fig_no}.fig.jpg"
-    return p if p.exists() else None
+    return p if p.is_file() else None
 
 
 def prepare_front(src, max_h=FRONT_MAX_H, method="model"):

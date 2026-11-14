@@ -1,4 +1,5 @@
 """Tests for the front-photo source switch (V2-13). The segmentation model is never loaded."""
+import shutil
 import sys
 import tempfile
 import unittest
@@ -16,6 +17,7 @@ from process_images import front_source, prepare_front  # noqa: E402
 class FrontSourceTest(unittest.TestCase):
     def setUp(self):
         self.tmp = Path(tempfile.mkdtemp())
+        self.addCleanup(shutil.rmtree, self.tmp, True)
         for sid in ("71052", "71000"):
             d = self.tmp / sid
             d.mkdir()
@@ -51,6 +53,27 @@ class FrontSourceTest(unittest.TestCase):
         self.assertEqual(out.mode, "RGBA")
         self.assertEqual(out.size, (round(200 * 480 / 500), 480))   # tight crop, scaled to max_h
         self.assertGreater(np.asarray(out)[:, :, 3].min(), 250)
+
+    def test_model_method_all_zero_alpha_raises(self):
+        import seg_model
+        with mock.patch.object(seg_model, "model_alpha",
+                               lambda rgb: np.zeros(rgb.shape[:2], np.float32)):
+            with self.assertRaises(ValueError):
+                prepare_front(front_source("71000", 1, self.tmp), method="model")
+
+    def test_process_file_writes_webp_with_mocked_alpha(self):
+        def fake_alpha(rgb):
+            a = np.zeros(rgb.shape[:2], np.float32)
+            a[100:600, 250:450] = 1.0
+            return a
+
+        import seg_model
+        dest = self.tmp / "out" / "71000-1.webp"
+        with mock.patch.object(seg_model, "model_alpha", fake_alpha):
+            process_images.process_file(front_source("71000", 1, self.tmp), dest, "figure_front")
+        self.assertTrue(dest.is_file())
+        with Image.open(dest) as im:
+            self.assertEqual(im.size[1], 480)
 
     def test_process_file_default_is_model(self):
         calls = []
