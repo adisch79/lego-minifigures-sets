@@ -87,6 +87,13 @@ describe('requestLink', () => {
     signInWithOtp.mockResolvedValue({ error: { status: 400, code: 'over_email_send_rate_limit', message: 'x' } })
     expect(await a.requestLink('a@b.co')).toEqual({ ok: false, reason: 'rate' })
   })
+  it('maps captcha errors to captcha', async () => {
+    const a = await load(true)
+    signInWithOtp.mockResolvedValue({ error: { status: 400, code: 'captcha_failed', message: 'x' } })
+    expect(await a.requestLink('a@b.co', 't')).toEqual({ ok: false, reason: 'captcha' })
+    signInWithOtp.mockResolvedValue({ error: { status: 400, message: 'captcha protection: request disallowed' } })
+    expect(await a.requestLink('a@b.co', 't')).toEqual({ ok: false, reason: 'captcha' })
+  })
   it('redirect drops query and hash', async () => {
     const a = await load(true)
     window.history.replaceState(null, '', '/app/?q=x#series/71019')

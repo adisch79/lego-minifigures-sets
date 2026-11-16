@@ -87,6 +87,14 @@ describe('parsePeople', () => {
     })
     expect(out[1]).toMatchObject({ userId: 'u2', displayName: null, isAdmin: false, lastMarkAt: null })
   })
+  it('drops rows without an email', () => {
+    const out = parsePeople([
+      { user_id: 'u1', email: null, signed_up_at: 'x' },
+      { user_id: 'u2', signed_up_at: 'x' },
+      { user_id: 'u3', email: 'c@x.com', signed_up_at: 'x' },
+    ])
+    expect(out.map((p) => p.userId)).toEqual(['u3'])
+  })
   it('treats null and undefined as empty', () => {
     expect(parsePeople(null)).toEqual([])
     expect(parsePeople(undefined)).toEqual([])
@@ -95,7 +103,7 @@ describe('parsePeople', () => {
     expect(() => parsePeople({})).toThrow(/expected array/)
     expect(() => parsePeople([5])).toThrow(/admin_people_list\[0\]: expected object/)
     expect(() => parsePeople([[]])).toThrow(/expected object/)
-    expect(() => parsePeople([{ user_id: 'u', signed_up_at: 'x' }])).toThrow(/email/)
+    expect(() => parsePeople([{ email: 5, user_id: 'u', signed_up_at: 'x' }])).toThrow(/email/)
     expect(() => parsePeople([{ email: 'a', signed_up_at: 'x' }])).toThrow(/user_id/)
     expect(() => parsePeople([{ email: 'a', user_id: 'u' }])).toThrow(/signed_up_at/)
     expect(() => parsePeople([{ email: 'a', user_id: 'u', signed_up_at: 'x', is_admin: 'yes' }])).toThrow(/is_admin/)

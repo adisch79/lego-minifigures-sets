@@ -2,7 +2,7 @@
 -- Drops the allowlist gate on auth.users so any address can sign up; adds admin_people_list()
 -- (all users, no allowlist needed) and rewrites admin_wanted_list without the allowlist join.
 -- Kept on purpose: private.enforce_allowlist(), public.allowlist, block_email_change trigger,
--- public.admin_allowlist_list() (the app still calls it until part 2).
+-- public.admin_allowlist_list() (the app no longer calls it since part 2 shipped; kept only for rollback).
 -- Apply by pasting into the SQL Editor (never db push). Contains no emails, ids or secrets.
 --
 -- WARNING: Telegram alerts need a global cap before they are re-enabled (see the re-enable block
@@ -30,7 +30,8 @@
 drop trigger if exists enforce_allowlist_on_insert on auth.users;
 drop trigger if exists enforce_allowlist_on_email_update on auth.users;
 
--- All people with an account, newest sign-up first.
+-- All people with an account, newest sign-up first (auth.users.created_at; a profile row may be missing).
+-- Capped at 5000 rows like admin_wanted_list, no truncated flag.
 create function public.admin_people_list()
 returns table (
   user_id uuid, email text, display_name text, signed_up_at timestamptz,
@@ -44,13 +45,14 @@ begin
     raise exception 'not an admin' using errcode = '42501';
   end if;
   return query
-    select u.id, u.email::text, p.display_name, p.created_at,
+    select u.id, u.email::text, p.display_name, u.created_at,
            (ad.user_id is not null),
            (select max(m.updated_at) from public.marks m where m.user_id = u.id)
     from auth.users u
     left join public.profiles p on p.user_id = u.id
     left join public.admins ad on ad.user_id = u.id
-    order by p.created_at desc nulls last, u.email;
+    order by u.created_at desc, u.email
+    limit 5000;
 end;
 $$;
 

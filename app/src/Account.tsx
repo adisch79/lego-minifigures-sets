@@ -124,10 +124,11 @@ function Chevron({ up }: { up: boolean }) {
   )
 }
 
-type Failure = 'invalid' | 'rate' | 'network'
+type Failure = 'invalid' | 'rate' | 'network' | 'captcha'
 
 const LIVE_TEXT: Record<Failure | 'sent', string> = {
   sent: 'Check your email for the sign-in link and code.',
+  captcha: 'Verification failed, try again.',
   invalid: 'That does not look like an email address.',
   rate: 'Too many requests. Try again in an hour.',
   network: 'Could not reach the server. Check your connection and try again.',
@@ -230,6 +231,16 @@ function SignInPanel({ onAnnounce }: { onAnnounce: (text: string) => void }) {
           </span>
           <span>
             <b>Could not reach the server.</b>Check your connection and try again.
+          </span>
+        </div>
+      )}
+      {failure === 'captcha' && (
+        <div className="callout red">
+          <span className="dot">
+            <WarnIcon />
+          </span>
+          <span>
+            <b>Verification failed, try again.</b>
           </span>
         </div>
       )}

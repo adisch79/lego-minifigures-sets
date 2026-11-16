@@ -1,7 +1,7 @@
 // Cloudflare Turnstile widget, explicit render, no npm package.
 // SOURCE: https://developers.cloudflare.com/turnstile/get-started/client-side-rendering/
 // Only active when VITE_TURNSTILE_SITE_KEY is set; otherwise the sign-in form has no widget and no token.
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 export const TURNSTILE_SCRIPT = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit'
 
@@ -63,6 +63,9 @@ export function Turnstile({
   resetKey: number
 }) {
   const hostRef = useRef<HTMLDivElement>(null)
+  // failed: script did not load or the widget reported an error; attempt remounts the widget on Retry.
+  const [failed, setFailed] = useState(false)
+  const [attempt, setAttempt] = useState(0)
   const onTokenRef = useRef(onToken)
   useEffect(() => {
     onTokenRef.current = onToken
@@ -81,15 +84,38 @@ export function Turnstile({
           sitekey: siteKey,
           callback: (token) => onTokenRef.current(token),
           'expired-callback': () => onTokenRef.current(null),
-          'error-callback': () => onTokenRef.current(null),
+          'error-callback': () => {
+            onTokenRef.current(null)
+            if (active) setFailed(true)
+          },
         })
       })
-      .catch(() => onTokenRef.current(null))
+      .catch(() => {
+        onTokenRef.current(null)
+        if (active) setFailed(true)
+      })
     return () => {
       active = false
       if (api && widgetId !== null) api.remove(widgetId)
     }
-  }, [siteKey, resetKey])
+  }, [siteKey, resetKey, attempt])
 
+  if (failed) {
+    return (
+      <p className="msg" role="alert">
+        Verification could not load.{' '}
+        <button
+          type="button"
+          className="linkish"
+          onClick={() => {
+            setFailed(false)
+            setAttempt((n) => n + 1)
+          }}
+        >
+          Retry
+        </button>
+      </p>
+    )
+  }
   return <div ref={hostRef} className="turnstile" />
 }

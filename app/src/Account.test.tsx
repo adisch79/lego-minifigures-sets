@@ -127,6 +127,13 @@ describe('Account', () => {
     expect(screen.getByRole('heading', { name: 'Check your email' })).toBeTruthy()
   })
 
+  it('shows a verification message after a captcha failure', async () => {
+    renderAccount({ status: 'signed-out' })
+    await submitWith('fan@example.com', { ok: false, reason: 'captcha' })
+    expect(document.querySelector('.callout.red')?.textContent).toBe('Verification failed, try again.')
+    expect(screen.getByRole('status').textContent).toBe('Verification failed, try again.')
+  })
+
   it('closes on Escape and returns focus to the pill', () => {
     renderAccount({ status: 'signed-out' })
     openPopover()

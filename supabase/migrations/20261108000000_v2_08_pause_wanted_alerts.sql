@@ -15,6 +15,8 @@
 --     after update of state on public.marks
 --     for each row when (new.state = 'wanted' and old.state is distinct from new.state)
 --     execute function private.on_wanted_mark();
+--
+-- Do not re-enable before a global cap exists (open sign-up, V2-09).
 
 drop trigger if exists marks_wanted_alert_insert on public.marks;
 drop trigger if exists marks_wanted_alert_update on public.marks;

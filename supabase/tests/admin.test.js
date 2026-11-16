@@ -74,8 +74,10 @@ test('admin_people_list: all users without allowlist, admin flag, last mark, ord
   await q("update public.profiles set display_name='Ann' where user_id=$1", [A]);
   await mark(A, 'series', '71053', 'owned');
   await setTimes("update public.marks set updated_at = '2026-01-02T00:00:00Z'");
-  await q("update public.profiles set created_at = '2026-01-01T00:00:00Z' where user_id=$1", [A]);
-  await q("update public.profiles set created_at = '2026-02-01T00:00:00Z' where user_id=$1", [B]);
+  // Sign-up time and order come from auth.users.created_at, not profiles.created_at.
+  await q("update public.profiles set created_at = '2026-03-01T00:00:00Z' where user_id=$1", [A]);
+  await q("update auth.users set created_at = '2026-01-01T00:00:00Z' where id=$1", [A]);
+  await q("update auth.users set created_at = '2026-02-01T00:00:00Z' where id=$1", [B]);
   await q("delete from public.allowlist"); // no allowlist needed
   const r = (await asAdmin(() => q('select * from public.admin_people_list()'))).rows;
   assert.equal(r.length, 4); // includes GONE, who is off the allowlist
@@ -84,7 +86,7 @@ test('admin_people_list: all users without allowlist, admin flag, last mark, ord
   assert.equal(by[A].is_admin, false);
   assert.equal(by[A].email, 'a@example.invalid');
   assert.equal(by[A].display_name, 'Ann');
-  assert.ok(by[A].signed_up_at);
+  assert.equal(by[A].signed_up_at.toISOString(), '2026-01-01T00:00:00.000Z');
   assert.equal(by[A].last_mark_at.toISOString(), '2026-01-02T00:00:00.000Z');
   assert.equal(by[B].email, 'B@Example.invalid');
   assert.equal(by[B].last_mark_at, null);

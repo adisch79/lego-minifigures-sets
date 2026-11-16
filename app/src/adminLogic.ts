@@ -111,18 +111,23 @@ function rows(data: unknown, name: string): unknown[] {
 }
 
 export function parsePeople(data: unknown): Person[] {
-  return rows(data, 'admin_people_list').map((v, i) => {
+  const out: Person[] = []
+  rows(data, 'admin_people_list').forEach((v, i) => {
     const path = `admin_people_list[${i}]`
     const o = rec(v, path)
-    return {
-      email: text(o, 'email', path),
+    // auth.users.email can be null (e.g. phone or anonymous users); the list is people we can mail, so skip them.
+    const email = maybeText(o, 'email', path)
+    if (email === null) return
+    out.push({
+      email,
       userId: text(o, 'user_id', path),
       displayName: maybeText(o, 'display_name', path),
       signedUpAt: text(o, 'signed_up_at', path),
       isAdmin: o.is_admin === null || o.is_admin === undefined ? false : flag(o, 'is_admin', path),
       lastMarkAt: maybeText(o, 'last_mark_at', path),
-    }
+    })
   })
+  return out
 }
 
 export function parseWanted(data: unknown): WantedRow[] {

@@ -11,7 +11,7 @@ const TOKEN_PARAMS = ['access_token', 'refresh_token', 'token_type']
 
 export type LinkResult =
   | { ok: true }
-  | { ok: false; reason: 'rate' | 'invalid' | 'network' }
+  | { ok: false; reason: 'rate' | 'invalid' | 'network' | 'captcha' }
 
 export type AuthState = {
   status: 'disabled' | 'loading' | 'signed-out' | 'signed-in'
@@ -75,8 +75,9 @@ export const supabase: SupabaseClient | null = authEnabled
   : null
 
 const EMAIL_SHAPE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-// Same answer for every address (anti-enumeration). signup_disabled stays for the rollback path where
-// the Supabase sign-up flag is off again. email_not_confirmed is included so an unconfirmed account
+// Same answer for every address (anti-enumeration). signup_disabled stays ok:true on purpose: with the
+// Supabase sign-up flag off, an unknown address must look like a known one; the release checklist
+// covers turning sign-up on. email_not_confirmed is included so an unconfirmed account
 // cannot be told apart from a new one.
 const SAME_ANSWER_CODES = ['signup_disabled', 'user_not_found', 'otp_disabled', 'not_allowed', 'email_not_confirmed']
 const RATE_CODES = ['over_email_send_rate_limit', 'over_request_rate_limit']
@@ -103,6 +104,7 @@ export async function requestLink(email: string, captchaToken?: string): Promise
       return { ok: false, reason: 'rate' }
     }
     const msg = (error.message ?? '').toLowerCase()
+    if (error.code === 'captcha_failed' || msg.includes('captcha')) return { ok: false, reason: 'captcha' }
     if (
       (error.code && SAME_ANSWER_CODES.includes(error.code)) ||
       msg === 'signups not allowed for otp' ||

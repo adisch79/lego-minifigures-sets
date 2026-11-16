@@ -3,6 +3,7 @@ import react from '@vitejs/plugin-react'
 import { defineConfig, loadEnv, type Plugin } from 'vite'
 
 // Injects a CSP meta tag at build time. connect-src gets the Supabase origin only when configured.
+// public/_headers always allows challenges.cloudflare.com, so the header CSP and this meta CSP intersect.
 // Turnstile hosts are added only when a site key is set. SOURCE: https://developers.cloudflare.com/turnstile/reference/content-security-policy/
 function cspPlugin(supabaseUrl: string | undefined, turnstileKey?: string): Plugin {
   const ts = turnstileKey ? ' https://challenges.cloudflare.com' : ''
