@@ -3,7 +3,9 @@ import react from '@vitejs/plugin-react'
 import { defineConfig, loadEnv, type Plugin } from 'vite'
 
 // Injects a CSP meta tag at build time. connect-src gets the Supabase origin only when configured.
-function cspPlugin(supabaseUrl: string | undefined): Plugin {
+// Turnstile hosts are added only when a site key is set. SOURCE: https://developers.cloudflare.com/turnstile/reference/content-security-policy/
+function cspPlugin(supabaseUrl: string | undefined, turnstileKey?: string): Plugin {
+  const ts = turnstileKey ? ' https://challenges.cloudflare.com' : ''
   const origin = (() => {
     try {
       return supabaseUrl ? new URL(supabaseUrl).origin : ''
@@ -13,10 +15,11 @@ function cspPlugin(supabaseUrl: string | undefined): Plugin {
   })()
   const csp = [
     "default-src 'self'",
-    "script-src 'self'",
+    `script-src 'self'${ts}`,
+    ...(ts ? [`frame-src${ts}`] : []),
     "style-src 'self' 'unsafe-inline'",
     "img-src 'self' data:",
-    `connect-src 'self'${origin ? ` ${origin}` : ''}`,
+    `connect-src 'self'${origin ? ` ${origin}` : ''}${ts}`,
     "base-uri 'self'",
     "form-action 'self'",
     "object-src 'none'",
@@ -39,7 +42,7 @@ export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), 'VITE_')
   return {
     base: './',
-    plugins: [react(), cspPlugin(env.VITE_SUPABASE_URL)],
+    plugins: [react(), cspPlugin(env.VITE_SUPABASE_URL, env.VITE_TURNSTILE_SITE_KEY)],
     test: {
       environment: 'jsdom',
     },

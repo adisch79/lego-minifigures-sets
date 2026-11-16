@@ -16,6 +16,7 @@ import {
 import { requestLink, signOut, useAuth, type AuthState } from './auth'
 import { useIsAdmin, type AdminGate } from './adminApi'
 import { DEMO, DEMO_AUTH } from './demo'
+import { Turnstile, turnstileSiteKey } from './Turnstile'
 
 type AccountUi = {
   auth: AuthState
@@ -126,7 +127,7 @@ function Chevron({ up }: { up: boolean }) {
 type Failure = 'invalid' | 'rate' | 'network'
 
 const LIVE_TEXT: Record<Failure | 'sent', string> = {
-  sent: 'Check your email. If this address is invited, a sign-in link is on its way.',
+  sent: 'Check your email for the sign-in link and code.',
   invalid: 'That does not look like an email address.',
   rate: 'Too many requests. Try again in an hour.',
   network: 'Could not reach the server. Check your connection and try again.',
@@ -137,6 +138,10 @@ function SignInPanel({ onAnnounce }: { onAnnounce: (text: string) => void }) {
   const [email, setEmail] = useState('')
   const [phase, setPhase] = useState<'form' | 'sending' | 'sent'>('form')
   const [failure, setFailure] = useState<Failure | null>(null)
+  // Turnstile: token is null until solved; the widget remounts (resetKey) after each send.
+  const siteKey = turnstileSiteKey()
+  const [token, setToken] = useState<string | null>(null)
+  const [resetKey, setResetKey] = useState(0)
   const inputRef = useRef<HTMLInputElement>(null)
   const sentRef = useRef<HTMLHeadingElement>(null)
   const id = useId()
@@ -151,8 +156,14 @@ function SignInPanel({ onAnnounce }: { onAnnounce: (text: string) => void }) {
   const submit = async (e: FormEvent) => {
     e.preventDefault()
     if (phase === 'sending' || failure === 'rate') return
+    if (siteKey && !token) return
     setPhase('sending')
-    const result = await requestLink(email)
+    const result = await requestLink(email, siteKey ? (token ?? undefined) : undefined)
+    // A Turnstile token works once, so ask for a fresh one whatever the result.
+    if (siteKey) {
+      setToken(null)
+      setResetKey((k) => k + 1)
+    }
     if (result.ok) {
       setFailure(null)
       setPhase('sent')
@@ -173,7 +184,7 @@ function SignInPanel({ onAnnounce }: { onAnnounce: (text: string) => void }) {
         <h3 ref={sentRef} tabIndex={-1}>
           Check your email
         </h3>
-        <p>If this address is invited, a sign-in link is on its way. Open it in this browser.</p>
+        <p>Check your email for the sign-in link and code. Open the link in this browser.</p>
         <button
           type="button"
           className="linkish"
@@ -249,7 +260,8 @@ function SignInPanel({ onAnnounce }: { onAnnounce: (text: string) => void }) {
           That does not look like an email address.
         </p>
       )}
-      <button type="submit" className="send" disabled={sending || failure === 'rate'}>
+      {siteKey && <Turnstile siteKey={siteKey} onToken={setToken} resetKey={resetKey} />}
+      <button type="submit" className="send" disabled={sending || failure === 'rate' || (!!siteKey && !token)}>
         {label}
       </button>
     </form>
@@ -278,7 +290,7 @@ function SignedInPanel({ email, onDone }: { email: string; onDone: () => void })
           <AdminIcon />
           <span>
             <b>Admin</b>
-            <small>Wanted wall and allowlist</small>
+            <small>Wanted wall and collectors</small>
           </span>
         </a>
       )}

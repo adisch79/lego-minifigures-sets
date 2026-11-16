@@ -6,10 +6,9 @@ import { readPeopleResult, type PeopleResult } from './adminLogic'
 
 type PersonRow = {
   email: string
-  added_at: string
-  user_id: string | null
+  user_id: string
   display_name: string | null
-  signed_in_at: string | null
+  signed_up_at: string
   is_admin: boolean
   last_mark_at: string | null
 }
@@ -36,12 +35,11 @@ let people: PersonRow[] = [
   ['collector3@example.com', 'Noa', '2026-11-04T16:00', '2026-11-05T19:26', false, '2026-11-06T16:03'],
   ['collector4@example.com', '', '2026-11-05T10:12', null, false, null],
   ['collector5@example.com', '', '2026-11-06T14:48', null, false, null],
-].map(([email, name, added, signed, admin, last], i) => ({
+].map(([email, name, , signed, admin, last], i) => ({
   email: email as string,
-  added_at: shift(added as string),
-  user_id: signed ? `u${i}` : null,
-  display_name: signed ? (name as string) || null : null,
-  signed_in_at: signed ? shift(signed as string) : null,
+  user_id: `u${i}`,
+  display_name: (name as string) || null,
+  signed_up_at: shift(signed ? (signed as string) : '2026-11-06T14:48'),
   is_admin: admin as boolean,
   last_mark_at: last ? shift(last as string) : null,
 }))
@@ -89,21 +87,12 @@ export async function demoLists(): Promise<{ people: unknown; wanted: unknown }>
 }
 
 /** Same answers as the admin-people Edge Function. fail@example.com always fails, to show the error. */
-export async function demoPeople(action: 'add' | 'remove', email: string): Promise<PeopleResult> {
+export async function demoPeople(email: string): Promise<PeopleResult> {
   await wait()
   if (email === 'fail@example.com') return readPeopleResult({ error: 'internal' })
-  if (action === 'add') {
-    if (!people.some((p) => p.email === email)) {
-      people = [
-        ...people,
-        { email, added_at: new Date().toISOString(), user_id: null, display_name: null, signed_in_at: null, is_admin: false, last_mark_at: null },
-      ]
-    }
-    return readPeopleResult({ ok: true })
-  }
   const target = people.find((p) => p.email === email)
   if (target?.is_admin) return readPeopleResult({ error: 'is_admin' })
   people = people.filter((p) => p.email !== email)
-  if (target?.user_id) wanted = wanted.filter((w) => w.user_id !== target.user_id)
+  if (target) wanted = wanted.filter((w) => w.user_id !== target.user_id)
   return readPeopleResult({ ok: true })
 }

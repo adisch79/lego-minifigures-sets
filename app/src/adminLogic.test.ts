@@ -5,7 +5,6 @@ import {
   initialOf,
   isTruncated,
   namesLine,
-  normaliseEmail,
   parsePeople,
   parseWanted,
   personLabel,
@@ -69,18 +68,24 @@ describe('parsePeople', () => {
   it('maps snake_case rows and defaults a null is_admin to false', () => {
     const out = parsePeople([
       {
-        email: 'a@x.com',
-        added_at: '2026-01-01T00:00:00Z',
         user_id: 'u1',
+        email: 'a@x.com',
         display_name: 'A',
-        signed_in_at: '2026-01-02T00:00:00Z',
+        signed_up_at: '2026-01-02T00:00:00Z',
         is_admin: true,
         last_mark_at: null,
       },
-      { email: 'b@x.com', added_at: '2026-01-03T00:00:00Z', is_admin: null },
+      { user_id: 'u2', email: 'b@x.com', signed_up_at: '2026-01-03T00:00:00Z', is_admin: null },
     ])
-    expect(out[0]).toMatchObject({ email: 'a@x.com', userId: 'u1', displayName: 'A', isAdmin: true, lastMarkAt: null })
-    expect(out[1]).toMatchObject({ userId: null, displayName: null, signedInAt: null, isAdmin: false })
+    expect(out[0]).toEqual({
+      email: 'a@x.com',
+      userId: 'u1',
+      displayName: 'A',
+      signedUpAt: '2026-01-02T00:00:00Z',
+      isAdmin: true,
+      lastMarkAt: null,
+    })
+    expect(out[1]).toMatchObject({ userId: 'u2', displayName: null, isAdmin: false, lastMarkAt: null })
   })
   it('treats null and undefined as empty', () => {
     expect(parsePeople(null)).toEqual([])
@@ -88,11 +93,13 @@ describe('parsePeople', () => {
   })
   it('rejects non-array, non-object rows and wrong field types', () => {
     expect(() => parsePeople({})).toThrow(/expected array/)
-    expect(() => parsePeople([5])).toThrow(/admin_allowlist_list\[0\]: expected object/)
+    expect(() => parsePeople([5])).toThrow(/admin_people_list\[0\]: expected object/)
     expect(() => parsePeople([[]])).toThrow(/expected object/)
-    expect(() => parsePeople([{ added_at: 'x' }])).toThrow(/email/)
-    expect(() => parsePeople([{ email: 'a', added_at: 'x', is_admin: 'yes' }])).toThrow(/is_admin/)
-    expect(() => parsePeople([{ email: 'a', added_at: 'x', user_id: 4 }])).toThrow(/user_id/)
+    expect(() => parsePeople([{ user_id: 'u', signed_up_at: 'x' }])).toThrow(/email/)
+    expect(() => parsePeople([{ email: 'a', signed_up_at: 'x' }])).toThrow(/user_id/)
+    expect(() => parsePeople([{ email: 'a', user_id: 'u' }])).toThrow(/signed_up_at/)
+    expect(() => parsePeople([{ email: 'a', user_id: 'u', signed_up_at: 'x', is_admin: 'yes' }])).toThrow(/is_admin/)
+    expect(() => parsePeople([{ email: 'a', user_id: 'u', signed_up_at: 'x', display_name: 4 }])).toThrow(/display_name/)
   })
 })
 
@@ -283,31 +290,33 @@ describe('wanted helpers', () => {
 })
 
 describe('people ordering and tones', () => {
-  const mk = (email: string, addedAt: string, userId: string | null): Person => ({
+  const mk = (email: string, signedUpAt: string, userId: string): Person => ({
     email,
-    addedAt,
     userId,
     displayName: null,
-    signedInAt: userId ? addedAt : null,
+    signedUpAt,
     isAdmin: false,
     lastMarkAt: null,
   })
   const people = [
     mk('c@x.com', '2026-01-03T00:00:00Z', 'u3'),
     mk('a@x.com', '2026-01-01T00:00:00Z', 'u1'),
-    mk('b@x.com', '2026-01-01T00:00:00Z', null),
+    mk('b@x.com', '2026-01-01T00:00:00Z', 'u2'),
     mk('d@x.com', '2026-01-04T00:00:00Z', 'u4'),
   ]
-  it('sorts by invite time then email without mutating', () => {
-    expect(sortPeople(people).map((p) => p.email)).toEqual(['a@x.com', 'b@x.com', 'c@x.com', 'd@x.com'])
+  it('sorts newest sign-up first, then by email, without mutating', () => {
+    expect(sortPeople(people).map((p) => p.email)).toEqual(['d@x.com', 'c@x.com', 'a@x.com', 'b@x.com'])
     expect(people[0].email).toBe('c@x.com')
   })
-  it('assigns tones by position, skipping people without an account', () => {
+  it('assigns tones by sign-up order, oldest first, so a new person does not recolour others', () => {
     const t = toneMap(people)
-    expect(t.get('u1')).toBe('')
+    expect(t.get('u2')).toBe('') // oldest by order: b sorts last when reversed
+    expect(t.get('u1')).toBe('ink')
     expect(t.get('u3')).toBe('y')
     expect(t.get('u4')).toBe('')
-    expect(t.size).toBe(3)
+    expect(t.size).toBe(4)
+    const more = toneMap([...people, mk('e@x.com', '2026-02-01T00:00:00Z', 'u5')])
+    for (const id of ['u1', 'u2', 'u3', 'u4']) expect(more.get(id)).toBe(t.get(id))
   })
 })
 
@@ -324,50 +333,17 @@ describe('ago and personStatus', () => {
   it('returns empty for an invalid date', () => {
     expect(ago('nope', now)).toBe('')
   })
-  it('personStatus covers the three states', () => {
+  it('personStatus shows the last mark, else the sign-up time', () => {
     const base: Person = {
       email: 'a@x.com',
-      addedAt: '2026-01-09T12:00:00Z',
-      userId: null,
+      userId: 'u1',
       displayName: null,
-      signedInAt: null,
+      signedUpAt: '2026-01-10T09:00:00Z',
       isAdmin: false,
       lastMarkAt: null,
     }
-    expect(personStatus(base, now)).toBe('Invited yesterday, not signed in')
-    expect(personStatus({ ...base, signedInAt: '2026-01-10T09:00:00Z' }, now)).toBe('Signed in 3 h ago')
-    expect(
-      personStatus({ ...base, signedInAt: '2026-01-10T09:00:00Z', lastMarkAt: '2026-01-10T11:48:00Z' }, now),
-    ).toBe('Last mark 12 min ago')
-  })
-})
-
-describe('normaliseEmail', () => {
-  it('trims and lower-cases', () => {
-    expect(normaliseEmail('  Maya@Example.COM ')).toBe('maya@example.com')
-  })
-  it.each([
-    '',
-    '   ',
-    'plain',
-    'a@b',
-    'a@@b.com',
-    '@b.com',
-    'a@',
-    'a b@c.com',
-    'a@b .com',
-    'a@.com',
-    'a@b..com',
-    'a@b.',
-    'a\u0000@b.com',
-    'a@b.com\n x',
-  ])('rejects %j', (raw) => {
-    expect(normaliseEmail(raw)).toBeNull()
-  })
-  it('accepts exactly 254 characters and rejects 255', () => {
-    const tail = '@x.com'
-    expect(normaliseEmail('a'.repeat(254 - tail.length) + tail)).not.toBeNull()
-    expect(normaliseEmail('a'.repeat(255 - tail.length) + tail)).toBeNull()
+    expect(personStatus(base, now)).toBe('Signed up 3 h ago')
+    expect(personStatus({ ...base, lastMarkAt: '2026-01-10T11:48:00Z' }, now)).toBe('Last mark 12 min ago')
   })
 })
 
@@ -388,7 +364,7 @@ describe('readPeopleResult', () => {
     5,
     {},
     { ok: false },
-    { ok: false, error: 'duplicate' },
+    { ok: false, error: 'duplicate' }, // the client-side duplicate check is gone
     { ok: false, error: 'weird' },
     { ok: 'true' },
   ])('treats %j as network', (body) => {
