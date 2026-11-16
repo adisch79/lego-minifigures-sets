@@ -1,0 +1,18 @@
+MINIFIG HUNT
+Welcome to the hunt.
+
+Confirm this address to finish your Minifig Hunt account. The link works once and expires in 1 hour.
+
+Confirm my email:
+{{ .ConfirmationURL }}
+
+Signing in on another device? Type this 6-digit code on the sign-in screen:
+
+    {{ .Token }}
+
+The code expires in 1 hour.
+
+--
+You got this email because someone created a Minifig Hunt account with {{ .Email }}.
+If that was not you, ignore it: nothing happens without the link or the code.
+https://minifighunt.com

@@ -1,0 +1,18 @@
+MINIFIG HUNT
+Back on the hunt?
+
+Tap the button to sign in to Minifig Hunt. The link works once and expires in 1 hour.
+
+Sign in to Minifig Hunt:
+{{ .ConfirmationURL }}
+
+Signing in on another device? Type this 6-digit code on the sign-in screen:
+
+    {{ .Token }}
+
+The code expires in 1 hour.
+
+--
+You got this email because someone asked to sign in to minifighunt.com with {{ .Email }}.
+If that was not you, ignore it: nothing happens without the link or the code.
+https://minifighunt.com
