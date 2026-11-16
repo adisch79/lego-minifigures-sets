@@ -52,8 +52,21 @@ describe('parseRoute', () => {
     expect(parseRoute('#series/admin')).toEqual({ page: 'series', id: 'admin' })
   })
 
+  it('reads the about route and its chapters', () => {
+    expect(parseRoute('#about')).toEqual({ page: 'about' })
+    expect(parseRoute('#about/support')).toEqual({ page: 'about', chapter: 'support' })
+    expect(parseRoute('#about/write')).toEqual({ page: 'about', chapter: 'write' })
+    expect(parseRoute('#about/write/')).toEqual({ page: 'about', chapter: 'write' })
+  })
+
+  it('opens the about page top for an empty or unknown chapter', () => {
+    expect(parseRoute('#about/')).toEqual({ page: 'about' })
+    expect(parseRoute('#about/nope')).toEqual({ page: 'about' })
+    expect(parseRoute('#about/support/extra')).toEqual({ page: 'about' })
+  })
+
   it('sends any other hash home', () => {
-    expect(parseRoute('#about')).toEqual({ page: 'home' })
+    expect(parseRoute('#aboutus')).toEqual({ page: 'home' })
     expect(parseRoute('#seriesfoo/71019')).toEqual({ page: 'home' })
   })
 })
