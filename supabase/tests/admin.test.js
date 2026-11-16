@@ -63,11 +63,35 @@ test('is_admin: true for admin, false for others and for no session; anon refuse
 });
 
 test('list RPCs refuse anon and a non-admin with 42501', async () => {
-  for (const fn of ['admin_allowlist_list', 'admin_wanted_list']) {
+  for (const fn of ['admin_allowlist_list', 'admin_people_list', 'admin_wanted_list']) {
     await as('anon', null, () => assert.rejects(q(`select * from public.${fn}()`), denied('42501')));
     await as('authenticated', A, () => assert.rejects(q(`select * from public.${fn}()`), denied('42501')));
     await as('authenticated', null, () => assert.rejects(q(`select * from public.${fn}()`), denied('42501')));
   }
+});
+
+test('admin_people_list: all users without allowlist, admin flag, last mark, order', async () => {
+  await q("update public.profiles set display_name='Ann' where user_id=$1", [A]);
+  await mark(A, 'series', '71053', 'owned');
+  await setTimes("update public.marks set updated_at = '2026-01-02T00:00:00Z'");
+  await q("update public.profiles set created_at = '2026-01-01T00:00:00Z' where user_id=$1", [A]);
+  await q("update public.profiles set created_at = '2026-02-01T00:00:00Z' where user_id=$1", [B]);
+  await q("delete from public.allowlist"); // no allowlist needed
+  const r = (await asAdmin(() => q('select * from public.admin_people_list()'))).rows;
+  assert.equal(r.length, 4); // includes GONE, who is off the allowlist
+  const by = Object.fromEntries(r.map((x) => [x.user_id, x]));
+  assert.equal(by[ADM].is_admin, true);
+  assert.equal(by[A].is_admin, false);
+  assert.equal(by[A].email, 'a@example.invalid');
+  assert.equal(by[A].display_name, 'Ann');
+  assert.ok(by[A].signed_up_at);
+  assert.equal(by[A].last_mark_at.toISOString(), '2026-01-02T00:00:00.000Z');
+  assert.equal(by[B].email, 'B@Example.invalid');
+  assert.equal(by[B].last_mark_at, null);
+  assert.ok(by[GONE]);
+  // newest sign-up first
+  const idx = (id) => r.findIndex((x) => x.user_id === id);
+  assert.ok(idx(B) < idx(A));
 });
 
 test('admin_allowlist_list: rows, join on lower(email), admin flag, last mark, order', async () => {
@@ -125,11 +149,12 @@ test('admin_wanted_list: only wanted marks, label fallback, alert states', async
   assert.ok(r.every((x) => x.marked_at));
 });
 
-test('admin_wanted_list: users off the allowlist are hidden', async () => {
+test('admin_wanted_list: users off the allowlist are shown (open sign-up)', async () => {
   await mark(GONE, 'series', '71053');
   await mark(A, 'series', '71054');
-  const r = (await asAdmin(() => q('select user_id from public.admin_wanted_list()'))).rows;
-  assert.deepEqual(r.map((x) => x.user_id), [A]);
+  const r = (await asAdmin(() => q('select user_id, label from public.admin_wanted_list()'))).rows;
+  assert.deepEqual(r.map((x) => x.user_id).sort(), [A, GONE].sort());
+  assert.equal(r.find((x) => x.user_id === GONE).label, 'gone@example.invalid');
 });
 
 test('admin_wanted_list: newest first', async () => {
@@ -178,8 +203,8 @@ test('admin_user_lookup: service_role only, case-insensitive, admin flag', async
 test('new functions: definer, pinned search_path, service_role can call lookup', async () => {
   const r = await q(`select proname, prosecdef, proconfig from pg_proc
     where pronamespace='public'::regnamespace
-    and proname in ('is_admin','admin_allowlist_list','admin_wanted_list','admin_user_lookup')`);
-  assert.equal(r.rows.length, 4);
+    and proname in ('is_admin','admin_allowlist_list','admin_people_list','admin_wanted_list','admin_user_lookup')`);
+  assert.equal(r.rows.length, 5);
   for (const f of r.rows) {
     assert.equal(f.prosecdef, true, f.proname);
     assert.ok(f.proconfig.includes('search_path=""'), f.proname);
