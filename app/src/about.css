@@ -90,14 +90,23 @@
   .band-top > .nav-about + .acct { margin-left:0; }
   .site-foot { margin-top:32px; }
   .site-foot nav { gap:18px; }
-  .ab-split { grid-template-columns:1fr; min-height:0; }
+  .ab-split { grid-template-columns:minmax(0,1fr); min-height:0; }
   .ab-ink { padding:22px 18px 170px; }
   .ab-ink .brand { margin-bottom:36px; }
   .ab-ink .stats { gap:18px; }
   .ab-figs img { height:120px; }
   .ab-figs img:nth-child(2) { height:130px; }
   .ab-right { padding:0 18px 40px; }
-  .ab-top { display:none; }
+  /* Phone: back link and account stay, as a compact bar ruled off from the chapters */
+  .ab-top { justify-content:space-between; gap:10px; margin:0 -18px; padding:14px 18px; border-bottom:2px solid var(--ink); }
+  /* The row has room for the words, so the back link keeps its label (index.css shrinks it to an arrow) */
+  .ab-top .back { margin-left:0; }
+  /* Sign-in popover spans the bar, as it does on the brand row of the other pages */
+  .ab-top { position:relative; z-index:5; }
+  .ab-top > .acct { position:static; }
+  .ab-top .pop { left:12px; right:12px; top:calc(100% + 10px); }
+  .ab-top .back:has(+ .acct) { width:auto; padding:0 16px; font-size:14px; }
+  .ab-top .back:has(+ .acct) .back-t { position:static; width:auto; height:auto; overflow:visible; clip:auto; }
   .ab-ch:first-of-type { padding-top:32px; }
   .ab-ch h2 { font-size:28px; }
   .ab-coffee { padding:22px 20px; }
