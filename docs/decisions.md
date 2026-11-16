@@ -91,3 +91,6 @@
 - 2026-11-09 — V2-11 F: logos narrower than 2:1 get a 190 px box instead of 150 px. Reason: in 150 px DC, Looney Tunes, DFB, Team GB shrank below their v4 size. Default, owner may override.
 - 2026-11-09 — V2-11 card crowds: owner picked option A, light zoom to 1.7:1 with edges at the narrowest gap (not full crowd). Reason: figures big like references 71009/71051.
 2026-11-14 | V2-11 cards: crowd scaled to the figure size of the owner references (71009 71033 71039 71051, FIG_TARGET 111, per-card FIG_ADJ by eye) replaces the fixed 1.7 zoom; logo ink capped at the Muppets reference (35535 px) | owner: some crowds too big/far, some logos too big
+- 2026-11-16 — V2-09 open sign-up supersedes invite-only (lines "invite-only" and "public signups off ... allowlist enforced by a trigger" above, and docs/design/V2-01-schema.md:5-12). Reason: owner backlog row V2-09. Design: [design/V2-09-open-signup.md](design/V2-09-open-signup.md).
+- 2026-11-16 — V2-09 admin "Remove" becomes "Delete account": deletes the account and data; the person may sign up again. No block list. Reason: owner pick 2026-11-16.
+- 2026-11-16 — V2-09 CAPTCHA: Cloudflare Turnstile on sign-in/sign-up (Supabase Auth built-in support). Reason: security review blocking finding (open mail sender); site already on Cloudflare. Default, owner may override. New outbound host challenges.cloudflare.com.
