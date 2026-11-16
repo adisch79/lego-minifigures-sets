@@ -118,7 +118,12 @@ describe('series page', () => {
   it('opens from the hash with the card, facts and figure', async () => {
     window.history.replaceState(null, '', '/#series/71019')
     render(<App />)
-    const title = await screen.findByRole('heading', { level: 1, name: 'Ninjago Movie' })
+    const title = await screen.findByRole(
+      'heading',
+      { level: 1, name: 'Ninjago Movie' },
+      // Longer wait: the default 1 s flaked once under a loaded full run (V2-15 review).
+      { timeout: 3000 },
+    )
     expect(title).toBeTruthy()
     expect(document.title).toContain('Ninjago Movie')
     const hero = title.closest('section')!

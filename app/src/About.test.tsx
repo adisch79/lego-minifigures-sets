@@ -165,6 +165,7 @@ describe('Coffee chapter', () => {
     expect(button.disabled).toBe(true)
     expect(screen.getByText(/The payment page is being set up\./)).toBeTruthy()
     expect(screen.queryByRole('link')).toBeNull()
+    expect(screen.queryByText(/handled by Ko-fi/)).toBeNull()
   })
 
   it('shows a new-tab link once the link is set', () => {
@@ -175,6 +176,7 @@ describe('Coffee chapter', () => {
     expect(link.getAttribute('rel')).toBe('noopener noreferrer')
     expect(screen.getByText(/Opens a secure payment page/)).toBeTruthy()
     expect(screen.queryByRole('button', { name: /Coming soon/ })).toBeNull()
+    expect(screen.getByText(/handled by Ko-fi/)).toBeTruthy()
   })
 })
 

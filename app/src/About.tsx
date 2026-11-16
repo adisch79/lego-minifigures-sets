@@ -55,6 +55,7 @@ function CupIcon() {
 export function Coffee({ url = KOFI_URL }: { url?: string }) {
   const live = url !== ''
   return (
+    <>
     <div className={live ? 'ab-coffee ab-coffee-live' : 'ab-coffee'}>
       <div>
         <b>Buy me a coffee</b>
@@ -91,6 +92,9 @@ export function Coffee({ url = KOFI_URL }: { url?: string }) {
         </button>
       )}
     </div>
+    {/* Ko-fi is named only once the link exists (code review V2-15). */}
+    {live && <p className="ab-fine">Payments are handled by Ko-fi, never by this site.</p>}
+    </>
   )
 }
 
@@ -477,7 +481,6 @@ export default function About({ load }: { load: Load }) {
             everyone.
           </p>
           <Coffee />
-          <p className="ab-fine">Payments are handled by Ko-fi, never by this site.</p>
         </section>
 
         <section className="ab-ch" id="write" aria-labelledby="write-title">
