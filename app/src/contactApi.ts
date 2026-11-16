@@ -34,9 +34,11 @@ export function codePoints(s: string): number {
   return Array.from(s).length
 }
 
-// C0 and C1 control characters, and DEL.
+// C0 and C1 control characters, and DEL. Matching them is the point of these patterns.
+// eslint-disable-next-line no-control-regex
 const CONTROL = /[\u0000-\u001f\u007f-\u009f]/
 // The same set minus newline (\n) and tab (\t), which a message may contain.
+// eslint-disable-next-line no-control-regex
 const CONTROL_IN_MESSAGE = /[\u0000-\u0008\u000b-\u001f\u007f-\u009f]/
 
 /** Optional name. Null when fine. */
@@ -53,8 +55,8 @@ export function validateEmail(raw: string): string | null {
   const v = raw.trim()
   if (v === '') return 'Enter your email, so I can answer.'
   if (v.length > EMAIL_MAX) return `Keep the email to ${EMAIL_MAX} characters.`
-  // Whitespace, control characters, and anything outside printable ASCII (no homograph addresses).
-  if (/[\s\u0000-\u001f\u007f-\u009f]/.test(v) || /[^!-~]/.test(v)) return 'Check the email address.'
+  // Printable ASCII only (! to ~): rules out whitespace, control characters and homograph addresses.
+  if (/[^!-~]/.test(v)) return 'Check the email address.'
   const parts = v.split('@')
   if (parts.length !== 2 || parts[0] === '' || parts[1] === '') return 'Check the email address.'
   return null

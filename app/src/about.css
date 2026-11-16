@@ -78,6 +78,64 @@
 .ab-wait strong { display:block; font-size:19px; font-weight:800; letter-spacing:-.02em; margin-bottom:4px; }
 .ab-wait p { margin:0; font-size:14.5px; font-weight:600; line-height:1.45; color:var(--grey-500); }
 
+/* Write to me: the contact form (mockup C frame 02). Soft grey wells that turn white and ink-ruled on focus */
+.cf { display:flex; flex-direction:column; gap:18px; }
+.cf-row { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+.cf-fld { display:flex; flex-direction:column; gap:7px; min-width:0; }
+.cf-lbl { font-size:12px; font-weight:800; letter-spacing:.1em; text-transform:uppercase; color:var(--ink); }
+.cf-lbl i { font-style:normal; font-weight:600; letter-spacing:0; text-transform:none; color:var(--grey-500); margin-left:6px; font-size:13px; }
+.cf-in { width:100%; box-sizing:border-box; font:inherit; font-size:15px; color:var(--ink); height:50px; border-radius:14px; border:2px solid var(--grey-100);
+  background:var(--grey-50); padding:0 16px; transition:border-color .2s, background .2s, box-shadow .2s; }
+.cf-in::placeholder { color:#7A7A74; }
+.cf-in:hover { border-color:var(--grey-300); }
+.cf-in:focus { outline:none; border-color:var(--ink); background:var(--white); box-shadow:0 0 0 4px rgba(253,224,27,.55); }
+.cf-in[aria-invalid="true"] { border-color:var(--lego-red); background:#FFF6F6; }
+.cf-in[aria-invalid="true"]:focus { box-shadow:0 0 0 4px rgba(223,0,18,.18); }
+textarea.cf-in { height:auto; min-height:150px; padding:14px 16px; line-height:1.55; resize:vertical; }
+.cf-under { display:flex; justify-content:space-between; align-items:flex-start; gap:12px; }
+.cf-count { flex:none; font-size:12.5px; font-weight:700; color:var(--grey-500); font-variant-numeric:tabular-nums; transition:color .2s; }
+.cf-count.over { color:#B3000E; }
+.cf-err { margin:0; font-size:13px; line-height:1.4; font-weight:700; color:#B3000E; animation:cf-in .25s var(--ease) both; }
+@keyframes cf-in { from { opacity:0; transform:translateY(-3px); } }
+.cf-alert { margin:0; display:flex; align-items:center; gap:10px; padding:14px 18px; border-radius:14px; background:#FFF1F1; border-left:5px solid var(--lego-red);
+  font-size:15px; font-weight:800; color:#8A000B; animation:cf-in .3s var(--ease) both; }
+.cf-foot { display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap; }
+/* The widget is 300 x 65; reserve the space so the row does not jump when it renders */
+.cf-ts { display:flex; flex-direction:column; gap:8px; min-height:65px; min-width:min(300px,100%); }
+.cf-ts .turnstile { min-height:65px; }
+.cf-ts .msg { margin:0; }
+.cf-go { display:inline-flex; align-items:center; justify-content:center; gap:9px; height:52px; padding:0 28px; border:0; border-radius:999px;
+  background:var(--lego-red); color:var(--white); font:inherit; font-size:15.5px; font-weight:800; cursor:pointer;
+  box-shadow:0 10px 20px -12px rgba(223,0,18,.8); transition:transform .15s var(--ease), box-shadow .2s, background .2s; }
+.cf-go:hover { transform:translateY(-2px); box-shadow:0 14px 24px -12px rgba(223,0,18,.9); }
+.cf-go:hover svg { transform:translate(2px,-2px); }
+.cf-go svg { transition:transform .2s var(--ease); }
+.cf-go:active { transform:scale(.97); }
+.cf-go:focus-visible { outline:3px solid var(--ink); outline-offset:3px; }
+.cf-go:disabled { background:#8E8E88; box-shadow:none; transform:none; cursor:progress; }
+.cf-spin { width:16px; height:16px; border-radius:50%; border:2.5px solid rgba(255,255,255,.4); border-top-color:var(--white); animation:cf-spin .8s linear infinite; }
+@keyframes cf-spin { to { transform:rotate(360deg); } }
+.cf-priv { display:flex; gap:8px; align-items:flex-start; margin:0; font-size:13px; line-height:1.5; font-weight:600; color:var(--grey-500); max-width:62ch; }
+.cf-priv svg { flex:none; margin-top:3px; }
+
+/* Sent: a stamped receipt, same family as the waiting card */
+.ab-sent { display:grid; grid-template-columns:auto 1fr; gap:22px; align-items:start; background:var(--grey-50); border-left:6px solid var(--lego-red);
+  border-radius:0 18px 18px 0; padding:26px 28px; animation:cf-in .4s var(--ease) both; }
+.ab-sent .tick { width:52px; height:52px; border-radius:50%; background:var(--ink); color:var(--lego-yellow); display:grid; place-items:center;
+  animation:cf-stamp .6s var(--ease) both; }
+@keyframes cf-stamp { 0% { transform:scale(.4) rotate(-20deg); opacity:0; } 60% { transform:scale(1.12) rotate(4deg); opacity:1; } }
+.ab-sent h3 { margin:2px 0 8px; font-size:24px; font-weight:800; letter-spacing:-.025em; line-height:1.15; overflow-wrap:anywhere; }
+.ab-sent h3:focus { outline:none; }
+.ab-sent p { margin:0 0 10px; font-size:15.5px; line-height:1.55; font-weight:500; overflow-wrap:anywhere; }
+.ab-sent blockquote { margin:14px 0 18px; padding:0 0 0 16px; border-left:3px solid var(--grey-300); font-size:15px; line-height:1.55; color:var(--grey-500);
+  font-style:italic; white-space:pre-line; overflow-wrap:anywhere; }
+.ab-sent .linkish { font-size:15px; min-height:44px; }
+
+@media (prefers-reduced-motion:reduce) {
+  .cf-err, .cf-alert, .ab-sent, .ab-sent .tick { animation:none; }
+  .cf-spin { animation-duration:2.4s; }
+}
+
 @media (max-width:1000px) {
   .ab-ink { padding:36px 32px 200px; }
   .ab-right { padding:24px 32px 48px; }
@@ -112,4 +170,11 @@
   .ab-coffee { padding:22px 20px; }
   .ab-coffee > .ab-soon, .ab-coffee > .ab-live { justify-self:stretch; justify-content:center; }
   .ab-wait { grid-template-columns:1fr; gap:14px; padding:22px 18px; }
+  /* Form stacks; 16px inputs keep iOS from zooming on focus */
+  .cf-row { grid-template-columns:1fr; gap:18px; }
+  .cf-in { font-size:16px; }
+  .cf-foot { flex-direction:column; align-items:stretch; }
+  .cf-ts { align-items:center; }
+  .cf-go { width:100%; }
+  .ab-sent { grid-template-columns:1fr; gap:14px; padding:22px 18px; }
 }

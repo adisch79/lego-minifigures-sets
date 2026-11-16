@@ -10,6 +10,7 @@ type TurnstileApi = {
     el: HTMLElement,
     opts: {
       sitekey: string
+      action?: string
       callback: (token: string) => void
       'expired-callback': () => void
       'error-callback': () => void
@@ -52,15 +53,18 @@ function loadScript(): Promise<TurnstileApi> {
 /**
  * Renders the widget and reports the token (null when it expires or errors).
  * Change `resetKey` to remount the widget and get a fresh token, as a token works once.
+ * `action` tags the token (e.g. "contact") so the server can refuse a token from another form.
  */
 export function Turnstile({
   siteKey,
   onToken,
   resetKey,
+  action,
 }: {
   siteKey: string
   onToken: (token: string | null) => void
   resetKey: number
+  action?: string
 }) {
   const hostRef = useRef<HTMLDivElement>(null)
   // failed: script did not load or the widget reported an error; attempt remounts the widget on Retry.
@@ -82,6 +86,7 @@ export function Turnstile({
         api = t
         widgetId = t.render(hostRef.current, {
           sitekey: siteKey,
+          ...(action ? { action } : {}),
           callback: (token) => onTokenRef.current(token),
           'expired-callback': () => onTokenRef.current(null),
           'error-callback': () => {
@@ -98,7 +103,7 @@ export function Turnstile({
       active = false
       if (api && widgetId !== null) api.remove(widgetId)
     }
-  }, [siteKey, resetKey, attempt])
+  }, [siteKey, resetKey, attempt, action])
 
   if (failed) {
     return (
