@@ -42,6 +42,18 @@ describe('Turnstile', () => {
     expect(render_).toHaveBeenCalledTimes(2)
     expect(onToken).toHaveBeenCalledWith(null)
   })
+  it('passes the action only when given', async () => {
+    const render_ = vi.fn(() => 'w')
+    window.turnstile = { render: render_, remove: vi.fn() } as unknown as typeof window.turnstile
+    render(<Turnstile siteKey="k" onToken={() => {}} resetKey={0} action="contact" />)
+    await act(async () => {})
+    expect((render_.mock.calls[0] as unknown[])[1]).toMatchObject({ sitekey: 'k', action: 'contact' })
+    cleanup()
+    render(<Turnstile siteKey="k" onToken={() => {}} resetKey={0} />)
+    await act(async () => {})
+    expect((render_.mock.calls[1] as unknown[])[1]).not.toHaveProperty('action')
+  })
+
   it('shows a retry message when the widget reports an error, and Retry remounts it', async () => {
     const opts: Opts[] = []
     window.turnstile = {
