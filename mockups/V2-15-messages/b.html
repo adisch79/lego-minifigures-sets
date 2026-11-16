@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>V2-15 admin Messages, direction B: Mailbag slide-over</title>
+<link rel="stylesheet" href="../../app/src/index.css">
+<link rel="stylesheet" href="../../app/src/admin.css">
+<style>
+/* Direction B: the wanted wall stays the page. A second ink pill in the hero ("Mailbag", with a red
+   unread count) opens a wide slide-over, built like the allowlist panel. Inside, messages are stacked
+   letter cards grouped by day; long ones fold after five lines. Prefix mb- (messages, B). */
+
+.mb-pills { display:flex; flex-wrap:wrap; gap:12px; }
+.mb-open { position:relative; }
+.mb-open .mb-badge { min-width:30px; height:30px; padding:0 9px; border-radius:999px; background:var(--lego-red); color:var(--white); display:grid; place-items:center; font-size:13px; font-weight:800; box-shadow:0 0 0 3px var(--ink); font-variant-numeric:tabular-nums; }
+.mb-open .mb-env { width:42px; height:42px; border-radius:50%; background:var(--lego-yellow); color:var(--ink); display:grid; place-items:center; }
+
+/* Wide variant of the allowlist panel */
+.ap-panel.mb-panel { width:min(540px,100%); background:var(--grey-50); }
+.mb-panel .ap-top { padding-bottom:18px; }
+.mb-seg { display:flex; gap:6px; margin-top:16px; }
+.mb-seg button { display:inline-flex; align-items:center; gap:8px; height:38px; padding:0 8px 0 15px; border-radius:999px; border:2px solid #33332F; background:transparent; color:#D6D6D1; font:inherit; font-size:13.5px; font-weight:800; cursor:pointer; transition:background .2s, color .2s, border-color .2s; }
+.mb-seg button:hover { border-color:#5A5A55; color:var(--white); }
+.mb-seg button i { font-style:normal; min-width:24px; height:24px; padding:0 7px; border-radius:999px; background:#2E2E2B; display:grid; place-items:center; font-size:12px; font-variant-numeric:tabular-nums; }
+.mb-seg button[aria-pressed=true] { background:var(--white); border-color:var(--white); color:var(--ink); }
+.mb-seg button[aria-pressed=true] i { background:var(--lego-yellow); color:var(--ink); }
+.mb-seg button.hot i { background:var(--lego-red); color:var(--white); }
+.mb-seg .mb-cap { margin-left:auto; align-self:center; font-size:12px; font-weight:700; color:#8A8A85; }
+
+.mb-scroll { flex:1; overflow-y:auto; overscroll-behavior:contain; padding:6px 18px 32px; }
+.mb-day { position:sticky; top:0; z-index:1; margin:0 -18px; padding:16px 22px 10px; background:linear-gradient(var(--grey-50) 70%, rgba(246,246,244,0)); font-size:11.5px; font-weight:800; letter-spacing:.16em; text-transform:uppercase; color:var(--grey-500); }
+.mb-list { list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:12px; }
+
+/* Letter card */
+.mb-card { position:relative; background:var(--white); border-radius:22px; padding:18px 18px 14px; box-shadow:0 1px 0 rgba(0,0,0,.04); animation:rise .45s var(--ease) both; transition:box-shadow .25s, transform .25s var(--ease); }
+.mb-card:hover { box-shadow:0 22px 34px -26px rgba(0,0,0,.45); }
+.mb-card.new { box-shadow:inset 0 0 0 2px var(--ink); }
+.mb-card.new::after { content:"New"; position:absolute; top:-9px; right:18px; height:24px; padding:0 10px; border-radius:999px; background:var(--lego-red); color:var(--white); font-size:10.5px; font-weight:800; letter-spacing:.14em; text-transform:uppercase; display:grid; place-items:center; transform:rotate(3deg); box-shadow:0 6px 12px -6px rgba(223,0,18,.7); }
+.mb-h { display:flex; align-items:center; gap:12px; min-width:0; }
+.mb-h .aw-av { width:40px; height:40px; font-size:16px; }
+.mb-t { min-width:0; flex:1; line-height:1.2; }
+.mb-t b { display:flex; align-items:center; gap:8px; font-size:16px; font-weight:800; letter-spacing:-.02em; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; }
+.mb-t b.anon { font-weight:700; font-style:italic; color:var(--grey-500); }
+.mb-t a { display:block; font-size:13px; font-weight:600; color:var(--grey-500); text-decoration:none; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.mb-t a:hover { color:var(--ink); text-decoration:underline; }
+.mb-dot { flex:none; width:10px; height:10px; border-radius:50%; background:var(--lego-red); box-shadow:0 0 0 3px #FFE3E5; }
+.mb-when { flex:none; align-self:flex-start; font-size:12px; font-weight:700; color:var(--grey-500); font-variant-numeric:tabular-nums; margin-top:3px; }
+.mb-card.new .mb-when { margin-right:58px; }
+.mb-text { margin:14px 0 0; font-size:15px; line-height:1.55; font-weight:500; white-space:pre-wrap; overflow-wrap:anywhere; }
+.mb-text.fold { display:-webkit-box; -webkit-line-clamp:5; -webkit-box-orient:vertical; overflow:hidden; -webkit-mask-image:linear-gradient(#000 60%, transparent); mask-image:linear-gradient(#000 60%, transparent); }
+.mb-more { margin-top:6px; display:inline-flex; align-items:center; gap:6px; padding:0; border:0; background:none; font:inherit; font-size:13.5px; font-weight:800; color:var(--ink); cursor:pointer; border-bottom:2px solid var(--lego-yellow); }
+.mb-more span { font-weight:600; color:var(--grey-500); }
+.mb-f { display:flex; align-items:center; gap:6px; margin-top:14px; padding-top:12px; border-top:1px dashed var(--grey-300); }
+.mb-b { display:inline-flex; align-items:center; gap:7px; height:36px; padding:0 14px; border-radius:999px; border:0; background:var(--grey-50); color:var(--ink); font:inherit; font-size:13px; font-weight:800; cursor:pointer; text-decoration:none; transition:background .2s, color .2s, transform .15s; }
+.mb-b:active { transform:scale(.97); }
+.mb-b:hover { background:var(--grey-100); }
+.mb-b.go { background:var(--ink); color:var(--lego-yellow); }
+.mb-b.go:hover { background:#000; }
+.mb-b.rm { margin-left:auto; background:transparent; color:var(--grey-500); }
+.mb-b.rm:hover { background:#FFF5F5; color:var(--lego-red); }
+.mb-ok { display:inline-flex; align-items:center; gap:6px; font-size:12.5px; font-weight:800; color:#22A447; padding:0 6px; }
+
+/* Delete confirm turns the card red-edged, as in the allowlist */
+.mb-card.ask { background:#FFF5F5; box-shadow:inset 0 0 0 2px var(--lego-red); }
+.mb-card.ask .mb-f { border-top-color:#F2B8BD; flex-wrap:wrap; }
+.mb-card.ask .mb-f p { margin:0; flex:1 1 200px; font-size:13px; font-weight:600; line-height:1.4; }
+
+.mb-end { margin:22px 0 0; text-align:center; font-size:12.5px; font-weight:700; color:var(--grey-500); }
+
+/* The wall behind the scrim, shortened to the series covers */
+.mb-wall .aw-stage { height:200px; }
+
+@media (max-width:640px) {
+  .mb-pills { width:100%; }
+  .mb-pills .aw-open { width:100%; }
+  .ap-panel.mb-panel { width:100%; }
+  .mb-scroll { padding:4px 12px 28px; }
+  .mb-day { margin:0 -12px; padding:14px 16px 8px; }
+  .mb-seg .mb-cap { display:none; }
+  .mb-card { padding:16px 14px 12px; border-radius:20px; }
+  .mb-text { font-size:15px; }
+  .mb-b { padding:0 12px; }
+  .mb-b.rm span { position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); }
+  .mb-wall .aw-stage { height:150px; }
+}
+</style>
+</head>
+<body class="aw-page">
+<div id="app"></div>
+<script src="msgs.js"></script>
+<script>
+/* Real series cover cards behind the scrim (names from app/public/catalog.json) */
+var WALL = [['71047', 'Dungeons & Dragons', 3], ['71048', 'Series 27', 3], ['71046', 'Series 26', 2], ['71045', 'Series 25', 2],
+  ['71038', 'Disney 100', 1], ['71039', 'Marvel Series 2', 1], ['71037', 'Series 24', 1], ['71034', 'Series 23', 1]];
+var open = new Set([]);   /* ids of unfolded long messages */
+var asking = 2;           /* id with the delete confirm open */
+var view = 'all';
+
+function hero() {
+  return '<div class="aw-hero"><div><p class="aw-eyebrow">Admin &middot; Wanted wall</p><h1>What they <em>want</em></h1>' +
+    '<ul class="aw-sum"><li><b>11</b>wanted</li><li><b>14</b>marks</li><li><b>2</b>to check</li></ul></div>' +
+    '<div class="mb-pills">' +
+    '<button type="button" class="aw-open mb-open" aria-expanded="true" aria-controls="mb-panel"><span class="aw-open-l"><b>Mailbag</b><small>' + MSGS.length + ' messages</small></span>' +
+    '<span class="mb-badge" aria-label="' + unread() + ' unread">' + unread() + '</span><span class="mb-env">' + IC.mail + '</span></button>' +
+    '<button type="button" class="aw-open"><span class="aw-open-l"><b>Collectors</b><small>7 signed up</small></span>' +
+    '<span class="aw-stack"><span class="aw-av">O</span><span class="aw-av t-ink">M</span><span class="aw-av t-y">T</span><span class="aw-more">+4</span></span></button>' +
+    '</div></div>';
+}
+function wall() {
+  return '<ul class="aw-grid mb-wall">' + WALL.map(function (w, i) {
+    return '<li class="aw-card"><div class="aw-stage k-cover"><img src="' + CARD + w[0] + '.png" alt=""><span class="aw-dot"><span>Sent</span></span><span class="aw-whole">Whole series</span></div>' +
+      '<div class="aw-body"><span class="aw-id">' + w[0] + '</span><h3>' + w[1] + '</h3><span class="aw-ser">All figures in the series</span></div></li>';
+  }).join('') + '</ul>';
+}
+function dayOf(iso) {
+  var d = Math.floor((new Date(NOW.toDateString()) - new Date(new Date(iso).toDateString())) / 864e5);
+  return d === 0 ? 'Today' : d === 1 ? 'Yesterday' : d < 7 ? 'This week' : 'Older';
+}
+function card(m, i) {
+  var long = m.text.length > 260, unfolded = open.has(m.id), ask = asking === m.id;
+  var foot = ask
+    ? '<p>Delete this message from <b>' + esc(who(m)) + '</b>? It cannot be brought back.</p><div class="ap-ask-b"><button type="button" class="ap-keep" data-keep>Keep</button><button type="button" class="ap-del" data-gone="' + m.id + '">' + IC.bin + 'Delete</button></div>'
+    : (m.read ? '<span class="mb-ok">' + IC.check + 'Read</span>' : '<button type="button" class="mb-b go" data-read="' + m.id + '">' + IC.check + 'Mark read</button>') +
+      '<a class="mb-b" href="' + mailto(m) + '">' + IC.reply + 'Reply</a>' +
+      '<button type="button" class="mb-b rm" data-ask="' + m.id + '" aria-label="Delete message from ' + esc(who(m)) + '">' + IC.bin + '<span>Delete</span></button>';
+  return '<li class="mb-card' + (m.read ? '' : ' new') + (ask ? ' ask' : '') + '" style="animation-delay:' + (i * 45) + 'ms">' +
+    '<div class="mb-h"><span class="aw-av ' + tone(m) + '" aria-hidden="true">' + initial(m) + '</span><div class="mb-t">' +
+    '<b' + (m.name ? '' : ' class="anon"') + '>' + (m.read ? '' : '<span class="mb-dot" aria-label="Unread"></span>') + esc(m.name || 'No name given') + '</b>' +
+    '<a href="' + mailto(m) + '">' + esc(m.email) + '</a></div><span class="mb-when" title="' + stamp(m.at) + '">' + (/^(Today|Yesterday)$/.test(dayOf(m.at)) ? stamp(m.at).split(', ')[1] : short(m.at)) + '</span></div>' +
+    '<p class="mb-text' + (long && !unfolded ? ' fold' : '') + '">' + esc(m.text) + '</p>' +
+    (long ? '<button type="button" class="mb-more" data-fold="' + m.id + '">' + (unfolded ? 'Show less' : 'Read all <span>' + m.text.split(/\s+/).length + ' words</span>') + '</button>' : '') +
+    '<div class="mb-f">' + foot + '</div></li>';
+}
+function panel() {
+  var list = MSGS.filter(function (m) { return view === 'all' || !m.read; });
+  var html = '', last = '';
+  list.forEach(function (m, i) {
+    var d = dayOf(m.at);
+    if (d !== last) { html += (last ? '</ul>' : '') + '<h3 class="mb-day">' + d + '</h3><ul class="mb-list">'; last = d; }
+    html += card(m, i);
+  });
+  html += list.length ? '</ul><p class="mb-end">That is everything. Newest first, the last 200 are kept here.</p>' : '';
+  return '<div class="ap-scrim on"></div><aside id="mb-panel" class="ap-panel mb-panel on" role="dialog" aria-modal="true" aria-labelledby="mb-h">' +
+    '<div class="ap-top"><div class="ap-row"><div><p class="ap-eyebrow">Admin &middot; Messages</p><h2 id="mb-h">Mailbag</h2>' +
+    '<p>Sent from the contact form on the About page.</p></div><button type="button" class="ap-x" aria-label="Close">' + IC.x + '</button></div>' +
+    '<div class="mb-seg" role="group" aria-label="Show"><button type="button" data-view="all" aria-pressed="' + (view === 'all') + '">All <i>' + MSGS.length + '</i></button>' +
+    '<button type="button" class="hot" data-view="new" aria-pressed="' + (view === 'new') + '">Unread <i>' + unread() + '</i></button><span class="mb-cap">Newest first</span></div></div>' +
+    '<div class="mb-scroll">' + html + '</div></aside>';
+}
+function render() {
+  document.getElementById('app').innerHTML = band(hero()) + '<main class="wrap"><div class="aw-bar"><button type="button" class="aw-chip" aria-pressed="true">Most wanted <i>11</i></button>' +
+    '<button type="button" class="aw-chip" aria-pressed="false">Newest <i>11</i></button><button type="button" class="aw-chip warn" aria-pressed="false">Not sent <i>2</i></button></div>' + wall() + '</main>' + panel();
+}
+document.addEventListener('click', function (e) {
+  var t = e.target.closest('button'); if (!t) return;
+  if (t.dataset.read) MSGS.forEach(function (m) { if (m.id === +t.dataset.read) m.read = true; });
+  else if (t.dataset.fold) { var id = +t.dataset.fold; open.has(id) ? open.delete(id) : open.add(id); }
+  else if (t.dataset.ask) asking = +t.dataset.ask;
+  else if (t.hasAttribute('data-keep')) asking = -1;
+  else if (t.dataset.gone) { MSGS = MSGS.filter(function (m) { return m.id !== +t.dataset.gone; }); asking = -1; }
+  else if (t.dataset.view) view = t.dataset.view;
+  else return;
+  var s = document.querySelector('.mb-scroll'), y = s ? s.scrollTop : 0;
+  render();
+  document.querySelector('.mb-scroll').scrollTop = y;
+});
+render();
+</script>
+</body>
+</html>

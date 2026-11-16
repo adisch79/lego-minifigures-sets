@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>V2-15 admin Messages, direction C: Ledger with expandable rows</title>
+<link rel="stylesheet" href="../../app/src/index.css">
+<link rel="stylesheet" href="../../app/src/admin.css">
+<style>
+/* Direction C: a compact ledger section on the admin page itself, between the hero and the wanted wall.
+   One line per message; a row opens in place to show the full text and the actions. Quick actions
+   (mark read, delete) also sit at the end of every closed row. Prefix mc- (messages, C). */
+
+.mc-sec { padding:34px 0 8px; }
+.mc-head { display:flex; align-items:flex-end; gap:18px; flex-wrap:wrap; padding-bottom:16px; border-bottom:2px solid var(--ink); }
+.mc-head h2 { margin:0; font-size:40px; font-weight:800; letter-spacing:-.05em; line-height:.95; display:flex; align-items:center; gap:14px; }
+.mc-pill { height:30px; padding:0 12px; border-radius:999px; background:var(--lego-red); color:var(--white); font-size:13px; font-weight:800; letter-spacing:0; display:inline-flex; align-items:center; gap:7px; font-variant-numeric:tabular-nums; animation:stamp .5s var(--ease) both; }
+.mc-pill::before { content:""; width:8px; height:8px; border-radius:50%; background:var(--white); animation:aw-blink 1.2s infinite; }
+.mc-head .aw-bar { padding:0; margin-left:auto; }
+.mc-head .aw-chip { height:38px; font-size:13.5px; }
+.mc-sub { margin:10px 0 0; font-size:13px; font-weight:600; color:var(--grey-500); }
+
+.mc-tab { margin:18px 0 0; background:var(--white); border-radius:22px; overflow:hidden; box-shadow:0 24px 50px -40px rgba(0,0,0,.4); }
+.mc-cols, .mc-line { display:grid; grid-template-columns:22px minmax(0,230px) minmax(0,1fr) 116px 92px 22px; align-items:center; gap:0 18px; }
+.mc-cols { padding:12px 22px; font-size:10.5px; font-weight:800; letter-spacing:.16em; text-transform:uppercase; color:var(--grey-500); background:var(--grey-50); border-bottom:2px solid var(--grey-100); }
+.mc-cols .r { text-align:right; }
+.mc-list { list-style:none; margin:0; padding:0; }
+.mc-item { border-bottom:1px solid var(--grey-100); transition:background .2s; animation:rise .4s var(--ease) both; }
+.mc-item:last-child { border-bottom:0; }
+.mc-item:hover { background:#FBFBF9; }
+.mc-line { position:relative; width:100%; min-height:62px; padding:10px 22px; border:0; background:none; font:inherit; color:var(--ink); text-align:left; cursor:pointer; }
+.mc-dot { width:10px; height:10px; border-radius:50%; justify-self:center; background:transparent; box-shadow:inset 0 0 0 2px var(--grey-300); }
+.mc-item.new .mc-dot { background:var(--lego-red); box-shadow:0 0 0 3px #FFE3E5; }
+.mc-from { min-width:0; line-height:1.25; }
+.mc-from b { display:block; font-size:14.5px; font-weight:700; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.mc-from b.anon { font-style:italic; color:var(--grey-500); font-weight:600; }
+.mc-from small { display:block; font-size:12.5px; font-weight:600; color:var(--grey-500); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.mc-item.new .mc-from b { font-weight:800; }
+.mc-pre { min-width:0; font-size:14px; font-weight:500; color:var(--grey-500); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.mc-item.new .mc-pre { color:var(--ink); font-weight:600; }
+.mc-when { text-align:right; font-size:13px; font-weight:700; font-variant-numeric:tabular-nums; line-height:1.25; }
+.mc-when small { display:block; font-size:11.5px; font-weight:600; color:var(--grey-500); }
+.mc-quick { display:flex; justify-content:flex-end; gap:4px; }
+.mc-ic { width:38px; height:38px; border-radius:50%; border:0; background:transparent; color:var(--grey-500); display:grid; place-items:center; cursor:pointer; transition:background .2s, color .2s, opacity .2s; }
+.mc-ic:hover { background:var(--grey-100); color:var(--ink); }
+.mc-ic.rm:hover { background:#FFF5F5; color:var(--lego-red); }
+.mc-ic.done { opacity:.3; cursor:default; }
+.mc-ic.done:hover { background:transparent; color:var(--grey-500); }
+.mc-chev { color:var(--grey-500); transition:transform .3s var(--ease); display:grid; place-items:center; }
+.mc-item.open .mc-chev { transform:rotate(180deg); color:var(--ink); }
+
+/* Opened row */
+.mc-item.open { background:#FFFBDC; box-shadow:inset 4px 0 0 var(--ink); }
+.mc-item.open:hover { background:#FFFBDC; }
+.mc-item.open .mc-pre { visibility:hidden; }
+.mc-open { display:grid; grid-template-columns:minmax(0,1fr) 250px; gap:28px; padding:4px 22px 24px 62px; animation:drop .35s var(--ease) both; }
+.mc-text { margin:0; padding:22px 26px; background:var(--white); border-radius:18px; font-size:16px; line-height:1.62; font-weight:500; white-space:pre-wrap; overflow-wrap:anywhere; max-width:72ch; box-shadow:0 1px 0 rgba(0,0,0,.05); }
+.mc-side { display:flex; flex-direction:column; gap:10px; }
+.mc-meta { margin:0 0 6px; padding:0; list-style:none; font-size:12.5px; font-weight:600; color:var(--grey-500); line-height:1.5; }
+.mc-meta b { display:block; font-size:10.5px; font-weight:800; letter-spacing:.14em; text-transform:uppercase; color:var(--ink); margin-top:8px; }
+.mc-meta li:first-child b { margin-top:0; }
+.mc-meta span { color:var(--ink); font-weight:700; overflow-wrap:anywhere; }
+.mc-side .aw-btn { width:100%; height:44px; font-size:14px; }
+.mc-side .aw-btn.light { box-shadow:inset 0 0 0 2px var(--grey-100); }
+.mc-side .aw-btn.del { background:transparent; color:var(--grey-500); }
+.mc-side .aw-btn.del:hover { background:#FFF5F5; color:var(--lego-red); }
+
+/* Row in delete confirm */
+.mc-item.ask { background:#FFF5F5; box-shadow:inset 0 0 0 2px var(--lego-red); }
+.mc-item.ask:hover { background:#FFF5F5; }
+.mc-ask { display:flex; align-items:center; gap:14px; padding:0 22px 14px 62px; animation:drop .3s var(--ease) both; }
+.mc-ask p { margin:0; flex:1; font-size:13.5px; font-weight:600; }
+.mc-ask .ap-ask-b button { height:38px; }
+
+.mc-foot { display:flex; justify-content:space-between; gap:12px; padding:14px 22px; background:var(--grey-50); font-size:12.5px; font-weight:700; color:var(--grey-500); }
+
+/* The wanted wall continues below */
+.mc-next { display:flex; align-items:baseline; justify-content:space-between; margin-top:44px; padding-bottom:14px; border-bottom:2px solid var(--ink); }
+.mc-next h2 { margin:0; font-size:40px; font-weight:800; letter-spacing:-.05em; }
+.mc-next span { font-size:13px; font-weight:600; color:var(--grey-500); }
+.mc-wall { padding-top:22px; }
+.mc-wall .aw-stage { height:180px; }
+
+@media (max-width:900px) {
+  .mc-cols { display:none; }
+  .mc-line { grid-template-columns:12px minmax(0,1fr) auto 18px; grid-template-areas:"dot from when chev" ". pre pre pre"; gap:3px 12px; padding:14px 16px; }
+  .mc-dot { grid-area:dot; }
+  .mc-from { grid-area:from; }
+  .mc-when { grid-area:when; }
+  .mc-when small { display:none; }
+  .mc-chev { grid-area:chev; }
+  .mc-pre { grid-area:pre; white-space:normal; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; font-size:13.5px; line-height:1.4; }
+  .mc-item.open .mc-pre { display:none; }
+  .mc-quick { display:none; }
+  .mc-open { grid-template-columns:1fr; gap:14px; padding:0 14px 16px; }
+  .mc-text { padding:16px 16px; font-size:15px; line-height:1.55; }
+  .mc-side { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+  .mc-meta { grid-column:1 / -1; display:flex; flex-wrap:wrap; gap:4px 18px; }
+  .mc-meta b { margin-top:0; }
+  .mc-meta li:last-child { display:none; }
+  .mc-side .aw-btn.reply { grid-column:1 / -1; order:3; }
+  .mc-side .aw-btn.del { box-shadow:inset 0 0 0 2px var(--grey-100); background:var(--white); }
+  .mc-ask { flex-wrap:wrap; padding:0 16px 14px; }
+}
+@media (max-width:640px) {
+  .mc-sec { padding-top:24px; }
+  .mc-head { gap:12px; }
+  .mc-head h2 { font-size:32px; }
+  .mc-head .aw-bar { margin:0 -18px; padding:0 18px; width:calc(100% + 36px); }
+  .mc-tab { margin:14px -18px 0; border-radius:0; }
+  .mc-foot { flex-direction:column; gap:2px; padding:12px 16px; }
+  .mc-next h2 { font-size:32px; }
+  .mc-next span { display:none; }
+  .mc-wall .aw-stage { height:130px; }
+}
+</style>
+</head>
+<body class="aw-page">
+<div id="app"></div>
+<script src="msgs.js"></script>
+<script>
+var WALL = [['71047', 'Dungeons & Dragons'], ['71048', 'Series 27'], ['71046', 'Series 26'], ['71045', 'Series 25']];
+var openId = 6;   /* the long, unread message is open */
+var asking = 4;   /* row with the delete confirm */
+var view = 'all';
+
+function hero() {
+  return '<div class="aw-hero"><div><p class="aw-eyebrow">Admin &middot; Wanted wall</p><h1>What they <em>want</em></h1>' +
+    '<ul class="aw-sum"><li><b>11</b>wanted</li><li><b>14</b>marks</li><li><b>2</b>to check</li><li><b style="color:var(--lego-red)">' + unread() + '</b>new messages</li></ul></div>' +
+    '<button type="button" class="aw-open"><span class="aw-open-l"><b>Collectors</b><small>7 signed up</small></span>' +
+    '<span class="aw-stack"><span class="aw-av">O</span><span class="aw-av t-ink">M</span><span class="aw-av t-y">T</span><span class="aw-more">+4</span></span></button></div>';
+}
+function item(m, i) {
+  var isOpen = openId === m.id, ask = asking === m.id;
+  var html = '<li class="mc-item' + (m.read ? '' : ' new') + (isOpen ? ' open' : '') + (ask ? ' ask' : '') + '" style="animation-delay:' + (i * 35) + 'ms">' +
+    '<div class="mc-line" role="button" tabindex="0" aria-expanded="' + isOpen + '" data-open="' + m.id + '">' +
+    '<span class="mc-dot"' + (m.read ? '' : ' aria-label="Unread"') + '></span>' +
+    '<span class="mc-from"><b' + (m.name ? '' : ' class="anon"') + '>' + esc(m.name || 'No name given') + '</b><small>' + esc(m.email) + '</small></span>' +
+    '<span class="mc-pre">' + esc(m.text) + '</span>' +
+    '<span class="mc-when">' + short(m.at) + '<small>' + ago(m.at) + '</small></span>' +
+    '<span class="mc-quick">' +
+    (m.read ? '<button type="button" class="mc-ic done" disabled aria-label="Already read">' + IC.check + '</button>'
+            : '<button type="button" class="mc-ic" data-read="' + m.id + '" aria-label="Mark read" title="Mark read">' + IC.check + '</button>') +
+    '<button type="button" class="mc-ic rm" data-ask="' + m.id + '" aria-label="Delete" title="Delete">' + IC.bin + '</button></span>' +
+    '<span class="mc-chev" aria-hidden="true">' + IC.chev + '</span></div>';
+  if (ask) {
+    html += '<div class="mc-ask"><p>Delete the message from <b>' + esc(who(m)) + '</b>? It cannot be brought back.</p>' +
+      '<div class="ap-ask-b"><button type="button" class="ap-keep" data-keep>Keep</button><button type="button" class="ap-del" data-gone="' + m.id + '">' + IC.bin + 'Delete</button></div></div>';
+  } else if (isOpen) {
+    html += '<div class="mc-open"><p class="mc-text">' + esc(m.text) + '</p><div class="mc-side">' +
+      '<ul class="mc-meta"><li><b>Received</b>' + stamp(m.at) + '</li><li><b>From</b><span>' + esc(m.email) + '</span></li><li><b>Length</b>' + m.text.split(/\s+/).length + ' words</li></ul>' +
+      (m.read ? '' : '<button type="button" class="aw-btn" data-read="' + m.id + '">' + IC.check + 'Mark read</button>') +
+      '<a class="aw-btn light reply" href="' + mailto(m) + '">' + IC.reply + 'Reply by email</a>' +
+      '<button type="button" class="aw-btn del" data-ask="' + m.id + '">' + IC.bin + 'Delete</button></div></div>';
+  }
+  return html + '</li>';
+}
+function render() {
+  var list = MSGS.filter(function (m) { return view === 'all' || (view === 'new' ? !m.read : m.read); });
+  document.getElementById('app').innerHTML = band(hero()) + '<main class="wrap">' +
+    '<section class="mc-sec" aria-labelledby="mc-h"><div class="mc-head"><div><h2 id="mc-h">Messages' + (unread() ? '<span class="mc-pill">' + unread() + ' new</span>' : '') + '</h2>' +
+    '<p class="mc-sub">From the contact form on the About page. Newest first.</p></div>' +
+    '<div class="aw-bar" role="group" aria-label="Show">' +
+    '<button type="button" class="aw-chip" data-view="all" aria-pressed="' + (view === 'all') + '">All <i>' + MSGS.length + '</i></button>' +
+    '<button type="button" class="aw-chip warn" data-view="new" aria-pressed="' + (view === 'new') + '">Unread <i>' + unread() + '</i></button>' +
+    '<button type="button" class="aw-chip" data-view="read" aria-pressed="' + (view === 'read') + '">Read <i>' + (MSGS.length - unread()) + '</i></button></div></div>' +
+    '<div class="mc-tab"><div class="mc-cols" aria-hidden="true"><span></span><span>From</span><span>Message</span><span class="r">Received</span><span class="r">Actions</span><span></span></div>' +
+    '<ul class="mc-list">' + list.map(item).join('') + '</ul>' +
+    '<div class="mc-foot"><span>Showing ' + list.length + ' of ' + MSGS.length + '</span><span>The newest 200 messages are kept here</span></div></div></section>' +
+    '<div class="mc-next"><h2>Wanted wall</h2><span>Ranked by collectors, then newest</span></div>' +
+    '<ul class="aw-grid mc-wall">' + WALL.map(function (w) {
+      return '<li class="aw-card"><div class="aw-stage k-cover"><img src="' + CARD + w[0] + '.png" alt=""><span class="aw-dot"><span>Sent</span></span><span class="aw-whole">Whole series</span></div>' +
+        '<div class="aw-body"><span class="aw-id">' + w[0] + '</span><h3>' + w[1] + '</h3><span class="aw-ser">All figures in the series</span></div></li>';
+    }).join('') + '</ul></main>';
+}
+document.addEventListener('click', function (e) {
+  var t = e.target.closest('button, [data-open]'); if (!t) return;
+  if (t.dataset.read) MSGS.forEach(function (m) { if (m.id === +t.dataset.read) m.read = true; });
+  else if (t.dataset.ask) asking = +t.dataset.ask;
+  else if (t.hasAttribute('data-keep')) asking = -1;
+  else if (t.dataset.gone) { MSGS = MSGS.filter(function (m) { return m.id !== +t.dataset.gone; }); asking = -1; }
+  else if (t.dataset.view) view = t.dataset.view;
+  else if (t.dataset.open) { var id = +t.dataset.open; openId = openId === id ? -1 : id; asking = -1; }
+  else return;
+  render();
+});
+render();
+</script>
+</body>
+</html>

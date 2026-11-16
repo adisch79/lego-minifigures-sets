@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>V2-15 admin Messages, direction A: Inbox and reader</title>
+<link rel="stylesheet" href="../../app/src/index.css">
+<link rel="stylesheet" href="../../app/src/admin.css">
+<style>
+/* Direction A: the admin hero gets a two-way switch (Wanted wall / Messages). The Messages view is a
+   mail-client split: a list on the left, the open message in a reading pane on the right.
+   On a phone the reading pane folds into the list under the open row. Prefix ma- (messages, A). */
+
+/* Hero view switch, styled like the ink allowlist button */
+.ma-switch { display:inline-flex; gap:4px; padding:5px; border-radius:999px; background:var(--ink); box-shadow:0 18px 30px -18px rgba(0,0,0,.6); }
+.ma-switch button { display:inline-flex; align-items:center; gap:9px; height:48px; padding:0 20px; border:0; border-radius:999px; background:transparent; color:#B9B9B4; font:inherit; font-size:15px; font-weight:800; cursor:pointer; transition:background .2s, color .2s; }
+.ma-switch button:hover { color:var(--white); }
+.ma-switch button[aria-pressed=true] { background:var(--lego-yellow); color:var(--ink); }
+.ma-switch i { font-style:normal; min-width:24px; height:24px; padding:0 7px; border-radius:999px; background:var(--lego-red); color:var(--white); display:grid; place-items:center; font-size:12px; font-variant-numeric:tabular-nums; }
+
+/* Split panel */
+.ma-box { margin:30px 0 96px; display:grid; grid-template-columns:minmax(0,400px) minmax(0,1fr); background:var(--white); border-radius:26px; overflow:hidden; min-height:640px; box-shadow:0 30px 60px -40px rgba(0,0,0,.35); animation:rise .55s var(--ease) both; }
+.ma-side { border-right:2px solid var(--grey-50); display:flex; flex-direction:column; min-width:0; }
+.ma-side-h { display:flex; align-items:center; gap:8px; padding:18px 18px 14px; border-bottom:2px solid var(--grey-50); }
+.ma-side-h .aw-chip { height:36px; font-size:13px; padding:0 6px 0 14px; }
+.ma-side-h .aw-chip i { min-width:24px; height:24px; }
+.ma-cap { margin-left:auto; font-size:12px; font-weight:700; color:var(--grey-500); }
+.ma-list { list-style:none; margin:0; padding:8px; overflow-y:auto; flex:1; }
+.ma-row { position:relative; display:grid; grid-template-columns:38px minmax(0,1fr) auto; gap:4px 12px; width:100%; text-align:left; padding:14px 14px 14px 12px; border:0; border-radius:18px; background:transparent; color:var(--ink); font:inherit; cursor:pointer; transition:background .2s; animation:rise .45s var(--ease) both; }
+.ma-row:hover { background:var(--grey-50); }
+.ma-row[aria-current=true] { background:#FFF8C4; }
+.ma-row[aria-current=true]::before { content:""; position:absolute; left:0; top:14px; bottom:14px; width:4px; border-radius:4px; background:var(--ink); }
+.ma-row .aw-av { grid-row:span 2; width:38px; height:38px; }
+.ma-who { min-width:0; font-size:15px; font-weight:700; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.ma-who.anon { font-weight:600; color:var(--grey-500); }
+.ma-row.new .ma-who { font-weight:800; }
+.ma-when { font-size:12px; font-weight:700; color:var(--grey-500); font-variant-numeric:tabular-nums; display:flex; align-items:center; gap:6px; }
+.ma-row.new .ma-when { color:var(--lego-red); }
+.ma-dot { width:10px; height:10px; border-radius:50%; background:var(--lego-red); box-shadow:0 0 0 3px #FFE3E5; }
+.ma-pre { grid-column:2 / 4; font-size:13.5px; line-height:1.4; color:var(--grey-500); font-weight:500; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+.ma-row.new .ma-pre { color:var(--ink); }
+
+/* Reading pane */
+.ma-read { padding:34px 44px 40px; display:flex; flex-direction:column; min-width:0; animation:drop .35s var(--ease) both; }
+.ma-read-h { display:flex; align-items:center; gap:16px; padding-bottom:22px; border-bottom:1px dashed var(--grey-300); }
+.ma-read-h .aw-av { width:56px; height:56px; font-size:22px; }
+.ma-read-h h2 { margin:0; font-size:28px; font-weight:800; letter-spacing:-.04em; line-height:1.05; }
+.ma-read-h h2.anon { color:var(--grey-500); font-weight:700; font-style:italic; letter-spacing:-.02em; }
+.ma-mail { display:inline-flex; align-items:center; gap:7px; margin-top:6px; font-size:14px; font-weight:700; color:var(--ink); text-decoration:none; border-bottom:2px solid var(--lego-yellow); }
+.ma-mail:hover { border-color:var(--ink); }
+.ma-stamp { margin-left:auto; flex:none; text-align:right; font-size:12px; font-weight:700; color:var(--grey-500); line-height:1.45; font-variant-numeric:tabular-nums; }
+.ma-stamp b { display:block; font-size:14px; color:var(--ink); }
+.ma-body { margin:26px 0 0; font-size:17px; line-height:1.62; font-weight:500; max-width:64ch; white-space:pre-wrap; overflow-wrap:anywhere; flex:1; }
+.ma-acts { display:flex; flex-wrap:wrap; align-items:center; gap:10px; margin-top:32px; padding-top:22px; border-top:2px solid var(--grey-50); }
+.ma-acts .aw-btn { height:46px; font-size:14.5px; }
+.ma-del { border:2px solid var(--grey-100) !important; background:var(--white) !important; color:var(--ink) !important; }
+.ma-del:hover { border-color:var(--lego-red) !important; color:var(--lego-red) !important; }
+.ma-acts .sp { flex:1; }
+.ma-done { display:inline-flex; align-items:center; gap:7px; height:46px; padding:0 18px; border-radius:999px; background:var(--grey-50); color:var(--grey-500); font-size:14px; font-weight:800; }
+.ma-pos { font-size:12.5px; font-weight:700; color:var(--grey-500); font-variant-numeric:tabular-nums; }
+
+/* Inline delete confirm, same language as the allowlist remove confirm */
+.ma-ask { display:flex; flex-wrap:wrap; align-items:center; gap:10px 14px; width:100%; padding:14px 16px; border-radius:16px; background:#FFF5F5; box-shadow:inset 0 0 0 2px var(--lego-red); animation:drop .3s var(--ease) both; }
+.ma-ask p { margin:0; flex:1 1 220px; font-size:13.5px; font-weight:600; line-height:1.4; }
+.ma-ask .ap-ask-b button { height:40px; }
+
+.ma-fold { display:none; }
+
+@media (max-width:640px) {
+  .ma-switch { width:100%; }
+  .ma-switch button { flex:1; justify-content:center; height:46px; padding:0 12px; font-size:14px; }
+  .ma-box { display:block; margin:18px -18px 0; border-radius:24px 24px 0 0; min-height:0; }
+  .ma-side { border-right:0; }
+  .ma-side-h { padding:14px 14px 12px; overflow-x:auto; }
+  .ma-cap { display:none; }
+  .ma-list { padding:6px; }
+  .ma-read.desk { display:none; }
+  /* On a phone the open message unfolds under its row */
+  .ma-fold { display:block; padding:4px 12px 18px 12px; margin:0 0 6px; border-radius:0 0 18px 18px; background:#FFF8C4; animation:drop .3s var(--ease) both; }
+  .ma-row[aria-current=true] { border-radius:18px 18px 0 0; }
+  .ma-row[aria-current=true]::before { display:none; }
+  .ma-row[aria-current=true] .ma-pre { display:none; }
+  .ma-fold .ma-mail { margin:0 0 10px; font-size:13px; overflow-wrap:anywhere; }
+  .ma-fold .ma-body { margin:4px 0 0; font-size:15.5px; line-height:1.55; }
+  .ma-fold .ma-acts { margin-top:16px; padding-top:14px; border-top:1px dashed var(--grey-300); }
+  .ma-fold .ma-acts .aw-btn { flex:1; height:44px; padding:0 14px; }
+  .ma-fold .ma-pos { display:none; }
+}
+</style>
+</head>
+<body class="aw-page">
+<div id="app"></div>
+<script src="msgs.js"></script>
+<script>
+var sel = 2;      /* index of the open message: the long one */
+var asking = -1;  /* index with the delete confirm open */
+
+function hero() {
+  return '<div class="aw-hero"><div><p class="aw-eyebrow">Admin &middot; Messages</p>' +
+    '<h1>What they <em>say</em></h1>' +
+    '<ul class="aw-sum"><li><b>' + MSGS.length + '</b>messages</li><li><b>' + unread() + '</b>unread</li><li><b>' + ago(MSGS[0].at).replace(' ago', '') + '</b>since the last one</li></ul></div>' +
+    '<div class="ma-switch" role="group" aria-label="Admin view">' +
+    '<button type="button" aria-pressed="false">Wanted wall</button>' +
+    '<button type="button" aria-pressed="true">Messages <i>' + unread() + '</i></button></div></div>';
+}
+function row(m, i) {
+  var cur = i === sel;
+  return '<li><button type="button" class="ma-row' + (m.read ? '' : ' new') + '"' + (cur ? ' aria-current="true"' : '') + ' data-i="' + i + '" style="animation-delay:' + (i * 35) + 'ms">' +
+    '<span class="aw-av ' + tone(m) + '" aria-hidden="true">' + initial(m) + '</span>' +
+    '<span class="ma-who' + (m.name ? '' : ' anon') + '">' + esc(who(m)) + '</span>' +
+    '<span class="ma-when">' + (m.read ? '' : '<span class="ma-dot" aria-label="Unread"></span>') + short(m.at) + '</span>' +
+    '<span class="ma-pre">' + esc(m.text) + '</span></button>' +
+    (cur ? '<div class="ma-fold">' + reader(m, i, true) + '</div>' : '') + '</li>';
+}
+function acts(m, i) {
+  if (asking === i) {
+    return '<div class="ma-ask"><p>Delete this message from <b>' + esc(who(m)) + '</b>? It cannot be brought back.</p>' +
+      '<div class="ap-ask-b"><button type="button" class="ap-keep" data-keep>Keep</button><button type="button" class="ap-del" data-gone="' + i + '">' + IC.bin + 'Delete</button></div></div>';
+  }
+  return (m.read
+      ? '<span class="ma-done">' + IC.check + 'Read</span>'
+      : '<button type="button" class="aw-btn" data-read="' + i + '">' + IC.check + 'Mark read</button>') +
+    '<button type="button" class="aw-btn ma-del" data-ask="' + i + '">' + IC.bin + 'Delete</button>' +
+    '<span class="sp"></span><span class="ma-pos">' + (i + 1) + ' of ' + MSGS.length + '</span>';
+}
+function reader(m, i, fold) {
+  if (fold) {
+    return '<a class="ma-mail" href="' + mailto(m) + '">' + IC.reply + esc(m.email) + '</a>' +
+      '<p class="ma-body">' + esc(m.text) + '</p><div class="ma-acts">' + acts(m, i) + '</div>';
+  }
+  return '<div class="ma-read-h"><span class="aw-av ' + tone(m) + '" aria-hidden="true">' + initial(m) + '</span><div style="min-width:0">' +
+    '<h2' + (m.name ? '' : ' class="anon"') + '>' + esc(m.name || 'No name given') + '</h2>' +
+    '<a class="ma-mail" href="' + mailto(m) + '">' + IC.reply + esc(m.email) + '</a></div>' +
+    '<span class="ma-stamp"><b>' + ago(m.at) + '</b>' + stamp(m.at) + '</span></div>' +
+    '<p class="ma-body">' + esc(m.text) + '</p><div class="ma-acts">' + acts(m, i) + '</div>';
+}
+function render() {
+  var m = MSGS[sel];
+  document.getElementById('app').innerHTML = band(hero()) +
+    '<main class="wrap"><section class="ma-box" aria-label="Messages">' +
+    '<div class="ma-side"><div class="ma-side-h">' +
+    '<button type="button" class="aw-chip" aria-pressed="true">All <i>' + MSGS.length + '</i></button>' +
+    '<button type="button" class="aw-chip warn" aria-pressed="false">Unread <i>' + unread() + '</i></button>' +
+    '<span class="ma-cap">Newest first &middot; last 200</span></div>' +
+    '<ul class="ma-list">' + MSGS.map(row).join('') + '</ul></div>' +
+    (m ? '<article class="ma-read desk">' + reader(m, sel, false) + '</article>' : '') +
+    '</section></main>';
+}
+document.addEventListener('click', function (e) {
+  var t = e.target.closest('button'); if (!t) return;
+  if (t.dataset.i) { sel = +t.dataset.i; asking = -1; }
+  else if (t.dataset.read) MSGS[+t.dataset.read].read = true;
+  else if (t.dataset.unread) MSGS[+t.dataset.unread].read = false;
+  else if (t.dataset.ask) asking = +t.dataset.ask;
+  else if (t.hasAttribute('data-keep')) asking = -1;
+  else if (t.dataset.gone) { MSGS.splice(+t.dataset.gone, 1); asking = -1; sel = Math.min(sel, MSGS.length - 1); }
+  else return;
+  render();
+});
+render();
+</script>
+</body>
+</html>
