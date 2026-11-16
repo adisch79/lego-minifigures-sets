@@ -22,9 +22,10 @@ Backlog row: docs/backlog.md (V2-09). Reviews 2026-11-16: design-reviewer (4 blo
 - v2_08 re-enable block: comment that Telegram alerts need a global cap before re-enabling (any stranger could get 20 messages/hour each).
 
 ## Owner steps at release (exact text delivered with the PR)
-1. Turnstile site key + secret (Cloudflare dashboard), secret into Supabase Auth > Attack Protection.
+1. Turnstile site key + secret (Cloudflare dashboard).
+1a. Set `VITE_TURNSTILE_SITE_KEY` in the Cloudflare Pages build env, redeploy, check the widget loads on the sign-in form. Only then put the secret into Supabase Auth > Attack Protection and switch captcha on (captcha on before the widget ships blocks every sign-in, existing users included).
 2. Custom SMTP (V2-16) with its own hourly cap; SPF/DKIM for the sender domain.
 3. Auth rate limits for emails per hour and OTP per IP: values to be set and recorded with SOURCE at release (UNKNOWN now).
 4. "Confirm signup" email template includes `{{ .Token }}` (new users get this template, not "Magic link").
-5. "Allow new users to sign up" ON, last.
+5. "Allow new users to sign up" ON, last, and only after steps 1-3 are done and the rate-limit values are recorded with SOURCE.
 6. Smoke test with a fresh address: link path and code path.
