@@ -66,7 +66,9 @@ textarea.in { height:150px; padding:14px 16px; line-height:1.55; resize:vertical
   .ts { width:100%; max-width:300px; align-self:center; }
   .go { width:100%; }
   .soon { width:100%; justify-content:center; }
-  .ann { font-size:11px; }
+  .ann { font-size:11px; position:static; display:inline-block; margin:12px 16px 16px; }
+  .soon { white-space:nowrap; padding:0 14px; gap:8px; font-size:15px; }
+  .soon em { font-size:10px; padding:4px 7px; }
 }
 /* ---- Direction B CSS: this block is what would ship ---- */
 .b-cupbtn { flex:none; width:44px; height:44px; border-radius:50%; border:0; background:var(--white); color:var(--ink); display:grid; place-items:center;
@@ -164,7 +166,7 @@ textarea.in { height:150px; padding:14px 16px; line-height:1.55; resize:vertical
   .b-counter { height:330px; }
   .b-counter img.larry { height:230px; left:14px; }
   .b-counter svg.mug { width:124px; right:18px; }
-  .b-counter .menu { right:14px; top:16px; }
+  .b-counter .menu { display:none; }
   .b-pays { grid-template-columns:1fr 1fr 1fr; gap:8px; }
   .b-pays li { padding:10px 8px; font-size:12px; }
   .b-pays li b { font-size:18px; }

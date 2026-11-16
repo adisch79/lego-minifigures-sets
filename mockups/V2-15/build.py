@@ -173,7 +173,9 @@ textarea.in { height:150px; padding:14px 16px; line-height:1.55; resize:vertical
   .ts { width:100%; max-width:300px; align-self:center; }
   .go { width:100%; }
   .soon { width:100%; justify-content:center; }
-  .ann { font-size:11px; }
+  .ann { font-size:11px; position:static; display:inline-block; margin:12px 16px 16px; }
+  .soon { white-space:nowrap; padding:0 14px; gap:8px; font-size:15px; }
+  .soon em { font-size:10px; padding:4px 7px; }
 }
 """
 
@@ -245,6 +247,7 @@ A_CSS = """
 .a-coffee p { font-size:16.5px; line-height:1.6; margin:0 0 14px; font-weight:500; max-width:56ch; }
 .a-coffee .facts { margin:20px 0 26px; }
 .a-coffee .facts .fact { background:var(--white); border:1px solid var(--grey-100); }
+.a-coffee .facts .fact.dark { background:var(--ink); color:var(--lego-yellow); border-color:var(--ink); }
 .a-coffee .hint2 { font-size:13.5px; font-weight:600; color:var(--grey-500); margin:12px 0 0; }
 .a-thanks { background:var(--lego-yellow); border-radius:24px; padding:28px; }
 .a-thanks h3 { margin:0 0 8px; font-size:20px; font-weight:800; letter-spacing:-.02em; }
@@ -285,7 +288,7 @@ A_SIDE = f"""
 
 A_F1 = (f'<div class="page"><main class="wrap"><div class="rule"><span><b>{N_SERIES} series</b></span><span>Newest first</span></div>'
         f'<div class="a-tease"><ul class="grid">{tiles()}</ul></div></main>{A_FOOT}'
-        '<span class="ann" style="right:250px;bottom:118px">New footer, on every page</span></div>')
+        '<span class="ann" style="right:250px;bottom:150px">New footer, on every page</span></div>')
 
 A_F2 = (f'<div class="page">{a_band("Say <em>hello.</em>", "Spotted a wrong name, a missing figure, or a series that is not here yet? Tell me, and I will fix it.")}'
         f'<main class="wrap a-main"><section class="a-card"><h2>Send a message</h2>'
@@ -408,7 +411,7 @@ B_CSS = """
   .b-counter { height:330px; }
   .b-counter img.larry { height:230px; left:14px; }
   .b-counter svg.mug { width:124px; right:18px; }
-  .b-counter .menu { right:14px; top:16px; }
+  .b-counter .menu { display:none; }
   .b-pays { grid-template-columns:1fr 1fr 1fr; gap:8px; }
   .b-pays li { padding:10px 8px; font-size:12px; }
   .b-pays li b { font-size:18px; }
