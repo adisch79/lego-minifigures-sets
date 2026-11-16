@@ -1,5 +1,5 @@
 // Pure logic for story V2-05, the admin page (docs/design/V2-05-admin.md, direction C "Wanted wall").
-// Row guards for the two admin RPCs, grouping wanted marks into ranked cards, the three wall views,
+// Row guards for the two admin RPCs (admin_people_list, admin_wanted_list), grouping wanted marks into ranked cards, the three wall views,
 // relative times, email checks and the Edge Function answers. No React and no network in here.
 import type { Series } from './catalog'
 import { tileArt } from './home'
@@ -7,13 +7,12 @@ import type { MarkKind } from './marks'
 
 export type AlertState = 'sent' | 'unsent' | 'none'
 
-/** One row of rpc admin_allowlist_list. */
+/** One row of rpc admin_people_list: every account (V2-09 open sign-up). */
 export interface Person {
   email: string
-  addedAt: string
-  userId: string | null
+  userId: string
   displayName: string | null
-  signedInAt: string | null
+  signedUpAt: string
   isAdmin: boolean
   lastMarkAt: string | null
 }
@@ -112,19 +111,23 @@ function rows(data: unknown, name: string): unknown[] {
 }
 
 export function parsePeople(data: unknown): Person[] {
-  return rows(data, 'admin_allowlist_list').map((v, i) => {
-    const path = `admin_allowlist_list[${i}]`
+  const out: Person[] = []
+  rows(data, 'admin_people_list').forEach((v, i) => {
+    const path = `admin_people_list[${i}]`
     const o = rec(v, path)
-    return {
-      email: text(o, 'email', path),
-      addedAt: text(o, 'added_at', path),
-      userId: maybeText(o, 'user_id', path),
+    // auth.users.email can be null (e.g. phone or anonymous users); the list is people we can mail, so skip them.
+    const email = maybeText(o, 'email', path)
+    if (email === null) return
+    out.push({
+      email,
+      userId: text(o, 'user_id', path),
       displayName: maybeText(o, 'display_name', path),
-      signedInAt: maybeText(o, 'signed_in_at', path),
+      signedUpAt: text(o, 'signed_up_at', path),
       isAdmin: o.is_admin === null || o.is_admin === undefined ? false : flag(o, 'is_admin', path),
       lastMarkAt: maybeText(o, 'last_mark_at', path),
-    }
+    })
   })
+  return out
 }
 
 export function parseWanted(data: unknown): WantedRow[] {
@@ -288,28 +291,28 @@ export function isTruncated(wanted: readonly WantedRow[]): boolean {
   return wanted.some((w) => w.truncated)
 }
 
-/** Wanted marks per collector, for the allowlist rows. */
+/** Wanted marks per collector, for the collector rows. */
 export function wantedPerUser(wanted: readonly WantedRow[]): Map<string, number> {
   const n = new Map<string, number>()
   for (const w of wanted) n.set(w.userId, (n.get(w.userId) ?? 0) + 1)
   return n
 }
 
-/** Allowlist in the order people were invited; the oldest invite (the owner) first. */
+/** Everyone, newest sign-up first (the people to look at after a release). */
 export function sortPeople(people: readonly Person[]): Person[] {
   return [...people].sort(
-    (a, b) => Date.parse(a.addedAt) - Date.parse(b.addedAt) || a.email.localeCompare(b.email),
+    (a, b) => Date.parse(b.signedUpAt) - Date.parse(a.signedUpAt) || a.email.localeCompare(b.email),
   )
 }
 
 export const AVATAR_TONES = ['', 'ink', 'y'] as const
 
-/** Stable avatar colour per collector: their place on the allowlist, three tones round. */
+/** Stable avatar colour per collector: order of sign-up (oldest first), three tones round. */
 export function toneMap(people: readonly Person[]): Map<string, string> {
   const tones = new Map<string, string>()
-  sortPeople(people).forEach((p, i) => {
-    if (p.userId) tones.set(p.userId, AVATAR_TONES[i % AVATAR_TONES.length])
-  })
+  sortPeople(people)
+    .reverse()
+    .forEach((p, i) => tones.set(p.userId, AVATAR_TONES[i % AVATAR_TONES.length]))
   return tones
 }
 
@@ -329,31 +332,14 @@ export function ago(iso: string, now: number = Date.now()): string {
   return d === 1 ? 'yesterday' : `${d} days ago`
 }
 
-/** Second line of an allowlist row. */
+/** Second line of a collector row. */
 export function personStatus(p: Person, now: number = Date.now()): string {
-  if (!p.signedInAt) return `Invited ${ago(p.addedAt, now)}, not signed in`
   if (p.lastMarkAt) return `Last mark ${ago(p.lastMarkAt, now)}`
-  return `Signed in ${ago(p.signedInAt, now)}`
+  return `Signed up ${ago(p.signedUpAt, now)}`
 }
 
 // ---------------------------------------------------------------------------------------------
-// Inviting and removing
-
-// SOURCE: docs/design/V2-05-admin.md "Writes": trim, lower-case, max 254 chars, one @, no whitespace
-// or control chars. The client applies the same rule so a typo never costs a round trip.
-const MAX_EMAIL = 254
-
-/** Cleaned email, or null when the server would refuse it as bad_email. */
-export function normaliseEmail(raw: string): string | null {
-  const e = raw.trim().toLowerCase()
-  if (!e || e.length > MAX_EMAIL) return null
-  // eslint-disable-next-line no-control-regex
-  if (/[\s\u0000-\u001f\u007f]/.test(e)) return null
-  const parts = e.split('@')
-  if (parts.length !== 2 || !parts[0] || !parts[1]) return null
-  if (!/^[^.]+(\.[^.]+)+$/.test(parts[1])) return null
-  return e
-}
+// Deleting accounts
 
 export type PeopleError =
   | 'unauthorized'
@@ -363,7 +349,6 @@ export type PeopleError =
   | 'is_admin'
   | 'internal'
   | 'network'
-  | 'duplicate'
 
 export type PeopleResult = { ok: true } | { ok: false; error: PeopleError }
 
@@ -386,8 +371,7 @@ export const PEOPLE_ERROR_TEXT: Record<PeopleError, string> = {
   not_admin: 'This account is no longer an admin.',
   bad_request: 'The server refused the request. Reload the page and try again.',
   bad_email: 'That does not look like an email address.',
-  is_admin: 'Admins cannot be removed from this page.',
+  is_admin: 'Admin accounts cannot be deleted from this page.',
   internal: 'The server could not finish. Nothing was changed; try again.',
   network: 'Could not reach the server. Check your connection and try again.',
-  duplicate: 'That address is already on the allowlist.',
 }

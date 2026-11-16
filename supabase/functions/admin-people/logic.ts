@@ -25,10 +25,6 @@ export type Deps = {
   getUser: (jwt: string) => Promise<AuthUser | null>; // auth client, validates the token
   isAdmin: (userId: string) => Promise<boolean>; // live read of public.admins (service client)
   lookup: (email: string) => Promise<Lookup | null>; // rpc admin_user_lookup
-  // On conflict do nothing. ok=false on error; inserted=true only when this call created the row.
-  insertAllowlist: (email: string) => Promise<{ ok: boolean; inserted: boolean }>;
-  deleteAllowlist: (email: string) => Promise<boolean>;
-  createUser: (email: string) => Promise<AuthErr>; // auth.admin.createUser({ email, email_confirm: true })
   deleteUser: (userId: string) => Promise<AuthErr>; // auth.admin.deleteUser
   log: (message: string) => void; // fixed strings only, never emails or tokens
 };
@@ -78,13 +74,6 @@ export function bearerToken(header: string | null): string | null {
   return m ? m[1] : null;
 }
 
-// "Already registered" from Auth admin createUser. Code is current; message is the fallback.
-export function isAlreadyRegistered(err: AuthErr): boolean {
-  if (!err) return false;
-  if (err.code === 'email_exists' || err.code === 'user_already_exists') return true;
-  return /already (been )?registered|already exists/i.test(err.message ?? '');
-}
-
 export async function handleRequest(req: Req, deps: Deps): Promise<Res> {
   // Origin first: any other origin (or none) learns nothing.
   if (!isAllowedOrigin(req.origin)) return { status: 403, headers: { vary: 'Origin' }, body: { error: 'origin' } };
@@ -123,40 +112,20 @@ export async function handleRequest(req: Req, deps: Deps): Promise<Res> {
   }
   if (typeof body !== 'object' || body === null || Array.isArray(body)) return fail(o, 400, 'bad_request');
   const b = body as Record<string, unknown>;
-  if (b.action !== 'add' && b.action !== 'remove') return fail(o, 400, 'bad_request');
+  if (b.action !== 'remove') return fail(o, 400, 'bad_request');
   const email = normalizeEmail(b.email);
   if (!email) return fail(o, 400, 'bad_email');
 
   try {
-    return b.action === 'add' ? await add(o, email, deps) : await remove(o, email, caller, deps);
+    return await remove(o, email, caller, deps);
   } catch {
     deps.log('admin-people: unexpected failure');
     return fail(o, 500, 'internal');
   }
 }
 
-// V2-01 "Adding a person": allowlist row first (the auth.users trigger needs it), then the account.
-async function add(o: string, email: string, deps: Deps): Promise<Res> {
-  const ins = await deps.insertAllowlist(email);
-  if (!ins.ok) {
-    deps.log('admin-people: allowlist insert failed');
-    return fail(o, 500, 'internal');
-  }
-  const err = await deps.createUser(email);
-  if (err && !isAlreadyRegistered(err)) {
-    // Roll back only a row this request created; a pre-existing row belongs to an earlier invite.
-    if (ins.inserted) {
-      deps.log('admin-people: createUser failed, rolling back allowlist row');
-      if (!(await deps.deleteAllowlist(email))) deps.log('admin-people: rollback failed');
-    } else {
-      deps.log('admin-people: createUser failed, allowlist row kept');
-    }
-    return fail(o, 500, 'internal');
-  }
-  return reply(o, 200, { ok: true });
-}
-
-// V2-01 "Removing a person": refuse admins, hard-delete the account, then drop the allowlist row.
+// V2-09 "Delete account": refuse admins and the caller, hard-delete the account. No allowlist write
+// (open sign-up): the person may sign up again.
 async function remove(o: string, email: string, caller: AuthUser, deps: Deps): Promise<Res> {
   const target = await deps.lookup(email);
   if (target && (target.is_admin || target.user_id === caller.id)) return fail(o, 409, 'is_admin');
@@ -166,10 +135,6 @@ async function remove(o: string, email: string, caller: AuthUser, deps: Deps): P
       deps.log('admin-people: deleteUser failed');
       return fail(o, 500, 'internal');
     }
-  }
-  if (!(await deps.deleteAllowlist(email))) {
-    deps.log('admin-people: allowlist delete failed');
-    return fail(o, 500, 'internal');
   }
   return reply(o, 200, { ok: true });
 }

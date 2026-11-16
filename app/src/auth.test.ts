@@ -60,14 +60,39 @@ describe('requestLink', () => {
     signInWithOtp.mockResolvedValue({ error: null })
     expect(await a.requestLink('a@b.co')).toEqual({ ok: true })
   })
-  it('trims, lower-cases, forbids user creation, sets redirect', async () => {
+  it('trims, lower-cases, allows user creation, sets redirect', async () => {
     const a = await load(true)
     signInWithOtp.mockResolvedValue({ error: null })
     await a.requestLink('  Foo@Bar.COM ')
     expect(signInWithOtp).toHaveBeenCalledWith({
       email: 'foo@bar.com',
-      options: { shouldCreateUser: false, emailRedirectTo: window.location.origin + '/app/' },
+      options: { shouldCreateUser: true, emailRedirectTo: window.location.origin + '/app/' },
     })
+  })
+  it('answers ok for a brand-new address', async () => {
+    const a = await load(true)
+    signInWithOtp.mockResolvedValue({ data: { user: null, session: null }, error: null })
+    expect(await a.requestLink('new.person@example.com')).toEqual({ ok: true })
+  })
+  it('passes the Turnstile token only when given', async () => {
+    const a = await load(true)
+    signInWithOtp.mockResolvedValue({ error: null })
+    await a.requestLink('a@b.co', 'tok123')
+    expect(signInWithOtp.mock.calls[0][0].options.captchaToken).toBe('tok123')
+    await a.requestLink('a@b.co')
+    expect(signInWithOtp.mock.calls[1][0].options).not.toHaveProperty('captchaToken')
+  })
+  it('maps a rate-limit code to rate', async () => {
+    const a = await load(true)
+    signInWithOtp.mockResolvedValue({ error: { status: 400, code: 'over_email_send_rate_limit', message: 'x' } })
+    expect(await a.requestLink('a@b.co')).toEqual({ ok: false, reason: 'rate' })
+  })
+  it('maps captcha errors to captcha', async () => {
+    const a = await load(true)
+    signInWithOtp.mockResolvedValue({ error: { status: 400, code: 'captcha_failed', message: 'x' } })
+    expect(await a.requestLink('a@b.co', 't')).toEqual({ ok: false, reason: 'captcha' })
+    signInWithOtp.mockResolvedValue({ error: { status: 400, message: 'captcha protection: request disallowed' } })
+    expect(await a.requestLink('a@b.co', 't')).toEqual({ ok: false, reason: 'captcha' })
   })
   it('redirect drops query and hash', async () => {
     const a = await load(true)

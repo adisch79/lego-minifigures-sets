@@ -1,5 +1,5 @@
-// Edge Function: add or remove an invited person (V2-05). Caller: the admin page, with the
-// signed-in user's JWT (verify_jwt = true in config.toml). Body: {action: "add"|"remove", email}.
+// Edge Function: delete a person's account (V2-05, open sign-up V2-09). Caller: the admin page, with the
+// signed-in user's JWT (verify_jwt = true in config.toml). Body: {action: "remove", email}.
 // SUPABASE_URL, SUPABASE_ANON_KEY and SUPABASE_SERVICE_ROLE_KEY are injected by the platform.
 // SOURCE: https://supabase.com/docs/guides/functions/secrets
 import { createClient } from 'npm:@supabase/supabase-js@2';
@@ -54,22 +54,6 @@ Deno.serve(async (req: Request) => {
       const { data, error } = await db.rpc('admin_user_lookup', { p_email: email });
       if (error) throw new Error('lookup failed');
       return Array.isArray(data) && data.length > 0 ? data[0] : null;
-    },
-    insertAllowlist: async (email) => {
-      // ignoreDuplicates + select: returns only rows this call actually inserted.
-      const { data, error } = await db
-        .from('allowlist')
-        .upsert({ email }, { onConflict: 'email', ignoreDuplicates: true })
-        .select('email');
-      return { ok: !error, inserted: !error && Array.isArray(data) && data.length > 0 };
-    },
-    deleteAllowlist: async (email) => {
-      const { error } = await db.from('allowlist').delete().eq('email', email);
-      return !error;
-    },
-    createUser: async (email) => {
-      const { error } = await db.auth.admin.createUser({ email, email_confirm: true });
-      return error ? { message: error.message, status: error.status, code: error.code } : null;
     },
     deleteUser: async (userId) => {
       const { error } = await db.auth.admin.deleteUser(userId);

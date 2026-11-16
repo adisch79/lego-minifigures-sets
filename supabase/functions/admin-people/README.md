@@ -1,12 +1,12 @@
 # admin-people
 
-Edge Function (Deno) that adds or removes an invited person (story V2-05). Needs the service role (Auth admin API), so it cannot run in the browser. Design: `docs/design/V2-05-admin.md`, rules from `docs/design/V2-01-schema.md` ("Adding a person", "Removing a person").
+Edge Function (Deno) that deletes a person's account (stories V2-05, V2-09 open sign-up). Needs the service role (Auth admin API), so it cannot run in the browser. Design: `docs/design/V2-05-admin.md`, rules from `docs/design/V2-01-schema.md` ("Adding a person", "Removing a person").
 
 ## How it works
-- `POST` with the signed-in user's JWT and body `{"action": "add" | "remove", "email": "<address>"}` (JSON, at most 1 KB).
+- `POST` with the signed-in user's JWT and body `{"action": "remove", "email": "<address>"}` (JSON, at most 1 KB).
 - `verify_jwt = true` (`config.toml`). The function also validates the token with `auth.getUser`, then checks `public.admins` live (403 `not_admin`).
-- `add`: inserts the allowlist row, then creates the account (`email_confirm: true`). A create failure other than "already registered" removes the allowlist row again.
-- `remove`: refuses admins and the caller (`is_admin`), hard-deletes the account (profile, marks and alerts cascade), then deletes the allowlist row. The person's marks are lost.
+- There is no `add` any more: anyone can sign up (V2-09). An `add` request gets 400 `bad_request`.
+- `remove`: refuses admins and the caller (`is_admin`), hard-deletes the account (profile, marks and alerts cascade). No allowlist write. The person's marks are lost and they may sign up again.
 - CORS: only the exact origin `https://minifighunt.com` (`ALLOWED_ORIGINS`). ACAO echoes the caller with `Vary: Origin`; other origin 403, other method 405.
 - Answers `{"ok": true}` or `{"error": "<code>"}`: `unauthorized` (401), `not_admin` (403), `bad_request` and `bad_email` (400), `is_admin` (409), `internal` (500). Logs never hold emails or tokens.
 
@@ -25,10 +25,10 @@ The admin page (`#admin`) calls it. Manual check with an admin's access token (k
 
     curl -X POST https://iagnfgedasxkqqjbsoeg.supabase.co/functions/v1/admin-people \
       -H "Origin: https://minifighunt.com" -H "Authorization: Bearer <admin access token>" \
-      -H "Content-Type: application/json" -d '{"action":"add","email":"person@example.com"}'
+      -H "Content-Type: application/json" -d '{"action":"remove","email":"person@example.com"}'
 
 ## Test
     cd supabase
     npm test
 
-`logic.ts` is unit-tested with injected dependencies. `index.ts` (Deno wiring) is covered by the live smoke only: a removed user cannot sign in; a re-added user can.
+`logic.ts` is unit-tested with injected dependencies. `index.ts` (Deno wiring) is covered by the live smoke only: a deleted user's account is gone and the same address can sign up again.

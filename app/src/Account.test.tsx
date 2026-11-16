@@ -3,13 +3,13 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import type { AuthState, LinkResult } from './auth'
 
 const authState: { current: AuthState } = { current: { status: 'signed-out' } }
-const requestLink = vi.fn<(email: string) => Promise<LinkResult>>()
+const requestLink = vi.fn<(email: string, token?: string) => Promise<LinkResult>>()
 const signOut = vi.fn<() => Promise<void>>()
 
 vi.mock('./auth', () => ({
   authEnabled: true,
   useAuth: () => authState.current,
-  requestLink: (email: string) => requestLink(email),
+  requestLink: (email: string, token?: string) => requestLink(email, token),
   signOut: () => signOut(),
 }))
 
@@ -85,10 +85,10 @@ describe('Account', () => {
   it('submits the typed address and shows the sent state', async () => {
     renderAccount({ status: 'signed-out' })
     await submitWith('fan@example.com', { ok: true })
-    expect(requestLink).toHaveBeenCalledWith('fan@example.com')
+    expect(requestLink).toHaveBeenCalledWith('fan@example.com', undefined)
     expect(screen.getByRole('heading', { name: 'Check your email' })).toBeTruthy()
     expect(
-      screen.getByText('If this address is invited, a sign-in link is on its way. Open it in this browser.'),
+      screen.getByText('Check your email for the sign-in link and code. Open the link in this browser.'),
     ).toBeTruthy()
     expect(screen.getByRole('status').textContent).toContain('Check your email')
     fireEvent.click(screen.getByRole('button', { name: 'Use a different address' }))
@@ -125,6 +125,13 @@ describe('Account', () => {
     })
     expect(requestLink).toHaveBeenCalledTimes(2)
     expect(screen.getByRole('heading', { name: 'Check your email' })).toBeTruthy()
+  })
+
+  it('shows a verification message after a captcha failure', async () => {
+    renderAccount({ status: 'signed-out' })
+    await submitWith('fan@example.com', { ok: false, reason: 'captcha' })
+    expect(document.querySelector('.callout.red')?.textContent).toBe('Verification failed, try again.')
+    expect(screen.getByRole('status').textContent).toBe('Verification failed, try again.')
   })
 
   it('closes on Escape and returns focus to the pill', () => {
@@ -171,5 +178,38 @@ describe('Account', () => {
     renderAccount({ status: 'signed-out', linkError: 'That sign-in link has expired. Ask for a new one.' })
     fireEvent.click(screen.getByRole('button', { name: 'Dismiss' }))
     expect(screen.queryByRole('alert')).toBeNull()
+  })
+})
+
+describe('Account with Turnstile configured', () => {
+  afterEach(() => {
+    vi.unstubAllEnvs()
+    delete window.turnstile
+  })
+
+  it('holds the send button until solved, passes the token, then asks for a fresh one', async () => {
+    vi.stubEnv('VITE_TURNSTILE_SITE_KEY', 'site-key')
+    let cb: (t: string) => void = () => {}
+    const render_ = vi.fn((_el: HTMLElement, o: { callback: (t: string) => void }) => {
+      cb = o.callback
+      return 'w' + render_.mock.calls.length
+    })
+    window.turnstile = { render: render_, remove: vi.fn() } as unknown as typeof window.turnstile
+    renderAccount({ status: 'signed-out' })
+    requestLink.mockResolvedValueOnce({ ok: true })
+    openPopover()
+    await act(async () => {})
+    fireEvent.change(screen.getByLabelText('Email address'), { target: { value: 'new@example.com' } })
+    const send = screen.getByRole('button', { name: 'Email me a sign-in link' }) as HTMLButtonElement
+    expect(send.disabled).toBe(true)
+    act(() => cb('tok-1'))
+    expect(send.disabled).toBe(false)
+    await act(async () => {
+      fireEvent.click(send)
+    })
+    expect(requestLink).toHaveBeenCalledWith('new@example.com', 'tok-1')
+    fireEvent.click(screen.getByRole('button', { name: 'Use a different address' }))
+    await act(async () => {})
+    expect(render_).toHaveBeenCalledTimes(2)
   })
 })

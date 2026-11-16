@@ -11,7 +11,7 @@ const TOKEN_PARAMS = ['access_token', 'refresh_token', 'token_type']
 
 export type LinkResult =
   | { ok: true }
-  | { ok: false; reason: 'rate' | 'invalid' | 'network' }
+  | { ok: false; reason: 'rate' | 'invalid' | 'network' | 'captcha' }
 
 export type AuthState = {
   status: 'disabled' | 'loading' | 'signed-out' | 'signed-in'
@@ -75,12 +75,18 @@ export const supabase: SupabaseClient | null = authEnabled
   : null
 
 const EMAIL_SHAPE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-// email_not_confirmed is included so an unconfirmed account cannot reveal who is invited.
+// Same answer for every address (anti-enumeration). signup_disabled stays ok:true on purpose: with the
+// Supabase sign-up flag off, an unknown address must look like a known one; the release checklist
+// covers turning sign-up on. email_not_confirmed is included so an unconfirmed account
+// cannot be told apart from a new one.
 const SAME_ANSWER_CODES = ['signup_disabled', 'user_not_found', 'otp_disabled', 'not_allowed', 'email_not_confirmed']
 const RATE_CODES = ['over_email_send_rate_limit', 'over_request_rate_limit']
 
-/** Asks for a sign-in link. Listed and unlisted addresses get the same answer. */
-export async function requestLink(email: string): Promise<LinkResult> {
+/**
+ * Asks for a sign-in link; a new address creates an account (V2-09 open sign-up). Every address gets the
+ * same answer. captchaToken is the Turnstile token, sent only when the widget is configured.
+ */
+export async function requestLink(email: string, captchaToken?: string): Promise<LinkResult> {
   const clean = email.trim().toLowerCase()
   if (!EMAIL_SHAPE.test(clean)) return { ok: false, reason: 'invalid' }
   if (!supabase) return { ok: false, reason: 'network' }
@@ -88,8 +94,9 @@ export async function requestLink(email: string): Promise<LinkResult> {
     const { error } = await supabase.auth.signInWithOtp({
       email: clean,
       options: {
-        shouldCreateUser: false,
+        shouldCreateUser: true,
         emailRedirectTo: window.location.origin + window.location.pathname,
+        ...(captchaToken ? { captchaToken } : {}),
       },
     })
     if (!error) return { ok: true }
@@ -97,6 +104,7 @@ export async function requestLink(email: string): Promise<LinkResult> {
       return { ok: false, reason: 'rate' }
     }
     const msg = (error.message ?? '').toLowerCase()
+    if (error.code === 'captcha_failed' || msg.includes('captcha')) return { ok: false, reason: 'captcha' }
     if (
       (error.code && SAME_ANSWER_CODES.includes(error.code)) ||
       msg === 'signups not allowed for otp' ||

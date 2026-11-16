@@ -222,27 +222,34 @@ test('private functions are not callable by client roles', async () => {
   }
 });
 
-test('auth.users insert: unlisted and null email refused, mixed-case listed accepted', async () => {
+test('auth.users insert: V2-09 open sign-up, any address accepted, profile created', async () => {
   const add = (email) => q('insert into auth.users (email) values ($1)', [email]);
-  await assert.rejects(add('nobody@example.invalid'), denied('42501'));
-  await assert.rejects(add(null), denied('42501'));
-  await q("insert into public.allowlist (email) values ('mixed@example.invalid')");
+  await add('nobody@example.invalid');
+  await add(null);
   await add('Mixed@Example.invalid');
+  assert.equal((await q("select count(*)::int n from public.profiles p join auth.users u on u.id = p.user_id where u.email = 'nobody@example.invalid'")).rows[0].n, 1);
   assert.equal((await q("select count(*)::int n from public.profiles p join auth.users u on u.id = p.user_id where u.email = 'Mixed@Example.invalid'")).rows[0].n, 1);
 });
 
-test('the gate works as the role Auth uses', async () => {
-  await q("insert into public.allowlist (email) values ('c@example.invalid')");
+test('the sign-up path works as the role Auth uses, unlisted address included', async () => {
   await as('supabase_auth_admin', null, async () => {
     await q("insert into auth.users (email) values ('c@example.invalid')");
-    await assert.rejects(q("insert into auth.users (email) values ('d@example.invalid')"), denied('42501'));
+    await q("insert into auth.users (email) values ('d@example.invalid')");
   });
-  assert.equal((await q("select count(*)::int n from public.profiles p join auth.users u on u.id = p.user_id where u.email = 'c@example.invalid'")).rows[0].n, 1);
+  assert.equal((await q("select count(*)::int n from public.profiles p join auth.users u on u.id = p.user_id where u.email in ('c@example.invalid','d@example.invalid')")).rows[0].n, 2);
 });
 
-test('email cannot move off the allowlist; existing users survive allowlist removal', async () => {
+test('allowlist gate triggers are gone; block_email_change stays', async () => {
+  const r = await q("select tgname from pg_trigger where tgrelid='auth.users'::regclass and not tgisinternal order by 1");
+  const names = r.rows.map((x) => x.tgname);
+  assert.ok(!names.includes('enforce_allowlist_on_insert'));
+  assert.ok(!names.includes('enforce_allowlist_on_email_update'));
+  assert.ok(names.includes('block_email_change'));
+});
+
+test('email update to an unlisted address works; email_change is still blocked', async () => {
   await assert.rejects(q("update auth.users set email_change='x@example.invalid' where id=$1", [A]), denied('42501'));
-  await assert.rejects(q("update auth.users set email='x@example.invalid' where id=$1", [A]), denied('42501'));
+  await q("update auth.users set email='x@example.invalid' where id=$1", [A]);
   // Auth rewrites whole rows: the same values must keep working.
   await q("update auth.users set email=email, email_change=email_change where id=$1", [A]);
   await q("update auth.users set email_change='' where id=$1", [A]);
@@ -282,8 +289,8 @@ test('audit: definer functions pin search_path, RLS everywhere, nothing executab
       where p.pronamespace in ('private'::regnamespace, 'public'::regnamespace)
       and has_function_privilege('${role}', p.oid, 'execute') order by 1`)).rows.map((r) => r.proname);
   assert.deepEqual(await executable('anon'), []);
-  // V2-05: exactly the admin read functions; each re-checks admins inside.
-  assert.deepEqual(await executable('authenticated'), ['admin_allowlist_list', 'admin_wanted_list', 'is_admin']);
+  // V2-05/V2-09: exactly the admin read functions; each re-checks admins inside.
+  assert.deepEqual(await executable('authenticated'), ['admin_allowlist_list', 'admin_people_list', 'admin_wanted_list', 'is_admin']);
 });
 
 test('none of the tables is in the realtime publication', async () => {
