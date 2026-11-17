@@ -65,6 +65,24 @@ if (initialLinkError !== null) {
 const initialHadCode: boolean =
   typeof window === 'undefined' ? false : new URLSearchParams(window.location.search).has('code')
 
+// V2-16: the email button opens `<site>?token_hash=...&type=email` (no Supabase host in the mail).
+// Read and strip at module load, like the PKCE code, so the secret hash does not stay in the address bar.
+// SOURCE: https://supabase.com/docs/guides/auth/auth-email-templates (token_hash + type, then verifyOtp)
+// SOURCE: https://supabase.com/docs/reference/javascript/auth-verifyotp ("Verify Email Auth (Token Hash)": type 'email')
+const TOKEN_HASH_TYPES = ['email', 'signup', 'magiclink']
+const initialTokenLink: { tokenHash: string; type: 'email' | 'signup' | 'magiclink' } | null = (() => {
+  if (typeof window === 'undefined') return null
+  const p = new URLSearchParams(window.location.search)
+  const tokenHash = p.get('token_hash')
+  const type = p.get('type')
+  if (!tokenHash || !type || !TOKEN_HASH_TYPES.includes(type)) return null
+  p.delete('token_hash')
+  p.delete('type')
+  const qs = p.toString()
+  window.history.replaceState(null, '', window.location.pathname + (qs ? `?${qs}` : '') + window.location.hash)
+  return { tokenHash, type: type as 'email' | 'signup' | 'magiclink' }
+})()
+
 export const authEnabled: boolean = Boolean(url && anonKey)
 
 // Created once at module load so the PKCE `?code=` is read before React effects run.
@@ -81,6 +99,23 @@ const EMAIL_SHAPE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 // cannot be told apart from a new one.
 const SAME_ANSWER_CODES = ['signup_disabled', 'user_not_found', 'otp_disabled', 'not_allowed', 'email_not_confirmed']
 const RATE_CODES = ['over_email_send_rate_limit', 'over_request_rate_limit']
+
+// Runs once per page load (StrictMode runs effects twice); resolves to a link error message or undefined.
+let tokenLinkResult: Promise<string | undefined> | null = null
+function verifyTokenLink(): Promise<string | undefined> {
+  if (!initialTokenLink || !supabase) return Promise.resolve(undefined)
+  const client = supabase
+  const link = initialTokenLink
+  tokenLinkResult ??= (async () => {
+    try {
+      const { error } = await client.auth.verifyOtp({ token_hash: link.tokenHash, type: link.type })
+      return error ? describeLinkError(error.code ?? '', error.message) : undefined
+    } catch {
+      return describeLinkError('', '')
+    }
+  })()
+  return tokenLinkResult
+}
 
 /**
  * Asks for a sign-in link; a new address creates an account (V2-09 open sign-up). Every address gets the
@@ -153,7 +188,8 @@ export function useAuth(): AuthState {
       try {
         // initialize() runs the PKCE exchange and returns its error; getSession alone would drop it.
         const { error } = await supabase.auth.initialize()
-        const exchangeError = error ? describeLinkError(error.code ?? '', error.message) : undefined
+        const tokenError = await verifyTokenLink()
+        const exchangeError = error ? describeLinkError(error.code ?? '', error.message) : tokenError
         const { data: s } = await supabase.auth.getSession()
         const next = cleanLinkUrl(window.location.href, initialHadCode)
         if (next !== window.location.pathname + window.location.search + window.location.hash) {
