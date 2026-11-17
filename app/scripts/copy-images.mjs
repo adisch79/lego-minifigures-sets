@@ -23,6 +23,12 @@ console.log(`copy-images: ${src} -> ${dest}`)
 
 const emailSrc = resolve(here, '../../site/email')
 const emailDest = resolve(here, '../public/email')
+try {
+  await stat(emailSrc)
+} catch {
+  console.error(`copy-images: source folder missing: ${emailSrc}`)
+  process.exit(1)
+}
 await rm(emailDest, { recursive: true, force: true })
 await cp(emailSrc, emailDest, { recursive: true })
 console.log(`copy-images: ${emailSrc} -> ${emailDest}`)

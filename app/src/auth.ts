@@ -1,5 +1,5 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
 const MSG_EXPIRED = 'That sign-in link has expired. Ask for a new one.'
 // Token-link failures say nothing about the browser: the link is opened from a mail, not the sign-in tab.
@@ -82,6 +82,8 @@ const initialHadCode: boolean =
 const TOKEN_HASH_TYPES = ['email']
 // Shape check only (URL-safe characters, bounded length); Supabase validates the value itself.
 const TOKEN_HASH_SHAPE = /^[A-Za-z0-9_-]{1,128}$/
+// True when a token_hash was present but malformed: the visitor sees the failed-link message.
+let invalidTokenLink = false
 let pendingTokenLink: { tokenHash: string; type: 'email' } | null = (() => {
   if (typeof window === 'undefined') return null
   const p = new URLSearchParams(window.location.search)
@@ -92,7 +94,10 @@ let pendingTokenLink: { tokenHash: string; type: 'email' } | null = (() => {
   p.delete('type')
   const qs = p.toString()
   window.history.replaceState(null, '', window.location.pathname + (qs ? `?${qs}` : '') + window.location.hash)
-  if (!TOKEN_HASH_SHAPE.test(tokenHash) || !TOKEN_HASH_TYPES.includes(type)) return null
+  if (!TOKEN_HASH_SHAPE.test(tokenHash) || !TOKEN_HASH_TYPES.includes(type)) {
+    invalidTokenLink = true
+    return null
+  }
   return { tokenHash, type: 'email' }
 })()
 
@@ -180,9 +185,15 @@ export async function signOut(): Promise<void> {
 export function useAuth(): AuthState {
   const [state, setState] = useState<AuthState>(
     authEnabled
-      ? { status: 'loading', linkError: initialLinkError ?? undefined, pendingLink: pendingTokenLink !== null }
+      ? {
+          status: 'loading',
+          linkError: initialLinkError ?? (invalidTokenLink ? MSG_LINK_FAILED : undefined),
+          pendingLink: pendingTokenLink !== null,
+        }
       : { status: 'disabled' },
   )
+  // A token-link failure survives later auth events while signed in (until dismissed or a later link works).
+  const tokenFailure = useRef(invalidTokenLink)
 
   const dismissLink = useCallback(() => {
     pendingTokenLink = null
@@ -192,6 +203,7 @@ export function useAuth(): AuthState {
   const continueLink = useCallback(async () => {
     if (!supabase) return
     const tokenError = await verifyTokenLink()
+    tokenFailure.current = tokenError !== undefined
     pendingTokenLink = null
     try {
       const { data: s } = await supabase.auth.getSession()
@@ -217,7 +229,8 @@ export function useAuth(): AuthState {
         status: email ? 'signed-in' : 'signed-out',
         email,
         // A session ends the failed-link story, so the strip must not return after a later sign-out.
-        linkError: email ? undefined : (linkError ?? prev.linkError),
+        linkError:
+          email && !(tokenFailure.current && prev.linkError) ? undefined : (linkError ?? prev.linkError),
         pendingLink: prev.pendingLink,
       }))
     }

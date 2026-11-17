@@ -433,7 +433,7 @@ export function LinkErrorStrip() {
     // V2-16: a mail link is used only after this click (no sign-in on page load).
     const switching = auth.status === 'signed-in'
     return (
-      <div className="linkgo" role="region" aria-label="Sign-in link">
+      <div className="linkgo" role="status" aria-label="Sign-in link">
         <p>
           {switching
             ? `You are signed in as ${auth.email}. Continue to switch to the account from the email link.`

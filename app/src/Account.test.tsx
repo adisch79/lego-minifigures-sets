@@ -211,6 +211,15 @@ describe('Continue sign-in panel (V2-16)', () => {
     expect(screen.getByRole('alert').textContent).toContain('did not work')
     expect(screen.queryByRole('button', { name: 'Continue sign-in' })).toBeNull()
   })
+  it('shows the failure strip when signed in with a token-link error', () => {
+    renderAccount({ status: 'signed-in', email: 'a@b.co', linkError: 'That sign-in link did not work. Ask for a new one.' })
+    expect(screen.getByRole('alert').textContent).toContain('did not work')
+  })
+  it('announces the Continue panel as a status and keeps the button reachable', () => {
+    renderAccount({ status: 'signed-out', pendingLink: true, continueLink, dismissLink })
+    const panel = screen.getByRole('status', { name: 'Sign-in link' })
+    expect(panel.contains(screen.getByRole('button', { name: 'Continue sign-in' }))).toBe(true)
+  })
   it('shows nothing extra without a pending link', () => {
     renderAccount({ status: 'signed-out' })
     expect(screen.queryByRole('button', { name: 'Continue sign-in' })).toBeNull()

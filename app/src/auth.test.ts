@@ -346,8 +346,22 @@ describe('token_hash link (V2-16 email button)', () => {
     const a = await load(true)
     const { result } = await ready(a)
     expect(result.current.pendingLink).toBe(false)
+    expect(result.current.linkError).toBe(NEUTRAL)
     expect(verifyOtp).not.toHaveBeenCalled()
     expect(window.location.search).toBe('?q=1')
+  })
+  it('keeps a token-link failure through later auth events while signed in', async () => {
+    window.history.replaceState(null, '', '/app/?token_hash=bad&type=email')
+    const a = await load(true)
+    verifyOtp.mockResolvedValue({ data: {}, error: { code: 'otp_expired', message: 'expired' } })
+    const { result } = await ready(a)
+    await act(async () => {
+      await result.current.continueLink?.()
+    })
+    expect(result.current.linkError).toBe(NEUTRAL)
+    act(() => authListener?.('TOKEN_REFRESHED', { user: { email: 'a@b.co' } }))
+    expect(result.current.status).toBe('signed-in')
+    expect(result.current.linkError).toBe(NEUTRAL)
   })
   it('does nothing when no params are present', async () => {
     const a = await load(true)
