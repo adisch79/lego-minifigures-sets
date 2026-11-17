@@ -1,3 +1,4 @@
+import { StrictMode } from 'react'
 import { renderHook, waitFor, act } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
@@ -231,62 +232,127 @@ describe('requestLink loose match', () => {
 })
 
 describe('token_hash link (V2-16 email button)', () => {
-  const OTHER = 'Open the sign-in link in the same browser where you asked for it, or ask for a new one.'
-  const EXPIRED = 'That sign-in link has expired. Ask for a new one.'
+  const NEUTRAL = 'That sign-in link did not work. Ask for a new one.'
   const session = { data: { session: { user: { email: 'a@b.co' } } }, error: null }
+  const ready = async (a: Awaited<ReturnType<typeof load>>) => {
+    const hook = renderHook(() => a.useAuth())
+    await waitFor(() => expect(hook.result.current.status).not.toBe('loading'))
+    return hook
+  }
 
-  it('calls verifyOtp with token_hash and type, then signs in', async () => {
+  it('does not call verifyOtp on load and reports a pending link', async () => {
+    window.history.replaceState(null, '', '/app/?token_hash=abc123&type=email')
+    const a = await load(true)
+    const { result } = await ready(a)
+    expect(verifyOtp).not.toHaveBeenCalled()
+    expect(result.current.pendingLink).toBe(true)
+    expect(result.current.status).toBe('signed-out')
+  })
+  it('calls verifyOtp once on click, then signs in', async () => {
+    window.history.replaceState(null, '', '/app/?token_hash=abc123&type=email')
+    const a = await load(true)
+    const { result } = await ready(a)
+    getSession.mockResolvedValue(session)
+    await act(async () => {
+      await result.current.continueLink?.()
+    })
+    expect(verifyOtp).toHaveBeenCalledTimes(1)
+    expect(verifyOtp).toHaveBeenCalledWith({ token_hash: 'abc123', type: 'email' })
+    expect(result.current.status).toBe('signed-in')
+    expect(result.current.pendingLink).toBe(false)
+  })
+  it('runs verifyOtp once for a double click', async () => {
+    window.history.replaceState(null, '', '/app/?token_hash=abc123&type=email')
+    const a = await load(true)
+    const { result } = await ready(a)
+    await act(async () => {
+      await Promise.all([result.current.continueLink?.(), result.current.continueLink?.()])
+    })
+    expect(verifyOtp).toHaveBeenCalledTimes(1)
+  })
+  it('runs verifyOtp once under StrictMode', async () => {
+    window.history.replaceState(null, '', '/app/?token_hash=abc123&type=email')
+    const a = await load(true)
+    const { result } = renderHook(() => a.useAuth(), { wrapper: StrictMode })
+    await waitFor(() => expect(result.current.status).not.toBe('loading'))
+    expect(verifyOtp).not.toHaveBeenCalled()
+    await act(async () => {
+      await result.current.continueLink?.()
+      await result.current.continueLink?.()
+    })
+    expect(verifyOtp).toHaveBeenCalledTimes(1)
+  })
+  it('with a session already present, keeps it until the click', async () => {
     window.history.replaceState(null, '', '/app/?token_hash=abc123&type=email')
     const a = await load(true)
     getSession.mockResolvedValue(session)
-    const { result } = renderHook(() => a.useAuth())
-    await waitFor(() => expect(result.current.status).toBe('signed-in'))
-    expect(verifyOtp).toHaveBeenCalledTimes(1)
-    expect(verifyOtp).toHaveBeenCalledWith({ token_hash: 'abc123', type: 'email' })
+    const { result } = await ready(a)
+    expect(result.current.status).toBe('signed-in')
+    expect(result.current.email).toBe('a@b.co')
+    expect(result.current.pendingLink).toBe(true)
+    expect(verifyOtp).not.toHaveBeenCalled()
   })
-  it('removes token_hash and type from the URL and keeps other params', async () => {
+  it('dismissLink clears the pending link without verifying', async () => {
+    window.history.replaceState(null, '', '/app/?token_hash=abc123&type=email')
+    const a = await load(true)
+    const { result } = await ready(a)
+    act(() => result.current.dismissLink?.())
+    expect(result.current.pendingLink).toBe(false)
+    expect(verifyOtp).not.toHaveBeenCalled()
+  })
+  it('removes token_hash and type from the URL on load and keeps other params', async () => {
     window.history.replaceState(null, '', '/app/?token_hash=abc123&type=email&q=1#series/71019')
     const a = await load(true)
-    const { result } = renderHook(() => a.useAuth())
-    await waitFor(() => expect(result.current.status).not.toBe('loading'))
+    await ready(a)
     expect(window.location.search).toBe('?q=1')
     expect(window.location.hash).toBe('#series/71019')
   })
-  it('shows the link error when verifyOtp fails', async () => {
+  it('shows the neutral message when verifyOtp fails', async () => {
     window.history.replaceState(null, '', '/app/?token_hash=bad&type=email')
     const a = await load(true)
     verifyOtp.mockResolvedValue({ data: {}, error: { code: 'otp_expired', message: 'Email link is invalid or has expired' } })
-    const { result } = renderHook(() => a.useAuth())
-    await waitFor(() => expect(result.current.status).toBe('signed-out'))
-    expect(result.current.linkError).toBe(EXPIRED)
+    const { result } = await ready(a)
+    await act(async () => {
+      await result.current.continueLink?.()
+    })
+    expect(result.current.linkError).toBe(NEUTRAL)
+    expect(result.current.pendingLink).toBe(false)
     expect(window.location.search).toBe('')
   })
-  it('shows the generic error when verifyOtp throws', async () => {
+  it('shows the neutral message when verifyOtp throws', async () => {
     window.history.replaceState(null, '', '/app/?token_hash=bad&type=email')
     const a = await load(true)
     verifyOtp.mockRejectedValue(new Error('network'))
-    const { result } = renderHook(() => a.useAuth())
-    await waitFor(() => expect(result.current.status).toBe('signed-out'))
-    expect(result.current.linkError).toBe(OTHER)
+    const { result } = await ready(a)
+    await act(async () => {
+      await result.current.continueLink?.()
+    })
+    expect(result.current.linkError).toBe(NEUTRAL)
   })
-  it('does nothing without both params', async () => {
-    window.history.replaceState(null, '', '/app/?token_hash=abc123')
+  it('a PKCE exchange error wins over a token error', async () => {
     const a = await load(true)
-    const { result } = renderHook(() => a.useAuth())
-    await waitFor(() => expect(result.current.status).toBe('signed-out'))
+    initialize.mockResolvedValue({ error: { code: 'otp_expired', message: 'expired' } })
+    const { result } = await ready(a)
+    expect(result.current.linkError).toBe('That sign-in link has expired. Ask for a new one.')
+  })
+  it.each([
+    ['missing type', 'token_hash=abc123'],
+    ['unknown type', 'token_hash=abc&type=recovery'],
+    ['signup type', 'token_hash=abc&type=signup'],
+    ['bad shape', 'token_hash=a%20b%3Cx&type=email'],
+    ['too long', `token_hash=${'a'.repeat(129)}&type=email`],
+  ])('drops a link with %s, still strips it from the URL', async (_n, qs) => {
+    window.history.replaceState(null, '', `/app/?${qs}&q=1`)
+    const a = await load(true)
+    const { result } = await ready(a)
+    expect(result.current.pendingLink).toBe(false)
     expect(verifyOtp).not.toHaveBeenCalled()
+    expect(window.location.search).toBe('?q=1')
   })
   it('does nothing when no params are present', async () => {
     const a = await load(true)
-    const { result } = renderHook(() => a.useAuth())
-    await waitFor(() => expect(result.current.status).toBe('signed-out'))
-    expect(verifyOtp).not.toHaveBeenCalled()
-  })
-  it('ignores an unknown type', async () => {
-    window.history.replaceState(null, '', '/app/?token_hash=abc&type=recovery')
-    const a = await load(true)
-    const { result } = renderHook(() => a.useAuth())
-    await waitFor(() => expect(result.current.status).toBe('signed-out'))
+    const { result } = await ready(a)
+    expect(result.current.pendingLink).toBe(false)
     expect(verifyOtp).not.toHaveBeenCalled()
   })
 })
