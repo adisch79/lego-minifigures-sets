@@ -33,7 +33,7 @@ function world(over = {}) {
   return w;
 }
 
-const good = { name: 'Ann', email: 'Ann@Example.invalid', message: 'Hello there', token: 'tok' };
+const good = { name: 'Ann', email: 'Ann@Example.invalid', message: 'Hello there', captchaToken: 'tok' };
 const KNOWN_IP = { value: '203.0.113.7', trusted: true };
 const post = (w, body, over = {}) => handleRequest({
   method: 'POST', origin: ORIGIN, contentType: 'application/json',
@@ -157,7 +157,7 @@ test('fields: message 1..2000 code points, only newline and tab allowed as contr
 });
 
 test('request: invalid field returns 400 before captcha is spent', async () => {
-  for (const patch of [{ email: 'nope' }, { message: '' }, { name: 'a\nb' }, { token: '' }, { token: 5 }, { token: undefined }]) {
+  for (const patch of [{ email: 'nope' }, { message: '' }, { name: 'a\nb' }, { captchaToken: '' }, { captchaToken: 5 }, { captchaToken: undefined }]) {
     const w = world();
     const r = await post(w, { ...good, ...patch });
     assert.equal(r.status, 400, JSON.stringify(patch));

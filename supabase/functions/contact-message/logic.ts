@@ -138,7 +138,7 @@ export async function handleRequest(req: Req, deps: Deps): Promise<Res> {
   const name = cleanName(b.name);
   const email = normalizeEmail(b.email);
   const message = cleanMessage(b.message);
-  const token = typeof b.token === 'string' ? b.token : '';
+  const token = typeof b.captchaToken === 'string' ? b.captchaToken : '';
   if (name === null || email === null || message === null || token === '') return fail(o, 400, 'invalid');
 
   // Captcha: any failure, mismatch or network error is a closed door.

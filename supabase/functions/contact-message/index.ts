@@ -1,5 +1,5 @@
 // Edge Function: public contact form (V2-15). Anonymous callers (verify_jwt = false in config.toml);
-// Turnstile plus the database rate limits are the gate. Body: {name?, email, message, token}.
+// Turnstile plus the database rate limits are the gate. Body: {name?, email, message, captchaToken} (field names match app/src/contactApi.ts).
 // Secrets (set with `supabase secrets set`): TURNSTILE_SECRET_KEY, CONTACT_IP_SALT.
 // SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are injected by the platform.
 // SOURCE: https://supabase.com/docs/guides/functions/secrets
