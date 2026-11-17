@@ -764,7 +764,10 @@ export default function Admin({ load, onRetry }: { load: Load; onRetry: () => vo
  * hero. Messages load right away so the switch can show the unread badge on the wall too.
  */
 function AdminViews({ load, onRetry }: { load: Load; onRetry: () => void }) {
-  const [view, setView] = useState<AdminView>('wall')
+  // ?demo=admin&messages opens the Messages view on load, for screenshots (dev only).
+  const [view, setView] = useState<AdminView>(() =>
+    DEMO_ADMIN && new URLSearchParams(window.location.search).has('messages') ? 'messages' : 'wall',
+  )
   const switched = useRef(false)
   const msgs = useMessages(true)
   const now = useNow()
