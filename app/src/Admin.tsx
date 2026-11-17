@@ -26,6 +26,9 @@ import {
   type WantedCard,
 } from './adminLogic'
 import { deleteAccount, useAdminData } from './adminApi'
+import { MessagesHero, MessagesInbox, ViewSwitch, type AdminView } from './AdminMessages'
+import { useMessages } from './messagesApi'
+import { unreadCount } from './messagesLogic'
 import { AccountControl, LinkErrorStrip, useAccount, useAdminGate } from './Account'
 import { DEMO_ADMIN } from './demo'
 import { Brand } from './SeriesPage'
@@ -582,7 +585,7 @@ function Collectors({
 // ---------------------------------------------------------------------------------------------
 // The page for an admin
 
-function Wall({ load, onRetryCatalog }: { load: Load; onRetryCatalog: () => void }) {
+function Wall({ load, onRetryCatalog, switcher }: { load: Load; onRetryCatalog: () => void; switcher: ReactNode }) {
   const { auth } = useAccount()
   const { data, refresh, retry } = useAdminData(true)
   const now = useNow()
@@ -638,6 +641,8 @@ function Wall({ load, onRetryCatalog }: { load: Load; onRetryCatalog: () => void
               </p>
             )}
           </div>
+          <div className="ma-hero-r">
+          {switcher}
           <button
             ref={openRef}
             type="button"
@@ -662,6 +667,7 @@ function Wall({ load, onRetryCatalog }: { load: Load; onRetryCatalog: () => void
               }))}
             />
           </button>
+          </div>
         </div>
       </Band>
 
@@ -750,5 +756,44 @@ export default function Admin({ load, onRetry }: { load: Load; onRetry: () => vo
       </div>
     )
   }
-  return <Wall load={load} onRetryCatalog={onRetry} />
+  return <AdminViews load={load} onRetry={onRetry} />
+}
+
+/**
+ * A confirmed admin: the wanted wall or the messages inbox (V2-15), switched by the pill in the
+ * hero. Messages load right away so the switch can show the unread badge on the wall too.
+ */
+function AdminViews({ load, onRetry }: { load: Load; onRetry: () => void }) {
+  // ?demo=admin&messages opens the Messages view on load, for screenshots (dev only).
+  const [view, setView] = useState<AdminView>(() =>
+    DEMO_ADMIN && new URLSearchParams(window.location.search).has('messages') ? 'messages' : 'wall',
+  )
+  const switched = useRef(false)
+  const msgs = useMessages(true)
+  const now = useNow()
+  const unread = msgs.data.status === 'ready' ? unreadCount(msgs.data.messages) : 0
+
+  // The hero is rebuilt on a switch, so focus goes back to the pressed half of the new switch.
+  useEffect(() => {
+    if (!switched.current) return
+    document.querySelector<HTMLElement>('.ma-switch [aria-pressed="true"]')?.focus({ preventScroll: true })
+  }, [view])
+
+  const change = (v: AdminView) => {
+    switched.current = true
+    setView(v)
+  }
+  const switcher = <ViewSwitch view={view} unread={unread} onChange={change} />
+
+  if (view === 'wall') return <Wall load={load} onRetryCatalog={onRetry} switcher={switcher} />
+  return (
+    <div className="aw-page">
+      <Band>
+        <MessagesHero data={msgs.data} now={now} switcher={switcher} />
+      </Band>
+      <main className="wrap">
+        <MessagesInbox data={msgs.data} now={now} onRetry={msgs.retry} onMarkRead={msgs.markRead} onDelete={msgs.remove} />
+      </main>
+    </div>
+  )
 }
