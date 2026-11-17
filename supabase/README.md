@@ -31,5 +31,13 @@ Owner paused Telegram alerts on wanted marks on 2026-11-08. Migration `migration
 
 To re-enable, run the two `create trigger` statements in the header comment of that file.
 
+## Auth emails (V2-16)
+Branded templates live in `templates/magic_link.html` and `templates/confirmation.html`. Links use `{{ .SiteURL }}?token_hash={{ .TokenHash }}&type=email` (the app verifies the token itself); the 6-digit `{{ .Token }}` is shown too. Not applied by this folder's tooling. Paste in the Supabase Dashboard > Authentication > Email Templates:
+
+- Magic link: subject `Your Minifig Hunt sign-in link`, body = `templates/magic_link.html`.
+- Confirm signup: subject `Confirm your Minifig Hunt account`, body = `templates/confirmation.html`.
+
+`config.toml` has the same entries for local dev. Site URL must be `https://minifighunt.com/` (trailing slash). A custom sender name or domain needs custom SMTP (owner step); the default Supabase sender stays until then. Images load from `https://minifighunt.com/img/...` (webp, so some desktop Outlook versions will not show them).
+
 ## Not covered yet
 Admin RPCs (V2-05), alerts (V2-04) and the private-function checks that depend on them. Auth settings (signups off) live outside migrations and need a live smoke test. PGlite has one connection, so the cap's advisory lock is not tested under real concurrency.
