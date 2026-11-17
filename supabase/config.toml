@@ -30,3 +30,7 @@ verify_jwt = false
 # V2-05: admin page calls this with the signed-in user JWT; the function re-checks admins.
 [functions.admin-people]
 verify_jwt = true
+
+# V2-15: anonymous contact form; Turnstile plus the database rate limits are the gate.
+[functions.contact-message]
+verify_jwt = false
