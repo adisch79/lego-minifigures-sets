@@ -25,3 +25,4 @@ dist-ssr
 
 # Copied from ../site/img by scripts/copy-images.mjs
 public/img
+public/email

@@ -3,10 +3,10 @@ name: App CI
 on:
   push:
     branches: [dev, master]
-    paths: ['app/**', 'site/img/**', '.github/workflows/app-ci.yml', 'scripts/check_bundle_keys*']
+    paths: ['app/**', 'site/img/**', 'site/email/**', '.github/workflows/app-ci.yml', 'scripts/check_bundle_keys*']
   pull_request:
     branches: [dev, master]
-    paths: ['app/**', 'site/img/**', '.github/workflows/app-ci.yml', 'scripts/check_bundle_keys*']
+    paths: ['app/**', 'site/img/**', 'site/email/**', '.github/workflows/app-ci.yml', 'scripts/check_bundle_keys*']
 
 concurrency:
   group: app-ci-${{ github.ref }}
@@ -89,7 +89,7 @@ jobs:
             exit 1
           fi
       # prebuild copies site/img into the app; fail if the build ships without figure images or headers.
-      - run: npm ci && npm run build && test -f dist/img/71019/71019-1.webp && test -f dist/_headers
+      - run: npm ci && npm run build && test -f dist/img/71019/71019-1.webp && test -f dist/email/71045-2.png && test -f dist/_headers
         working-directory: app
         env:
           VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL }}

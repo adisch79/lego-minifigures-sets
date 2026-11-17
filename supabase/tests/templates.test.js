@@ -7,6 +7,10 @@ import { fileURLToPath } from 'node:url'
 
 const here = dirname(fileURLToPath(import.meta.url))
 const repo = resolve(here, '../..')
+test('apple-touch-icon exists', () => {
+  assert.ok(imageExists('apple-touch-icon.png'))
+})
+
 const FILES = ['magic_link.html', 'confirmation.html']
 
 // Images are served from app/public/img, a git-ignored copy of the committed site/img
@@ -37,8 +41,25 @@ for (const name of FILES) {
     assert.ok(!/\/cards\/\d+\.png/.test(html))
   })
   test(`${name}: every site image URL maps to an existing file`, () => {
-    const urls = [...html.matchAll(/https:\/\/minifighunt\.com\/(img\/[^"')\s]+)/g)].map((m) => m[1])
-    assert.ok(urls.length >= 3, 'expected at least three figure images')
+    const urls = [...html.matchAll(/https:\/\/minifighunt\.com\/((?:img|email)\/[^"')\s]+|apple-touch-icon\.png)/g)].map((m) => m[1])
+    assert.ok(urls.length >= 4, 'expected three figure images and the app icon')
     for (const rel of urls) assert.ok(imageExists(rel), `missing file for ${rel}`)
+  })
+  test(`${name}: figure images are PNG (Outlook has no webp) and decorative`, () => {
+    const figs = [...html.matchAll(/<img src="https:\/\/minifighunt\.com\/email\/([^"]+)"[^>]*>/g)]
+    assert.equal(figs.length, 3)
+    for (const m of figs) {
+      assert.ok(m[1].endsWith('.png'), m[1])
+      assert.ok(/ alt=""/.test(m[0]), 'figure image alt must be empty')
+      assert.ok(/ width="120"/.test(m[0]))
+    }
+    assert.ok(!/\.webp/.test(html))
+  })
+  test(`${name}: every href starts with SiteURL or the production host`, () => {
+    const hrefs = [...html.matchAll(/href="([^"]*)"/g)].map((m) => m[1])
+    assert.ok(hrefs.length >= 2)
+    for (const h of hrefs) {
+      assert.ok(h.startsWith('{{ .SiteURL }}') || h.startsWith('https://minifighunt.com'), h)
+    }
   })
 }
