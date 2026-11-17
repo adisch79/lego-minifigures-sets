@@ -24,8 +24,10 @@ for (const name of FILES) {
     assert.ok(html.includes('type=email'))
   })
   test(`${name}: no Supabase host and no ConfirmationURL`, () => {
-    assert.ok(!html.includes('supabase.co'))
-    assert.ok(!html.includes('ConfirmationURL'))
+    // The SOURCE comment links supabase.com/docs, so check the markup without comments.
+    const markup = html.replace(/<!--[\s\S]*?-->/g, '')
+    assert.ok(!markup.includes('supabase.co'))
+    assert.ok(!markup.includes('ConfirmationURL'))
   })
   test(`${name}: no double slash after SiteURL`, () => {
     assert.ok(!/\{\{ \.SiteURL \}\}\//.test(html))
