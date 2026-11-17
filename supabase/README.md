@@ -37,7 +37,9 @@ Branded templates live in `templates/magic_link.html` and `templates/confirmatio
 - Magic link: subject `Your Minifig Hunt sign-in link`, body = `templates/magic_link.html`.
 - Confirm signup: subject `Confirm your Minifig Hunt account`, body = `templates/confirmation.html`.
 
-`config.toml` has the same entries for local dev. Site URL must be `https://minifighunt.com/` (trailing slash). A custom sender name or domain needs custom SMTP (owner step); the default Supabase sender stays until then. Images load from `https://minifighunt.com/img/...` (webp, so some desktop Outlook versions will not show them).
+`config.toml` has the same entries for local dev. Site URL must be `https://minifighunt.com/` (trailing slash). A custom sender name or domain needs custom SMTP (owner step); the default Supabase sender stays until then. Figure images are PNG copies (240 px wide, `site/email/`, served at `https://minifighunt.com/email/...`) because desktop Outlook does not show webp.
+
+Links use `{{ .SiteURL }}`, so mails sent from a preview or localhost app still point to production. Accepted. The link opens a "Continue sign-in" button; verification runs only on that click (login CSRF, mail scanners that open links).
 
 ## Not covered yet
 Admin RPCs (V2-05), alerts (V2-04) and the private-function checks that depend on them. Auth settings (signups off) live outside migrations and need a live smoke test. PGlite has one connection, so the cap's advisory lock is not tested under real concurrency.
