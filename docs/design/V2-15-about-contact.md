@@ -55,7 +55,7 @@ Ko-fi is the donation provider (V2-17, decisions.md 2026-11-17).
 ## Backend (PR 2)
 ### Table (migration `v2_15_contact_messages`, applied by pasting into the SQL Editor, never `db push`)
 - `public.contact_messages`: `id bigint identity pk`, `created_at timestamptz default now()`, `name text`
-  (check length <= 80), `email text not null` (<= 254), `message text not null` (1..2000), `ip_hash text not null`,
+  (check length <= 80), `email text not null` (<= 254), `message text not null` (1..2000), `ip_hash text` (nullable, see next sentence),
   `read_at timestamptz`. `ip_hash` is nullable and set to null once its 1-hour window ends (inside `contact_submit`).
   Indexes on `(ip_hash, created_at)` and `(created_at)`.
 - RLS on, no policies; `revoke all` on the table and its sequence from `anon`, `authenticated`.
