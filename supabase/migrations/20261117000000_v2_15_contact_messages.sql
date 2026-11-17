@@ -6,7 +6,7 @@ create table public.contact_messages (
   id bigint generated always as identity primary key,
   created_at timestamptz not null default now(),
   name text check (char_length(name) <= 80),
-  email text not null check (char_length(email) <= 254),
+  email text not null check (char_length(email) between 3 and 254),
   message text not null check (char_length(message) between 1 and 2000),
   -- Salted hash of the caller IP; set to null once its 1-hour window ends.
   ip_hash text,
@@ -36,6 +36,9 @@ declare
   -- SOURCE: DEFAULT, decisions.md (retention 365 days)
   retention constant interval := interval '365 days';
 begin
+  if p_ip_hash is null or p_ip_hash = '' then
+    raise exception 'ip hash required' using errcode = '22023';
+  end if;
   perform pg_advisory_xact_lock(hashtext('public.contact_submit'));
   if (select count(*) from public.contact_messages
       where ip_hash = p_ip_hash and created_at > now() - ip_window) >= per_ip_limit

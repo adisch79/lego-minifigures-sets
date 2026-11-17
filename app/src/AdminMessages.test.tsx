@@ -54,9 +54,9 @@ const messages = parseMessages([
   {
     id: 6,
     created_at: iso(1017),
-    name: 'Tomas ‮Okafor',
+    name: 'Tomas \u202EOkafor',
     email: 'tomas+cmf@example.org',
-    message: 'Line one.\n\n<img src=x onerror=alert(1)> stays text ⁦here⁩.',
+    message: 'Line one.\n\n<img src=x onerror=alert(1)> stays text \u2066here\u2069.',
     read_at: null,
   },
   { id: 5, created_at: iso(3000), name: 'Aiko Tanaka', email: 'aiko@example.jp', message: 'Small correction.', read_at: iso(2900) },
@@ -174,7 +174,7 @@ describe('Messages list and reader', () => {
     const body = p.querySelector('.ma-body') as HTMLElement
     expect(body.textContent).toBe('Line one.\n\n<img src=x onerror=alert(1)> stays text here.')
     expect(p.querySelector('img')).toBeNull()
-    expect(document.body.innerHTML).not.toMatch(/[‪-‮⁦-⁩]/)
+    expect(document.body.innerHTML).not.toMatch(/[\u202A-\u202E\u2066-\u2069]/)
   })
 
   it('links the reply with an encoded mailto', () => {

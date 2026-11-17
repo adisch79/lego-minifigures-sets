@@ -172,3 +172,18 @@ test('contact functions: definer with pinned search_path', async () => {
     assert.ok(f.proconfig.includes('search_path=""'), f.proname);
   }
 });
+
+test('contact_submit: null or empty ip_hash is refused (per-IP limit cannot be skipped)', async () => {
+  for (const hash of [null, '']) {
+    await assert.rejects(submit(hash), denied('22023'));
+  }
+});
+
+test('table: email shorter than 3 characters is refused', async () => {
+  await assert.rejects(
+    q("insert into public.contact_messages (email, message, ip_hash) values ('a@','m','h')"),
+    denied('23514'));
+});
+
+// Race safety of contact_submit rests on pg_advisory_xact_lock. PGlite runs one connection,
+// so concurrent submits are not exercised here (code review 2026-11-17, accepted).

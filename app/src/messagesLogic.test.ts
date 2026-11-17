@@ -74,8 +74,12 @@ describe('parseMessages', () => {
 
 describe('cleanText', () => {
   it('strips bidi embedding, override and isolate characters', () => {
-    const evil = 'a‪b‫c‬d‭e‮f⁦g⁧h⁨i⁩j'
+    const evil = 'a\u202Ab\u202Bc\u202Cd\u202De\u202Ef\u2066g\u2067h\u2068i\u2069j'
     expect(cleanText(evil)).toBe('abcdefghij')
+  })
+
+  it('strips LRM, RLM and ALM marks', () => {
+    expect(cleanText('a‎b‏c؜d')).toBe('abcd')
   })
 
   it('keeps ordinary text, new lines and non-Latin letters', () => {
@@ -89,8 +93,8 @@ describe('cleanText', () => {
 
 describe('senderLabel', () => {
   it('uses the name, else the email, both cleaned', () => {
-    expect(senderLabel(msg(1, false, { name: 'Ann‮' }))).toBe('Ann')
-    expect(senderLabel(msg(1, false, { name: null, email: 'x⁦@example.com' }))).toBe('x@example.com')
+    expect(senderLabel(msg(1, false, { name: 'Ann\u202E' }))).toBe('Ann')
+    expect(senderLabel(msg(1, false, { name: null, email: 'x\u2066@example.com' }))).toBe('x@example.com')
   })
 })
 
@@ -108,7 +112,7 @@ describe('mailtoHref', () => {
   })
 
   it('strips bidi characters before encoding', () => {
-    expect(mailtoHref('a‮@example.com')).toContain('mailto:a%40example.com?')
+    expect(mailtoHref('a\u202E@example.com')).toContain('mailto:a%40example.com?')
   })
 })
 

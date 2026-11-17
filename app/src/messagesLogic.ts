@@ -63,7 +63,8 @@ export function parseMessages(data: unknown): ContactMessage[] {
 
 // SOURCE: docs/design/V2-15-about-contact.md "Admin page": bidi override characters U+202A-202E and
 // U+2066-2069 are stripped on display, so a sender cannot reorder how the admin reads the text.
-const BIDI = /[‪-‮⁦-⁩]/g
+// Also LRM/RLM U+200E/200F and ALM U+061C (code review 2026-11-17). Escapes only, never raw characters.
+const BIDI = /[\u202A-\u202E\u2066-\u2069\u200E\u200F\u061C]/g
 
 /** Text as shown to the admin: bidi embedding, override and isolate characters removed. */
 export function cleanText(s: string): string {
