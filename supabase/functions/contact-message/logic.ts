@@ -22,7 +22,9 @@ export const TURNSTILE_ACTION = 'contact';
 export const SITEVERIFY_URL = 'https://challenges.cloudflare.com/turnstile/v0/siteverify';
 // SOURCE: DEFAULT (no owner source), logged in docs/decisions.md: siteverify call gives up after 5 s and fails closed.
 export const SITEVERIFY_TIMEOUT_MS = 5000;
-// PENDING PROBE: header choice not verified yet
+// SOURCE: gateway probe 2026-11-17 (scripts/ip-probe): the Supabase/Cloudflare edge sets cf-connecting-ip itself and
+// answers HTTP 403 when a client sends its own; x-forwarded-for is rewritten (a spoofed value never appears);
+// true-client-ip passes through unchanged, so it is NOT trusted.
 // SOURCE: UNKNOWN until the gateway probe of V2-15 PR 2 (docs/design/V2-15-about-contact.md, "ip_hash").
 export const IP_HEADER = 'cf-connecting-ip';
 // Bucket for requests with no usable IP header (design: one shared bucket under the same limit).
