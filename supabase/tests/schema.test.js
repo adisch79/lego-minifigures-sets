@@ -290,7 +290,7 @@ test('audit: definer functions pin search_path, RLS everywhere, nothing executab
       and has_function_privilege('${role}', p.oid, 'execute') order by 1`)).rows.map((r) => r.proname);
   assert.deepEqual(await executable('anon'), []);
   // V2-05/V2-09: exactly the admin read functions; each re-checks admins inside.
-  assert.deepEqual(await executable('authenticated'), ['admin_allowlist_list', 'admin_people_list', 'admin_wanted_list', 'is_admin']);
+  assert.deepEqual(await executable('authenticated'), ['admin_allowlist_list', 'admin_contact_delete', 'admin_contact_list', 'admin_contact_mark_read', 'admin_people_list', 'admin_wanted_list', 'is_admin']);
 });
 
 test('none of the tables is in the realtime publication', async () => {
