@@ -27,6 +27,7 @@ import SeriesPage, { Brand, LoadError } from './SeriesPage'
 import Admin from './Admin'
 import About from './About'
 import SiteFooter from './SiteFooter'
+import { WithMark } from './LegoMark'
 import Stats from './Stats'
 import './about.css'
 
@@ -68,7 +69,7 @@ function Tile({ series, index, query }: { series: Series; index: number; query: 
         </div>
         <h2>
           <a href={href} tabIndex={-1}>
-            {series.name}
+            <WithMark text={series.name} />
           </a>
         </h2>
         <TileProgress series={series} />

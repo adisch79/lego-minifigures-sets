@@ -410,7 +410,7 @@ describe('Contact form', () => {
 describe('Header and footer', () => {
   const checkFooter = () => {
     const f = footer()
-    expect(f.textContent).toContain('Fan-made site, not affiliated with the LEGO Group')
+    expect(f.textContent).toContain('does not sponsor, authorize or endorse this site')
     const href = (name: string) => within(f).getByRole('link', { name }).getAttribute('href')
     expect(href('About')).toBe('#about')
     expect(href('Contact')).toBe('#about/write')

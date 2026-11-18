@@ -7,14 +7,21 @@
   background-size:100% 3px; background-position:0 calc(100% - 9px); transition:background-size .25s var(--ease); }
 .nav-about:hover { background-size:100% 5px; }
 
-/* Footer line on every page */
-.site-foot { border-top:2px solid var(--ink); margin-top:48px; }
-.site-foot .wrap { display:flex; justify-content:space-between; align-items:center; gap:12px 24px; flex-wrap:wrap; padding-top:22px; padding-bottom:26px;
-  font-size:14px; font-weight:600; color:var(--grey-500); }
-.site-foot b { color:var(--ink); font-weight:800; }
+/* Footer on every page. V2-18 option C "Ink band" (mockups/V2-18/footer.html): ink band, yellow (R) badge,
+   Fair Play disclaimer, yellow links. */
+.site-foot { background:var(--ink); color:var(--white); margin-top:48px; }
+.site-foot .wrap { display:grid; grid-template-columns:auto 1fr auto; gap:14px 22px; align-items:center; padding-top:22px; padding-bottom:24px; }
+.site-foot .badge { width:40px; height:40px; border-radius:50%; background:var(--lego-yellow); color:var(--ink); display:grid; place-items:center;
+  font-weight:900; font-size:18px; }
+.site-foot .txt { font-size:13.5px; line-height:1.5; color:var(--grey-300); }
+.site-foot .txt b { color:var(--white); font-weight:800; }
 .site-foot nav { display:flex; gap:22px; flex-wrap:wrap; }
-.site-foot nav a { color:var(--ink); font-weight:800; text-decoration:none; padding:6px 0; }
+.site-foot nav a { color:var(--lego-yellow); font-weight:800; text-decoration:none; padding:6px 0; }
 .site-foot nav a:hover { text-decoration:underline; text-decoration-thickness:2px; text-underline-offset:5px; }
+/* The global ink focus ring would vanish on the ink band */
+.site-foot :focus-visible { outline:3px solid var(--lego-yellow); outline-offset:3px; }
+/* Registered sign after every LEGO word (V2-18) */
+sup.r { font-size:.62em; vertical-align:super; line-height:0; }
 .wrap-pad + .site-foot, .ab-split + .site-foot { margin-top:0; }
 
 /* Split: ink story column and the chapters */
@@ -147,7 +154,8 @@ textarea.cf-in { height:auto; min-height:150px; padding:14px 16px; line-height:1
   .band-top > .nav-about { order:1; margin-left:auto; }
   .band-top > .nav-about + .acct { margin-left:0; }
   .site-foot { margin-top:32px; }
-  .site-foot nav { gap:18px; }
+  .site-foot .wrap { grid-template-columns:auto 1fr; }
+  .site-foot nav { grid-column:1 / -1; gap:18px; }
   .ab-split { grid-template-columns:minmax(0,1fr); min-height:0; }
   .ab-ink { padding:22px 18px 170px; }
   .ab-ink .brand { margin-bottom:36px; }
