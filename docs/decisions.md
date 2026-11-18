@@ -93,3 +93,4 @@
 - 2026-11-17 — V2-16 token_hash mail links need a "Continue sign-in" click before verifyOtp runs (default chosen by Claude, owner may override). Reason: login CSRF (a forged link would sign the visitor into the attacker's account) and mail scanners that open links and burn the one-time token.
 - 2026-11-17 — V2-16 mail links are built from `{{ .SiteURL }}` (production) by design, so preview and localhost mails also point to prod. Reason: one Site URL setting, no Supabase host in the mail; accepted risk for dev mails.
 - 2026-11-17 — V2-16 mail figure images are PNG copies in `site/email/` (served at /email/). Reason: desktop Outlook does not render webp.
+| 2026-11-18 | V2-18: (R) on every LEGO word in visible text, not only the first per page | Fair Play page says the mark should appear "each time it is used" (https://www.lego.com/en-us/legal/notices-and-policies/fair-play) |
