@@ -103,3 +103,4 @@
 - 2026-11-17 — V2-15 admin Messages: owner picked A (Inbox: own "What they say" page, list left, open message right, Wanted wall / Messages switch). Reason: owner choice from mockups/V2-15-messages/sheet.png (5a3b1ae).
 - 2026-11-17 — V2-15 contact-message defaults: siteverify timeout 5000 ms (fail closed 403); wrong method 405 and declared body over 16 KB 413, both {error:"invalid"}; request body fields name, email, message, captchaToken (as app/src/contactApi.ts sends). Reason: coder defaults, no owner source.
 - 2026-11-17 — V2-15 client IP header: cf-connecting-ip. Probe (scripts/ip-probe on feature/V2-15-contact-backend): edge sets it and returns 403 to a client-sent one; x-forwarded-for rewritten; true-client-ip spoofable, not used. Per-IP limit stays.
+- 2026-11-18 — Owner signed off V2-16 build screenshots and the Continue sign-in click before verifyOtp. Reason: owner review of PR #57.
