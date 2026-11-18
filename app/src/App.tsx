@@ -73,7 +73,7 @@ function Tile({ series, index, query }: { series: Series; index: number; query: 
           </a>
         </h2>
         <TileProgress series={series} />
-        {hits.length > 0 && <p className="hit">Includes {hits.join(', ')}</p>}
+        {hits.length > 0 && <p className="hit">Includes <WithMark text={hits.join(', ')} /></p>}
       </div>
     </li>
   )
