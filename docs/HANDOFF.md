@@ -32,6 +32,7 @@ Previous next-step text (V2-04/05/06, all done): [archive/handoff-2026-11-07.md]
 - Logos: only files with real alpha (memory `feedback-asset-search`).
 
 ## Tests (2026-11-18 wrap, dev 1cd8d73)
+Second 2026-11-18 session (05cdf90) changed docs only; tests not re-run.
 `npx vitest run` in `app/`: 358 pass, `npx tsc --noEmit` clean. `npm test` in `supabase/`: 133 pass. `python -m pytest tests`: 102 pass. Local `dev` branch is stale: test against `origin/dev` (worktree `.claude/worktrees/qa-dev`).
 
 ## Open questions
