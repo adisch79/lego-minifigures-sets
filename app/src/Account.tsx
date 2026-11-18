@@ -41,7 +41,7 @@ export function AccountProvider({ children }: { children: ReactNode }) {
   const [stripDismissed, setStripDismissed] = useState(false)
   const pillRef = useRef<HTMLButtonElement | null>(null)
   const stripShown =
-    !stripDismissed && !!auth.linkError && auth.status !== 'disabled' && auth.status !== 'signed-in'
+    !stripDismissed && !!auth.linkError && auth.status !== 'disabled'
   const dismissStrip = useCallback(() => setStripDismissed(true), [])
   const { gate: adminGate, recheck: recheckAdmin } = useIsAdmin(auth)
   return (
@@ -429,6 +429,27 @@ export function AccountControl() {
 /** Red strip under the header after a sign-in link failed. */
 export function LinkErrorStrip() {
   const { auth, stripShown, dismissStrip, setOpen, pillRef } = useAccountUi()
+  if (auth.pendingLink && auth.status !== 'loading' && auth.status !== 'disabled') {
+    // V2-16: a mail link is used only after this click (no sign-in on page load).
+    const switching = auth.status === 'signed-in'
+    return (
+      <div className="linkgo" role="status" aria-label="Sign-in link">
+        <p>
+          {switching
+            ? `You are signed in as ${auth.email}. Continue to switch to the account from the email link.`
+            : 'Your sign-in link is ready.'}
+        </p>
+        <button type="button" className="send" onClick={() => void auth.continueLink?.()}>
+          Continue sign-in
+        </button>
+        {switching && (
+          <button type="button" className="linkgo-keep" onClick={() => auth.dismissLink?.()}>
+            Keep current account
+          </button>
+        )}
+      </div>
+    )
+  }
   if (!stripShown) return null
   return (
     <div className="linkbar" role="alert">

@@ -19,6 +19,18 @@ enable_signup = true
 double_confirm_changes = true
 secure_password_change = true
 
+# V2-16: branded auth emails. Local dev only; hosted projects take the same HTML and subject
+# pasted into Dashboard > Authentication > Email Templates (see supabase/README.md).
+# SOURCE: https://supabase.com/docs/guides/local-development/customizing-email-templates
+# Subjects: OWNER-SUPPLIED (owner picked mockup B).
+[auth.email.template.magic_link]
+subject = "Your Minifig Hunt sign-in link"
+content_path = "./supabase/templates/magic_link.html"
+
+[auth.email.template.confirmation]
+subject = "Confirm your Minifig Hunt account"
+content_path = "./supabase/templates/confirmation.html"
+
 [auth.sms]
 enable_signup = false
 

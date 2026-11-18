@@ -181,6 +181,51 @@ describe('Account', () => {
   })
 })
 
+describe('Continue sign-in panel (V2-16)', () => {
+  const continueLink = vi.fn<() => Promise<void>>()
+  const dismissLink = vi.fn<() => void>()
+  beforeEach(() => {
+    continueLink.mockReset().mockResolvedValue(undefined)
+    dismissLink.mockReset()
+  })
+
+  it('shows a Continue sign-in button and calls continueLink on click', () => {
+    renderAccount({ status: 'signed-out', pendingLink: true, continueLink, dismissLink })
+    expect(continueLink).not.toHaveBeenCalled()
+    fireEvent.click(screen.getByRole('button', { name: 'Continue sign-in' }))
+    expect(continueLink).toHaveBeenCalledTimes(1)
+  })
+  it('names the current account when signed in and offers Keep current account', () => {
+    renderAccount({ status: 'signed-in', email: 'a@b.co', pendingLink: true, continueLink, dismissLink })
+    expect(
+      screen.getByText(
+        'You are signed in as a@b.co. Continue to switch to the account from the email link.',
+      ),
+    ).toBeTruthy()
+    fireEvent.click(screen.getByRole('button', { name: 'Keep current account' }))
+    expect(dismissLink).toHaveBeenCalledTimes(1)
+    expect(continueLink).not.toHaveBeenCalled()
+  })
+  it('shows the failure message after the link failed', () => {
+    renderAccount({ status: 'signed-out', linkError: 'That sign-in link did not work. Ask for a new one.' })
+    expect(screen.getByRole('alert').textContent).toContain('did not work')
+    expect(screen.queryByRole('button', { name: 'Continue sign-in' })).toBeNull()
+  })
+  it('shows the failure strip when signed in with a token-link error', () => {
+    renderAccount({ status: 'signed-in', email: 'a@b.co', linkError: 'That sign-in link did not work. Ask for a new one.' })
+    expect(screen.getByRole('alert').textContent).toContain('did not work')
+  })
+  it('announces the Continue panel as a status and keeps the button reachable', () => {
+    renderAccount({ status: 'signed-out', pendingLink: true, continueLink, dismissLink })
+    const panel = screen.getByRole('status', { name: 'Sign-in link' })
+    expect(panel.contains(screen.getByRole('button', { name: 'Continue sign-in' }))).toBe(true)
+  })
+  it('shows nothing extra without a pending link', () => {
+    renderAccount({ status: 'signed-out' })
+    expect(screen.queryByRole('button', { name: 'Continue sign-in' })).toBeNull()
+  })
+})
+
 describe('Account with Turnstile configured', () => {
   afterEach(() => {
     vi.unstubAllEnvs()

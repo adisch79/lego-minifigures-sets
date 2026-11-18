@@ -1,7 +1,9 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js'
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
 const MSG_EXPIRED = 'That sign-in link has expired. Ask for a new one.'
+// Token-link failures say nothing about the browser: the link is opened from a mail, not the sign-in tab.
+const MSG_LINK_FAILED = 'That sign-in link did not work. Ask for a new one.'
 const MSG_OTHER =
   'Open the sign-in link in the same browser where you asked for it, or ask for a new one.'
 
@@ -17,6 +19,12 @@ export type AuthState = {
   status: 'disabled' | 'loading' | 'signed-out' | 'signed-in'
   email?: string
   linkError?: string
+  /** True while an email token link waits for the visitor to confirm (no verifyOtp has run yet). */
+  pendingLink?: boolean
+  /** Runs the one verifyOtp for the pending link. Safe to call twice. */
+  continueLink?: () => Promise<void>
+  /** Drops the pending link without using it. */
+  dismissLink?: () => void
 }
 
 /** Maps an error code or text from Supabase to a plain message. */
@@ -65,6 +73,34 @@ if (initialLinkError !== null) {
 const initialHadCode: boolean =
   typeof window === 'undefined' ? false : new URLSearchParams(window.location.search).has('code')
 
+// V2-16: the email button opens `<site>?token_hash=...&type=email` (no Supabase host in the mail).
+// Read and strip at module load, like the PKCE code, so the secret hash does not stay in the address bar.
+// The link is NOT used on load: a mail scanner or a forged link must not sign the visitor in by itself
+// (login CSRF). verifyOtp runs only when the visitor clicks Continue.
+// SOURCE: https://supabase.com/docs/guides/auth/auth-email-templates (token_hash + type, then verifyOtp)
+// SOURCE: https://supabase.com/docs/reference/javascript/auth-verifyotp ("Verify Email Auth (Token Hash)": type 'email')
+const TOKEN_HASH_TYPES = ['email']
+// Shape check only (URL-safe characters, bounded length); Supabase validates the value itself.
+const TOKEN_HASH_SHAPE = /^[A-Za-z0-9_-]{1,128}$/
+// True when a token_hash was present but malformed: the visitor sees the failed-link message.
+let invalidTokenLink = false
+let pendingTokenLink: { tokenHash: string; type: 'email' } | null = (() => {
+  if (typeof window === 'undefined') return null
+  const p = new URLSearchParams(window.location.search)
+  if (!p.has('token_hash')) return null
+  const tokenHash = p.get('token_hash') ?? ''
+  const type = p.get('type') ?? ''
+  p.delete('token_hash')
+  p.delete('type')
+  const qs = p.toString()
+  window.history.replaceState(null, '', window.location.pathname + (qs ? `?${qs}` : '') + window.location.hash)
+  if (!TOKEN_HASH_SHAPE.test(tokenHash) || !TOKEN_HASH_TYPES.includes(type)) {
+    invalidTokenLink = true
+    return null
+  }
+  return { tokenHash, type: 'email' }
+})()
+
 export const authEnabled: boolean = Boolean(url && anonKey)
 
 // Created once at module load so the PKCE `?code=` is read before React effects run.
@@ -81,6 +117,23 @@ const EMAIL_SHAPE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 // cannot be told apart from a new one.
 const SAME_ANSWER_CODES = ['signup_disabled', 'user_not_found', 'otp_disabled', 'not_allowed', 'email_not_confirmed']
 const RATE_CODES = ['over_email_send_rate_limit', 'over_request_rate_limit']
+
+// Runs verifyOtp at most once per page load (double click, StrictMode); resolves to an error message or undefined.
+let tokenLinkResult: Promise<string | undefined> | null = null
+function verifyTokenLink(): Promise<string | undefined> {
+  if (!pendingTokenLink || !supabase) return Promise.resolve(undefined)
+  const client = supabase
+  const link = pendingTokenLink
+  tokenLinkResult ??= (async () => {
+    try {
+      const { error } = await client.auth.verifyOtp({ token_hash: link.tokenHash, type: link.type })
+      return error ? MSG_LINK_FAILED : undefined
+    } catch {
+      return MSG_LINK_FAILED
+    }
+  })()
+  return tokenLinkResult
+}
 
 /**
  * Asks for a sign-in link; a new address creates an account (V2-09 open sign-up). Every address gets the
@@ -131,8 +184,41 @@ export async function signOut(): Promise<void> {
 /** Session state for the UI. Safe to call when auth is disabled. */
 export function useAuth(): AuthState {
   const [state, setState] = useState<AuthState>(
-    authEnabled ? { status: 'loading', linkError: initialLinkError ?? undefined } : { status: 'disabled' },
+    authEnabled
+      ? {
+          status: 'loading',
+          linkError: initialLinkError ?? (invalidTokenLink ? MSG_LINK_FAILED : undefined),
+          pendingLink: pendingTokenLink !== null,
+        }
+      : { status: 'disabled' },
   )
+  // A token-link failure survives later auth events while signed in (until dismissed or a later link works).
+  const tokenFailure = useRef(invalidTokenLink)
+
+  const dismissLink = useCallback(() => {
+    pendingTokenLink = null
+    setState((prev) => ({ ...prev, pendingLink: false }))
+  }, [])
+
+  const continueLink = useCallback(async () => {
+    if (!supabase) return
+    const tokenError = await verifyTokenLink()
+    tokenFailure.current = tokenError !== undefined
+    pendingTokenLink = null
+    try {
+      const { data: s } = await supabase.auth.getSession()
+      const email = s.session?.user.email ?? undefined
+      setState((prev) => ({
+        ...prev,
+        status: email ? 'signed-in' : 'signed-out',
+        email,
+        pendingLink: false,
+        linkError: tokenError ?? (email ? undefined : prev.linkError),
+      }))
+    } catch {
+      setState((prev) => ({ ...prev, pendingLink: false, linkError: tokenError ?? MSG_LINK_FAILED }))
+    }
+  }, [])
 
   useEffect(() => {
     if (!supabase) return
@@ -143,7 +229,9 @@ export function useAuth(): AuthState {
         status: email ? 'signed-in' : 'signed-out',
         email,
         // A session ends the failed-link story, so the strip must not return after a later sign-out.
-        linkError: email ? undefined : (linkError ?? prev.linkError),
+        linkError:
+          email && !(tokenFailure.current && prev.linkError) ? undefined : (linkError ?? prev.linkError),
+        pendingLink: prev.pendingLink,
       }))
     }
     const { data } = supabase.auth.onAuthStateChange((_event, session) => {
@@ -171,5 +259,5 @@ export function useAuth(): AuthState {
     }
   }, [])
 
-  return state
+  return { ...state, continueLink, dismissLink }
 }
