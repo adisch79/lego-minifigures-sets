@@ -2,6 +2,7 @@
 // owned / wanted chips and progress from V2-03 direction A (mockups/V2-03/a.html).
 import { AccountControl, LinkErrorStrip } from './Account'
 import { useState } from 'react'
+import { WithMark } from './LegoMark'
 import type { Figure, Series } from './catalog'
 import { tileArt } from './home'
 import { MarkChips, SeriesHeroMarks, useMark, useMarksUi } from './MarkChips'
@@ -125,7 +126,7 @@ function FigureTile({ figure, index }: { figure: Figure; index: number }) {
       </div>
       <h3>
         <span className="sr">Figure {figure.no}: </span>
-        {figure.name}
+        <WithMark text={figure.name} />
       </h3>
       {active && (
         <MarkChips
@@ -158,7 +159,7 @@ function SeriesView({ series }: { series: Series }) {
             <div className="hero-copy">
               <p className="eyebrow">Collectible Minifigures</p>
               <h1 id="series-title" tabIndex={-1}>
-                {series.name}
+                <WithMark text={series.name} />
               </h1>
               <div className="facts">
                 <span className="fact dark">No. {series.id}</span>
