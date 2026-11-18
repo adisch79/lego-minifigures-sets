@@ -1,6 +1,6 @@
 # HANDOFF
 
-## Current state (updated 2026-11-18, MVP 2.1: V2-09/15/16 on dev, not released; NEXT V2-17)
+## Current state (updated 2026-11-18, MVP 2.1: V2-09/15/16 on dev, not released; NEXT V2-18)
 - **Live:** https://minifighunt.com/ on Cloudflare Pages (V2-06, 2026-11-07); `www` 301 to apex. GitHub Pages switched off. Releases: V2-04+V2-05 PR #35, V2-06 PR #38 ([backlog](backlog.md)).
 
 ## Next step: MVP 2.1 owner fixes, ONE AT A TIME (updated 2026-11-08)
@@ -16,7 +16,8 @@ Queue (backlog MVP 2.1):
 8. **V2-09 open sign-up.** DONE on dev 2026-11-16: PR #54 merged (9cf5715). Design + both reviews + QA pass (app 228, supabase 82, pytest 102). NOT live: needs release into master, then `supabase db push` (migration 20261116000000), redeploy `admin-people`, then owner steps in order (docs/design/V2-09-open-signup.md: Turnstile key in Pages env + deploy + widget check, captcha secret in Supabase, custom SMTP (V2-16), rate limits with SOURCE, Confirm signup template with {{ .Token }}, sign-up ON last). NEXT: item 9 V2-15.
 9. **V2-15 contact + coffee pages.** DONE on dev: PR #55 (About page C, form UI) b409371, PR #56 (contact-message Edge Function, contact_messages table, admin Messages A) 1dc5945. NOT live: release, `supabase db push`, deploy `contact-message`, Turnstile secret. Coffee link 'Coming soon' until Ko-fi (V2-17). History: [archive/handoff-2026-11-18.md](archive/handoff-2026-11-18.md).
 10. **V2-16 branded auth emails.** DONE on dev: PR #57 1cd8d73, owner signed off 2026-11-18. Templates `supabase/templates/`, paste steps `supabase/README.md`. Email links `{{ .SiteURL }}?token_hash=...&type=email`; app shows 'Continue sign-in' before verifyOtp (decisions.md). NOT live: release, owner pastes both templates + subjects in Supabase dashboard (Site URL `https://minifighunt.com/`), sender name needs SMTP + DNS.
-11. **V2-17 business model**: paper docs/V2-17-business-model.md owner DECIDED 2026-11-17: plan approved, Ko-fi, affiliate sign-ups yes, ask LEGO yes. NEXT: (1) V2-15 coffee page uses Ko-fi wording/link slot; (2) give owner exact sign-up steps for Ko-fi, Amazon Associates, LEGO.com via Rakuten; (3) draft the LEGO question for the owner to send; (4) new backlog story: affiliate links (Amazon first).
+11. **V2-17 business model**: owner DECIDED 2026-11-17 (Ko-fi, affiliate sign-ups, ask LEGO). Ko-fi slot already on dev (`app/src/kofi.ts`, empty = 'Coming soon'). 2026-11-18: owner steps written: [V2-17-owner-steps.md](V2-17-owner-steps.md) (Ko-fi, Amazon Associates, LEGO.com via LinkShare, LEGO question text). WAITING on owner: Ko-fi link, Amazon store ID, LEGO affiliate result, LEGO answer.
+12. **V2-18 Fair Play disclaimer** (Ready, S): site has no 'not endorsed' footer and no registered mark. NEXT to build. Then V2-19 affiliate links (blocked on owner answers).
 Docs PR #42 merged. Untracked leftover `mockups/V2-11/tmp/` in worktree agent-a11b373be5017f407 (delete was denied).
 Previous next-step text (V2-04/05/06, all done): [archive/handoff-2026-11-07.md](archive/handoff-2026-11-07.md).
 
