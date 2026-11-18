@@ -1,6 +1,6 @@
 # HANDOFF
 
-## Current state (updated 2026-11-18, MVP 2.1: V2-09/15/16 on dev, not released; NEXT V2-18)
+## Current state (updated 2026-11-18, MVP 2.1: V2-09/15/16/18 on dev, not released; NEXT release or V2-19 when owner answers arrive)
 - **Live:** https://minifighunt.com/ on Cloudflare Pages (V2-06, 2026-11-07); `www` 301 to apex. GitHub Pages switched off. Releases: V2-04+V2-05 PR #35, V2-06 PR #38 ([backlog](backlog.md)).
 
 ## Next step: MVP 2.1 owner fixes, ONE AT A TIME (updated 2026-11-08)
@@ -17,7 +17,7 @@ Queue (backlog MVP 2.1):
 9. **V2-15 contact + coffee pages.** DONE on dev: PR #55 (About page C, form UI) b409371, PR #56 (contact-message Edge Function, contact_messages table, admin Messages A) 1dc5945. NOT live: release, `supabase db push`, deploy `contact-message`, Turnstile secret. Coffee link 'Coming soon' until Ko-fi (V2-17). History: [archive/handoff-2026-11-18.md](archive/handoff-2026-11-18.md).
 10. **V2-16 branded auth emails.** DONE on dev: PR #57 1cd8d73, owner signed off 2026-11-18. Templates `supabase/templates/`, paste steps `supabase/README.md`. Email links `{{ .SiteURL }}?token_hash=...&type=email`; app shows 'Continue sign-in' before verifyOtp (decisions.md). NOT live: release, owner pastes both templates + subjects in Supabase dashboard (Site URL `https://minifighunt.com/`), sender name needs SMTP + DNS.
 11. **V2-17 business model**: owner DECIDED 2026-11-17 (Ko-fi, affiliate sign-ups, ask LEGO). Ko-fi slot already on dev (`app/src/kofi.ts`, empty = 'Coming soon'). 2026-11-18: owner steps written: [V2-17-owner-steps.md](V2-17-owner-steps.md) (Ko-fi, Amazon Associates, LEGO.com via LinkShare, LEGO question text). WAITING on owner: Ko-fi link, Amazon store ID, LEGO affiliate result, LEGO answer.
-12. **V2-18 Fair Play disclaimer** (In progress, S): 3 footer mockups A/B/C on `feature/V2-18-fair-play` (worktree `.claude/worktrees/V2-18`, `mockups/V2-18/footer-1280.png`, `footer-500.png`) sent 2026-11-18; WAITING on owner pick. Scope: footer line in `app/src/SiteFooter.tsx` + (R) on 5 series names with LEGO in `app/public/catalog.json` (display only). Then V2-19 affiliate links (blocked on owner answers).
+12. **V2-18 Fair Play disclaimer** DONE on dev 2026-11-18: PR #58 merged (4ac4bbb), owner picked footer C. Footer `app/src/SiteFooter.tsx`, (R) helper `app/src/LegoMark.tsx`. Review: no blocking; QA app 364, tsc clean, supabase 133, pytest 102. NOT live: goes out with the next release into master. Admin page names left without (R) (owner-only page). NEXT: V2-19 affiliate links, blocked on owner answers (Ko-fi link, Amazon store ID, LEGO answer).
 Docs PR #42 merged. Untracked leftover `mockups/V2-11/tmp/` in worktree agent-a11b373be5017f407 (delete was denied).
 Previous next-step text (V2-04/05/06, all done): [archive/handoff-2026-11-07.md](archive/handoff-2026-11-07.md).
 
@@ -31,9 +31,9 @@ Previous next-step text (V2-04/05/06, all done): [archive/handoff-2026-11-07.md]
 - Figure images: `img.bricklink.com/ItemImage/SN/0/<code>-<n>.png`. 71049 has no code and keeps v1 images.
 - Logos: only files with real alpha (memory `feedback-asset-search`).
 
-## Tests (2026-11-18 wrap, dev 1cd8d73)
+## Tests (2026-11-18 V2-18, dev 4ac4bbb)
 Second 2026-11-18 session (05cdf90) changed docs only; tests not re-run.
-`npx vitest run` in `app/`: 358 pass, `npx tsc --noEmit` clean. `npm test` in `supabase/`: 133 pass. `python -m pytest tests`: 102 pass. Local `dev` branch is stale: test against `origin/dev` (worktree `.claude/worktrees/qa-dev`).
+`npx vitest run` in `app/`: 364 pass, `npx tsc --noEmit` clean. `npm test` in `supabase/`: 133 pass. `python -m pytest tests`: 102 pass. Local `dev` branch is stale: test against `origin/dev` (worktree `.claude/worktrees/qa-dev`).
 
 ## Open questions
 - V2-16 follow-up nits (review of 3f27c2b): `invalidTokenLink` module flag never reset on useAuth remount (auth.ts:86-98,196); code sign-in does not clear an old token-link failure (auth.ts:231-233); `stripDismissed` never reset (Account.tsx:41-45); no test for success-after-failure.
