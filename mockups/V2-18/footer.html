@@ -1,0 +1,85 @@
+<!doctype html>
+<!-- Story V2-18: three footer directions for the LEGO Fair Play disclaimer.
+     Disclaimer wording SOURCE: https://www.lego.com/en-us/legal/notices-and-policies/fair-play
+     ("LEGO(R) is a trademark of the LEGO Group of companies which does not sponsor, authorize or endorse this site";
+     "the LEGO trademark should always appear with a (R) symbol each time it is used"). Fetched 2026-11-18.
+     Tokens copied from app/src/index.css and app/src/about.css. -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>V2-18 footer options</title>
+<style>
+  :root { --lego-red:#DF0012; --lego-yellow:#FDE01B; --ink:#1A1A1A; --white:#FFFFFF; --grey-50:#F6F6F4; --grey-100:#EDEDEA; --grey-300:#C9C9C4; --grey-500:#6E6E69; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--grey-50); color:var(--ink); font-family:"Segoe UI", system-ui, -apple-system, Roboto, "Helvetica Neue", Arial, sans-serif; }
+  .wrap { max-width:1200px; margin:0 auto; padding-left:24px; padding-right:24px; }
+  .opt { background:var(--white); margin:0 0 28px; }
+  .tag { display:inline-block; margin:18px 0 0; font-size:12px; font-weight:800; letter-spacing:.18em; text-transform:uppercase; background:var(--ink); color:var(--lego-yellow); border-radius:999px; padding:6px 12px; }
+  .page-end { height:70px; display:flex; align-items:center; font-size:15px; font-weight:700; color:var(--grey-500); }
+  .page-end b { color:var(--ink); font-weight:800; margin-left:6px; }
+  sup.r { font-size:.62em; vertical-align:super; line-height:0; margin-left:1px; }
+  nav { display:flex; gap:22px; flex-wrap:wrap; }
+  nav a { color:var(--ink); font-weight:800; text-decoration:none; padding:6px 0; }
+
+  /* A: today's one line, disclaimer replaces the "not affiliated" text */
+  .fa { border-top:2px solid var(--ink); }
+  .fa .wrap { display:flex; justify-content:space-between; align-items:center; gap:12px 24px; flex-wrap:wrap; padding-top:22px; padding-bottom:26px; font-size:14px; font-weight:600; color:var(--grey-500); }
+  .fa .wrap > span { max-width:720px; line-height:1.45; }
+  .fa b { color:var(--ink); font-weight:800; }
+
+  /* B: brand + links row, fine print row under a hairline */
+  .fb { border-top:2px solid var(--ink); }
+  .fb .top { display:flex; justify-content:space-between; align-items:center; gap:12px 24px; flex-wrap:wrap; padding-top:22px; padding-bottom:16px; font-size:14px; font-weight:600; color:var(--grey-500); }
+  .fb .top b { color:var(--ink); font-weight:800; }
+  .fb .fine { border-top:1px solid var(--grey-100); padding-top:14px; padding-bottom:22px; font-size:12.5px; line-height:1.5; color:var(--grey-500); }
+
+  /* C: ink band with a yellow R badge */
+  .fc { background:var(--ink); color:var(--white); }
+  .fc .wrap { display:grid; grid-template-columns:auto 1fr auto; gap:14px 22px; align-items:center; padding-top:22px; padding-bottom:24px; }
+  .fc .badge { width:40px; height:40px; border-radius:50%; background:var(--lego-yellow); color:var(--ink); display:grid; place-items:center; font-weight:900; font-size:18px; }
+  .fc .txt { font-size:13.5px; line-height:1.5; color:var(--grey-300); }
+  .fc .txt b { color:var(--white); font-weight:800; }
+  .fc nav a { color:var(--lego-yellow); }
+  @media (max-width:640px) { .fc .wrap { grid-template-columns:auto 1fr; } .fc nav { grid-column:1 / -1; } }
+
+  .name-demo { padding:18px 0 22px; font-size:22px; font-weight:800; }
+  .name-demo small { display:block; font-size:12px; font-weight:700; letter-spacing:.14em; text-transform:uppercase; color:var(--grey-500); margin-bottom:6px; }
+</style>
+</head>
+<body>
+
+<section class="opt">
+  <div class="wrap"><span class="tag">Series name, all options</span>
+    <div class="name-demo"><small>Series page title</small>The LEGO<sup class="r">&reg;</sup> Batman Movie Series 2</div>
+  </div>
+</section>
+
+<section class="opt">
+  <div class="wrap"><span class="tag">A &middot; One line, same as today</span><div class="page-end">...end of page</div></div>
+  <footer class="fa"><div class="wrap">
+    <span><b>Minifig Hunt</b> &middot; Fan-made site. LEGO<sup class="r">&reg;</sup> is a trademark of the LEGO<sup class="r">&reg;</sup> Group of companies which does not sponsor, authorize or endorse this site.</span>
+    <nav><a href="#">About</a><a href="#">Contact</a><a href="#">Buy me a coffee</a></nav>
+  </div></footer>
+</section>
+
+<section class="opt">
+  <div class="wrap"><span class="tag">B &middot; Links row + fine print</span><div class="page-end">...end of page</div></div>
+  <footer class="fb">
+    <div class="wrap top"><span><b>Minifig Hunt</b> &middot; Fan-made site</span>
+      <nav><a href="#">About</a><a href="#">Contact</a><a href="#">Buy me a coffee</a></nav></div>
+    <div class="wrap fine">LEGO<sup class="r">&reg;</sup> is a trademark of the LEGO<sup class="r">&reg;</sup> Group of companies which does not sponsor, authorize or endorse this site.</div>
+  </footer>
+</section>
+
+<section class="opt">
+  <div class="wrap"><span class="tag">C &middot; Ink band</span><div class="page-end">...end of page</div></div>
+  <footer class="fc"><div class="wrap">
+    <span class="badge" aria-hidden="true">&reg;</span>
+    <span class="txt"><b>Minifig Hunt</b> is a fan-made site. LEGO<sup class="r">&reg;</sup> is a trademark of the LEGO<sup class="r">&reg;</sup> Group of companies which does not sponsor, authorize or endorse this site.</span>
+    <nav><a href="#">About</a><a href="#">Contact</a><a href="#">Buy me a coffee</a></nav>
+  </div></footer>
+</section>
+
+</body>
+</html>

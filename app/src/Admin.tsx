@@ -1,8 +1,8 @@
 // Admin page for story V2-05, approved direction C "Wanted wall" (mockups/V2-05/c.html,
-// docs/design/V2-05-admin.md). A ranked wall of what collectors want, plus the allowlist in a
+// docs/design/V2-05-admin.md). A ranked wall of what collectors want, plus every collector (V2-09) in a
 // slide-over. Logic lives in ./admin, network calls in ./adminApi. The gate here is cosmetic:
 // the RPCs and the admin-people Edge Function check the admins table again on the server.
-import { useCallback, useEffect, useId, useMemo, useRef, useState, type FormEvent, type ReactNode } from 'react'
+import { useCallback, useEffect, useId, useMemo, useRef, useState, type ReactNode } from 'react'
 import './admin.css'
 import {
   ALERT_TEXT,
@@ -13,7 +13,6 @@ import {
   initialOf,
   isTruncated,
   namesLine,
-  normaliseEmail,
   personLabel,
   personStatus,
   sortPeople,
@@ -26,7 +25,10 @@ import {
   type WallView,
   type WantedCard,
 } from './adminLogic'
-import { changePerson, useAdminData } from './adminApi'
+import { deleteAccount, useAdminData } from './adminApi'
+import { MessagesHero, MessagesInbox, ViewSwitch, type AdminView } from './AdminMessages'
+import { useMessages } from './messagesApi'
+import { unreadCount } from './messagesLogic'
 import { AccountControl, LinkErrorStrip, useAccount, useAdminGate } from './Account'
 import { DEMO_ADMIN } from './demo'
 import { Brand } from './SeriesPage'
@@ -48,7 +50,7 @@ const STAGGER_MAX = 12
 // Avatars shown on a stack before the "+n" bubble.
 const STACK_MAX = 3
 
-// A collector with this many wanted marks is shown in red on the allowlist (mockup c, n >= 4).
+// A collector with this many wanted marks is shown in red on the collectors list (mockup c, n >= 4).
 const HOT_WANTED = 4
 
 // Relative times ("12 min ago") are refreshed once a minute.
@@ -70,14 +72,6 @@ function XIcon({ size = 16 }: { size?: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" aria-hidden="true">
       <path d="M6 6l12 12M18 6 6 18" />
-    </svg>
-  )
-}
-
-function PlusIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" aria-hidden="true">
-      <path d="M12 5v14M5 12h14" />
     </svg>
   )
 }
@@ -360,7 +354,7 @@ function WallError({ title, message, onRetry }: { title: string; message: string
 }
 
 // ---------------------------------------------------------------------------------------------
-// Allowlist slide-over
+// Collectors slide-over
 
 type RowState = { email: string; busy: boolean; error: PeopleError | null }
 
@@ -397,7 +391,7 @@ function PersonRow({
   return (
     <li className={asking ? 'ap-p ask' : 'ap-p'} style={{ animationDelay: `${Math.min(index, STAGGER_MAX) * 30}ms` }}>
       <div className="ap-line">
-        <Avatar label={label} tone={tone} ghost={!person.signedInAt} />
+        <Avatar label={label} tone={tone} />
         <span className="ap-t">
           <b>
             {label}
@@ -410,7 +404,7 @@ function PersonRow({
         </span>
         {wanted > 0 && <span className={wanted >= HOT_WANTED ? 'ap-n hot' : 'ap-n'}>{wanted} wanted</span>}
         {!person.isAdmin && !asking && (
-          <button type="button" className="ap-rm" aria-label={`Remove ${person.email}`} data-email={person.email} onClick={onAsk}>
+          <button type="button" className="ap-rm" aria-label={`Delete account ${person.email}`} data-email={person.email} onClick={onAsk}>
             <XIcon />
           </button>
         )}
@@ -418,8 +412,8 @@ function PersonRow({
       {asking && (
         <div className="ap-ask" role="group" aria-labelledby={askId}>
           <p id={askId}>
-            Remove <b>{person.email}</b>? Their account and every mark they made
-            {wanted > 0 ? `, including ${wanted} wanted,` : ''} are deleted. This cannot be undone.
+            Delete the account of <b>{person.email}</b>? The account and every mark they made
+            {wanted > 0 ? `, including ${wanted} wanted,` : ''} are deleted. This cannot be undone. They can sign up again.
           </p>
           <div className="ap-ask-b">
             <button ref={keepRef} type="button" className="ap-keep" onClick={onCancel} disabled={ask.busy}>
@@ -427,7 +421,7 @@ function PersonRow({
             </button>
             <button type="button" className="ap-del" onClick={onRemove} disabled={ask.busy} aria-busy={ask.busy}>
               {ask.busy && <span className="aw-spin" aria-hidden="true" />}
-              {ask.busy ? 'Removing' : 'Remove'}
+              {ask.busy ? 'Deleting' : 'Delete account'}
             </button>
           </div>
           {ask.error && (
@@ -441,7 +435,7 @@ function PersonRow({
   )
 }
 
-function Allowlist({
+function Collectors({
   open,
   onClose,
   people,
@@ -461,22 +455,17 @@ function Allowlist({
   onChanged: () => Promise<void>
 }) {
   const panelRef = useRef<HTMLElement>(null)
-  const inputRef = useRef<HTMLInputElement>(null)
+  const closeRef = useRef<HTMLButtonElement>(null)
   const titleId = useId()
-  const msgId = useId()
-  const [email, setEmail] = useState('')
-  const [adding, setAdding] = useState(false)
-  const [addMsg, setAddMsg] = useState<{ ok: boolean; text: string } | null>(null)
   const [ask, setAsk] = useState<RowState | null>(null)
   const [announce, setAnnounce] = useState('')
 
   const sorted = useMemo(() => sortPeople(people), [people])
-  const signed = sorted.filter((p) => p.signedInAt).length
 
-  // Focus the invite field on open; Escape closes; Tab stays inside the panel.
+  // Focus the close button on open; Escape closes; Tab stays inside the panel.
   useEffect(() => {
     if (!open) return
-    inputRef.current?.focus({ preventScroll: true })
+    closeRef.current?.focus({ preventScroll: true })
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         e.preventDefault()
@@ -514,34 +503,6 @@ function Allowlist({
     if (!open) setAsk(null)
   }
 
-  const invite = async (e: FormEvent) => {
-    e.preventDefault()
-    if (adding) return
-    const clean = normaliseEmail(email)
-    if (!clean) {
-      setAddMsg({ ok: false, text: PEOPLE_ERROR_TEXT.bad_email })
-      inputRef.current?.focus()
-      return
-    }
-    if (people.some((p) => p.email.toLowerCase() === clean)) {
-      setAddMsg({ ok: false, text: PEOPLE_ERROR_TEXT.duplicate })
-      inputRef.current?.focus()
-      return
-    }
-    setAdding(true)
-    setAddMsg(null)
-    const res = await changePerson('add', clean)
-    if (res.ok) {
-      await onChanged()
-      setEmail('')
-      setAddMsg({ ok: true, text: `Invited ${clean}. They can now ask for a sign-in link.` })
-    } else {
-      setAddMsg({ ok: false, text: PEOPLE_ERROR_TEXT[res.error] })
-    }
-    setAdding(false)
-    inputRef.current?.focus()
-  }
-
   const cancel = (who: string) => {
     setAsk(null)
     // Back to the X of the same row, which renders again once the confirm is gone.
@@ -552,18 +513,16 @@ function Allowlist({
 
   const remove = async (who: string) => {
     setAsk({ email: who, busy: true, error: null })
-    const res = await changePerson('remove', who)
+    const res = await deleteAccount(who)
     if (res.ok) {
       await onChanged()
       setAsk(null)
-      setAnnounce(`Removed ${who}.`)
-      inputRef.current?.focus()
+      setAnnounce(`Deleted the account of ${who}.`)
+      closeRef.current?.focus()
     } else {
       setAsk({ email: who, busy: false, error: res.error })
     }
   }
-
-  const badAdd = addMsg !== null && !addMsg.ok
 
   return (
     <>
@@ -580,68 +539,34 @@ function Allowlist({
         <div className="ap-top">
           <div className="ap-row">
             <div>
-              <p className="ap-eyebrow">Allowlist</p>
-              <h2 id={titleId}>Invited collectors</h2>
+              <p className="ap-eyebrow">Admin</p>
+              <h2 id={titleId}>Collectors</h2>
             </div>
-            <button type="button" className="ap-x" aria-label="Close allowlist" onClick={onClose}>
+            <button ref={closeRef} type="button" className="ap-x" aria-label="Close collectors" onClick={onClose}>
               <XIcon />
             </button>
           </div>
-          <p>Only these addresses can get a sign-in link. Removing one deletes that collector and their marks.</p>
-          <form className="ap-add" onSubmit={invite} noValidate>
-            <label className="sr" htmlFor="ap-mail">
-              Email to invite
-            </label>
-            <input
-              ref={inputRef}
-              id="ap-mail"
-              className={badAdd ? 'ap-mail bad' : 'ap-mail'}
-              type="email"
-              inputMode="email"
-              autoComplete="off"
-              spellCheck={false}
-              placeholder="name@example.com"
-              value={email}
-              aria-invalid={badAdd}
-              aria-describedby={addMsg ? msgId : undefined}
-              onChange={(e) => {
-                setEmail(e.target.value)
-                if (badAdd) setAddMsg(null)
-              }}
-            />
-            <button type="submit" className="ap-go" disabled={adding} aria-busy={adding}>
-              {adding ? <span className="aw-spin" aria-hidden="true" /> : <PlusIcon />}
-              {adding ? 'Inviting' : 'Invite'}
-            </button>
-          </form>
-          {addMsg && (
-            <p className={addMsg.ok ? 'ap-msg ok' : 'ap-msg'} id={msgId} role={addMsg.ok ? 'status' : 'alert'}>
-              {addMsg.text}
-            </p>
-          )}
+          <p>Everyone who has signed up, newest first. Deleting an account removes that collector and their marks.</p>
         </div>
         <div className="ap-split">
           <span>
-            <b>{signed}</b> signed in
-          </span>
-          <span>
-            <b>{sorted.length - signed}</b> not yet
+            <b>{sorted.length}</b> {sorted.length === 1 ? 'collector' : 'collectors'}
           </span>
         </div>
         <p className="sr" role="status" aria-live="polite">
           {announce}
         </p>
         {sorted.length === 0 ? (
-          <p className="ap-empty">Nobody is invited yet. Add the first address above.</p>
+          <p className="ap-empty">Nobody has signed up yet.</p>
         ) : (
-          <ul className="ap-list" aria-label="Invited addresses">
+          <ul className="ap-list" aria-label="Collectors">
             {sorted.map((p, i) => (
               <PersonRow
                 key={p.email}
                 person={p}
                 index={i}
-                tone={p.userId ? tones.get(p.userId) : undefined}
-                wanted={p.userId ? (perUser.get(p.userId) ?? 0) : 0}
+                tone={tones.get(p.userId)}
+                wanted={perUser.get(p.userId) ?? 0}
                 isYou={!!me && p.email.toLowerCase() === me.toLowerCase()}
                 now={now}
                 ask={ask && ask.email === p.email ? ask : null}
@@ -660,7 +585,7 @@ function Allowlist({
 // ---------------------------------------------------------------------------------------------
 // The page for an admin
 
-function Wall({ load, onRetryCatalog }: { load: Load; onRetryCatalog: () => void }) {
+function Wall({ load, onRetryCatalog, switcher }: { load: Load; onRetryCatalog: () => void; switcher: ReactNode }) {
   const { auth } = useAccount()
   const { data, refresh, retry } = useAdminData(true)
   const now = useNow()
@@ -680,7 +605,7 @@ function Wall({ load, onRetryCatalog }: { load: Load; onRetryCatalog: () => void
   const counts = viewCounts(cards)
   const shown = viewCards(cards, view)
   const marks = data.status === 'ready' ? data.wanted.length : 0
-  const signedIn = sortPeople(people).filter((p) => p.signedInAt)
+  const everyone = sortPeople(people)
   const hint = WALL_VIEWS.find((v) => v.value === view)?.hint ?? ''
 
   const close = useCallback(() => {
@@ -716,6 +641,8 @@ function Wall({ load, onRetryCatalog }: { load: Load; onRetryCatalog: () => void
               </p>
             )}
           </div>
+          <div className="ma-hero-r">
+          {switcher}
           <button
             ref={openRef}
             type="button"
@@ -727,19 +654,20 @@ function Wall({ load, onRetryCatalog }: { load: Load; onRetryCatalog: () => void
             onClick={() => setOpen(true)}
           >
             <span className="aw-open-l">
-              <b>Allowlist</b>
+              <b>Collectors</b>
               <small>
-                {data.status === 'ready' ? `${people.length} invited · ${signedIn.length} signed in` : 'Loading'}
+                {data.status === 'ready' ? `${people.length} signed up` : 'Loading'}
               </small>
             </span>
             <Stack
-              people={signedIn.map((p) => ({
+              people={everyone.map((p) => ({
                 key: p.email,
                 label: personLabel(p),
-                tone: p.userId ? tones.get(p.userId) : undefined,
+                tone: tones.get(p.userId),
               }))}
             />
           </button>
+          </div>
         </div>
       </Band>
 
@@ -794,7 +722,7 @@ function Wall({ load, onRetryCatalog }: { load: Load; onRetryCatalog: () => void
       </main>
 
       {data.status === 'ready' && (
-        <Allowlist
+        <Collectors
           open={open}
           onClose={close}
           people={people}
@@ -828,5 +756,44 @@ export default function Admin({ load, onRetry }: { load: Load; onRetry: () => vo
       </div>
     )
   }
-  return <Wall load={load} onRetryCatalog={onRetry} />
+  return <AdminViews load={load} onRetry={onRetry} />
+}
+
+/**
+ * A confirmed admin: the wanted wall or the messages inbox (V2-15), switched by the pill in the
+ * hero. Messages load right away so the switch can show the unread badge on the wall too.
+ */
+function AdminViews({ load, onRetry }: { load: Load; onRetry: () => void }) {
+  // ?demo=admin&messages opens the Messages view on load, for screenshots (dev only).
+  const [view, setView] = useState<AdminView>(() =>
+    DEMO_ADMIN && new URLSearchParams(window.location.search).has('messages') ? 'messages' : 'wall',
+  )
+  const switched = useRef(false)
+  const msgs = useMessages(true)
+  const now = useNow()
+  const unread = msgs.data.status === 'ready' ? unreadCount(msgs.data.messages) : 0
+
+  // The hero is rebuilt on a switch, so focus goes back to the pressed half of the new switch.
+  useEffect(() => {
+    if (!switched.current) return
+    document.querySelector<HTMLElement>('.ma-switch [aria-pressed="true"]')?.focus({ preventScroll: true })
+  }, [view])
+
+  const change = (v: AdminView) => {
+    switched.current = true
+    setView(v)
+  }
+  const switcher = <ViewSwitch view={view} unread={unread} onChange={change} />
+
+  if (view === 'wall') return <Wall load={load} onRetryCatalog={onRetry} switcher={switcher} />
+  return (
+    <div className="aw-page">
+      <Band>
+        <MessagesHero data={msgs.data} now={now} switcher={switcher} />
+      </Band>
+      <main className="wrap">
+        <MessagesInbox data={msgs.data} now={now} onRetry={msgs.retry} onMarkRead={msgs.markRead} onDelete={msgs.remove} />
+      </main>
+    </div>
+  )
 }

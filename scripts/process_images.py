@@ -7,6 +7,7 @@
 """
 
 import os
+from pathlib import Path
 
 import numpy as np
 from PIL import Image
@@ -84,8 +85,49 @@ def prepare_group(img, max_width):
     return img
 
 
+# Figure images come from the front-facing Rebrickable photo (<set>-<n>.fig.jpg) for every series
+# when the file exists. SOURCE: owner approval 2026-11-15 (V2-13).
+FRONT_MAX_H = 480  # same height as the BrickLink cut-outs this replaces
+
+
+def front_source(series_id, fig_no, originals_dir):
+    """Path of the front photo to use for a figure, or None to keep the current pipeline."""
+    p = Path(originals_dir) / series_id / f"{series_id}-{fig_no}.fig.jpg"
+    return p if p.is_file() else None
+
+
+def prepare_front(src, max_h=FRONT_MAX_H, method="model"):
+    """Front photo -> RGBA cut-out, tight crop, height <= max_h.
+
+    method "model": BiRefNet alpha (seg_model.model_alpha), crop to alpha>128 bbox.
+    method "flood": edge flood fill (cutout.cutout), kept for tests and as fallback.
+    """
+    if method == "flood":
+        from cutout import cutout
+        out = cutout(src)
+    else:
+        import seg_model
+        with Image.open(src) as im:
+            rgb = np.asarray(im.convert("RGB"))
+        alpha = np.clip(seg_model.model_alpha(rgb), 0, 1)
+        a8 = (alpha * 255).astype(np.uint8)
+        ys, xs = np.where(a8 > 128)
+        if ys.size == 0:
+            raise ValueError(f"no foreground found in {src}")
+        out = Image.fromarray(np.dstack([rgb, a8]), "RGBA")
+        out = out.crop((int(xs.min()), int(ys.min()), int(xs.max()) + 1, int(ys.max()) + 1))
+    if out.size[1] > max_h:
+        out = out.resize((max(1, round(out.size[0] * max_h / out.size[1])), max_h), Image.LANCZOS)
+    return out
+
+
 def process_file(src, dest, kind):
-    """Process one downloaded file to WebP. kind: 'bag' | 'figure' | 'figure_set' | 'group'."""
+    """Process one downloaded file to WebP. kind: 'bag' | 'figure' | 'figure_set' | 'figure_front' | 'group'."""
+    if kind == "figure_front":
+        out = prepare_front(src)
+        dest.parent.mkdir(parents=True, exist_ok=True)
+        out.save(dest, "WEBP", quality=82, method=5)
+        return
     with Image.open(src) as img:
         if kind == "bag":
             out = flatten_bag(img, 700)

@@ -37,7 +37,7 @@ export async function loadLists(): Promise<AdminLists> {
   if (!supabase) throw new Error(LOAD_FAILED)
   let p, w
   try {
-    ;[p, w] = await Promise.all([supabase.rpc('admin_allowlist_list'), supabase.rpc('admin_wanted_list')])
+    ;[p, w] = await Promise.all([supabase.rpc('admin_people_list'), supabase.rpc('admin_wanted_list')])
   } catch {
     throw new Error(LOAD_FAILED) // network failure: never pass the raw message to the UI
   }
@@ -47,15 +47,15 @@ export async function loadLists(): Promise<AdminLists> {
   return { people: parsePeople(p.data), wanted: parseWanted(w.data) }
 }
 
-/** Invites or removes one address through the admin-people Edge Function. Never throws. */
-export async function changePerson(action: 'add' | 'remove', email: string): Promise<PeopleResult> {
+/** Deletes one account through the admin-people Edge Function (V2-09). Never throws. */
+export async function deleteAccount(email: string): Promise<PeopleResult> {
   if (import.meta.env.DEV && DEMO_ADMIN) {
     const { demoPeople } = await import('./adminDemo')
-    return demoPeople(action, email)
+    return demoPeople(email)
   }
   if (!supabase) return { ok: false, error: 'network' }
   try {
-    const { data, error } = await supabase.functions.invoke('admin-people', { body: { action, email } })
+    const { data, error } = await supabase.functions.invoke('admin-people', { body: { action: 'remove', email } })
     if (!error) return readPeopleResult(data)
     // A non-2xx answer arrives as an error whose context is the raw Response with the JSON body.
     const context = (error as { context?: unknown }).context

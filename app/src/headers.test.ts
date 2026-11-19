@@ -17,14 +17,15 @@ describe('public/_headers', () => {
     const csp = header('Content-Security-Policy')
     expect(csp).toContain("frame-ancestors 'none'")
     expect(csp).toContain("default-src 'self'")
-    expect(csp).toContain("script-src 'self'")
+    expect(csp).toMatch(/script-src 'self' https:\/\/challenges\.cloudflare\.com(;|$)/)
+    expect(csp).toMatch(/frame-src https:\/\/challenges\.cloudflare\.com(;|$)/)
     expect(csp).toContain("object-src 'none'")
     expect(csp).toContain("base-uri 'self'")
     expect(csp).not.toMatch(/script-src[^;]*unsafe/)
   })
-  it('CSP connect-src allows only self and the Supabase project', () => {
+  it('CSP connect-src allows only self, the Supabase project and Turnstile', () => {
     const connect = header('Content-Security-Policy').match(/connect-src ([^;]+)/)![1].trim().split(/\s+/)
-    expect(connect).toEqual(["'self'", 'https://iagnfgedasxkqqjbsoeg.supabase.co'])
+    expect(connect).toEqual(["'self'", 'https://iagnfgedasxkqqjbsoeg.supabase.co', 'https://challenges.cloudflare.com'])
   })
   it('CSP img-src has no external host (all images are bundled)', () => {
     expect(header('Content-Security-Policy')).toMatch(/img-src 'self' data:(;|$)/)

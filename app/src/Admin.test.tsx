@@ -14,7 +14,7 @@ const dataState: { current: AdminData } = { current: { status: 'loading' } }
 const recheck = vi.fn()
 const retry = vi.fn()
 const refresh = vi.fn<() => Promise<void>>()
-const changePerson = vi.fn<(action: 'add' | 'remove', email: string) => Promise<PeopleResult>>()
+const deleteAccount = vi.fn<(email: string) => Promise<PeopleResult>>()
 
 vi.mock('./auth', () => ({
   authEnabled: true,
@@ -29,7 +29,7 @@ vi.mock('./adminApi', () => ({
   loadLists: vi.fn(),
   useIsAdmin: () => ({ gate: gateState.current, recheck: () => recheck() }),
   useAdminData: () => ({ data: dataState.current, refresh: () => refresh(), retry: () => retry() }),
-  changePerson: (action: 'add' | 'remove', email: string) => changePerson(action, email),
+  deleteAccount: (email: string) => deleteAccount(email),
 }))
 
 import Admin from './Admin'
@@ -39,9 +39,9 @@ const NOW = Date.now()
 const iso = (minutesAgo: number) => new Date(NOW - minutesAgo * 60000).toISOString()
 
 const people = parsePeople([
-  { email: 'owner@x.com', added_at: iso(9000), user_id: 'u0', display_name: 'Owner', signed_in_at: iso(8000), is_admin: true, last_mark_at: iso(5) },
-  { email: 'maya@x.com', added_at: iso(8000), user_id: 'u1', display_name: 'Maya', signed_in_at: iso(7000), is_admin: false, last_mark_at: iso(30) },
-  { email: 'tom@x.com', added_at: iso(7000), user_id: null, display_name: null, signed_in_at: null, is_admin: false, last_mark_at: null },
+  { user_id: 'u0', email: 'owner@x.com', display_name: 'Owner', signed_up_at: iso(9000), is_admin: true, last_mark_at: iso(5) },
+  { user_id: 'u1', email: 'maya@x.com', display_name: 'Maya', signed_up_at: iso(8000), is_admin: false, last_mark_at: iso(30) },
+  { user_id: 'u2', email: 'tom@x.com', display_name: null, signed_up_at: iso(7000), is_admin: false, last_mark_at: null },
 ])
 
 const wanted = parseWanted([
@@ -85,7 +85,7 @@ function ready(p = people, w = wanted) {
 }
 
 const panel = () => document.getElementById('ap-panel') as HTMLElement
-const openButton = () => screen.getByRole('button', { name: /^Allowlist/ })
+const openButton = () => screen.getByRole('button', { name: /^Collectors/ })
 
 beforeEach(() => {
   authState.current = { status: 'signed-in', email: 'owner@x.com' }
@@ -95,7 +95,7 @@ beforeEach(() => {
   retry.mockReset()
   refresh.mockReset()
   refresh.mockResolvedValue(undefined)
-  changePerson.mockReset()
+  deleteAccount.mockReset()
 })
 
 afterEach(() => {
@@ -129,7 +129,7 @@ describe('Admin gate screens', () => {
     gateState.current = 'not-admin'
     renderAdmin()
     expect(screen.getByRole('heading', { level: 1 }).textContent).toBe('Not available')
-    expect(screen.queryByRole('button', { name: /^Allowlist/ })).toBeNull()
+    expect(screen.queryByRole('button', { name: /^Collectors/ })).toBeNull()
   })
 
   it('shows an error with Try again that rechecks', () => {
@@ -149,7 +149,7 @@ describe('Admin gate screens', () => {
 })
 
 describe('Admin wall', () => {
-  it('shows ghost cards and a disabled allowlist button while loading', () => {
+  it('shows ghost cards and a disabled collectors button while loading', () => {
     renderAdmin()
     expect(document.querySelectorAll('.aw-ghost').length).toBeGreaterThan(0)
     expect(openButton().hasAttribute('disabled')).toBe(true)
@@ -220,7 +220,7 @@ describe('Admin wall', () => {
   })
 })
 
-describe('Allowlist slide-over', () => {
+describe('Collectors slide-over', () => {
   it('is closed at first, opens from the button and closes by X, scrim and Escape', () => {
     ready()
     renderAdmin()
@@ -230,10 +230,10 @@ describe('Allowlist slide-over', () => {
     fireEvent.click(openButton())
     expect(panel().className).toBe('ap-panel on')
     expect(openButton().getAttribute('aria-expanded')).toBe('true')
-    expect(document.activeElement).toBe(document.getElementById('ap-mail'))
+    expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Close collectors' }))
     expect(document.body.style.overflow).toBe('hidden')
 
-    fireEvent.click(screen.getByRole('button', { name: 'Close allowlist' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Close collectors' }))
     expect(panel().className).toBe('ap-panel')
     expect(document.body.style.overflow).not.toBe('hidden')
 
@@ -246,127 +246,92 @@ describe('Allowlist slide-over', () => {
     expect(panel().className).toBe('ap-panel')
   })
 
-  it('lists people with counts, and no remove button for the admin', () => {
+  it('lists every person with counts, and no delete button for the admin', () => {
     ready()
     renderAdmin()
     fireEvent.click(openButton())
-    const list = within(panel()).getByRole('list', { name: 'Invited addresses' })
-    expect(within(list).getAllByRole('listitem')).toHaveLength(3)
+    const list = within(panel()).getByRole('list', { name: 'Collectors' })
+    const rows = within(list).getAllByRole('listitem')
+    expect(rows).toHaveLength(3)
+    // Newest sign-up first.
+    expect(rows[0].textContent).toMatch(/tom/)
     expect(within(list).getByText('2 wanted')).toBeTruthy()
-    expect(within(list).queryByRole('button', { name: 'Remove owner@x.com' })).toBeNull()
-    expect(within(list).getByRole('button', { name: 'Remove maya@x.com' })).toBeTruthy()
+    expect(within(list).queryByRole('button', { name: 'Delete account owner@x.com' })).toBeNull()
+    expect(within(list).getByRole('button', { name: 'Delete account maya@x.com' })).toBeTruthy()
     expect(within(list).getByText('You')).toBeTruthy()
-    expect(panel().textContent).toMatch(/2.*signed in.*1.*not yet/)
+    expect(panel().textContent).toMatch(/3.*collectors/)
   })
 
-  it('refuses a bad email and a duplicate without calling the API', async () => {
+  it('has no invite form and no allowlist wording', () => {
     ready()
     renderAdmin()
     fireEvent.click(openButton())
-    const input = document.getElementById('ap-mail') as HTMLInputElement
-    const submit = () =>
-      act(async () => {
-        fireEvent.click(within(panel()).getByRole('button', { name: 'Invite' }))
-      })
-
-    fireEvent.change(input, { target: { value: 'nope' } })
-    await submit()
-    expect(within(panel()).getByRole('alert').textContent).toMatch(/does not look like an email/)
-
-    fireEvent.change(input, { target: { value: ' MAYA@x.com ' } })
-    await submit()
-    expect(within(panel()).getByRole('alert').textContent).toMatch(/already on the allowlist/)
-    expect(changePerson).not.toHaveBeenCalled()
-  })
-
-  it('invites a clean address, refreshes and confirms', async () => {
-    ready()
-    changePerson.mockResolvedValue({ ok: true })
-    renderAdmin()
-    fireEvent.click(openButton())
-    fireEvent.change(document.getElementById('ap-mail') as HTMLInputElement, { target: { value: ' New@X.com ' } })
-    await act(async () => {
-      fireEvent.click(within(panel()).getByRole('button', { name: 'Invite' }))
-    })
-    expect(changePerson).toHaveBeenCalledWith('add', 'new@x.com')
-    expect(refresh).toHaveBeenCalledTimes(1)
-    expect(panel().textContent).toMatch(/Invited new@x.com/)
-  })
-
-  it('shows the server error text when an invite fails', async () => {
-    ready()
-    changePerson.mockResolvedValue({ ok: false, error: 'not_admin' })
-    renderAdmin()
-    fireEvent.click(openButton())
-    fireEvent.change(document.getElementById('ap-mail') as HTMLInputElement, { target: { value: 'new@x.com' } })
-    await act(async () => {
-      fireEvent.click(within(panel()).getByRole('button', { name: 'Invite' }))
-    })
-    expect(within(panel()).getByRole('alert').textContent).toMatch(/no longer an admin/)
-    expect(refresh).not.toHaveBeenCalled()
+    expect(document.getElementById('ap-mail')).toBeNull()
+    expect(within(panel()).queryByRole('button', { name: 'Invite' })).toBeNull()
+    expect(document.body.textContent).not.toMatch(/invite|allowlist/i)
   })
 })
 
-describe('Inline remove confirm', () => {
+describe('Inline delete-account confirm', () => {
   function openConfirm() {
     ready()
     const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(true)
     renderAdmin()
     fireEvent.click(openButton())
-    fireEvent.click(screen.getByRole('button', { name: 'Remove maya@x.com' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Delete account maya@x.com' }))
     return { confirmSpy, group: within(panel()).getByRole('group') }
   }
 
   it('asks inline with the email and wanted count, never window.confirm', () => {
     const { confirmSpy, group } = openConfirm()
-    expect(group.textContent).toMatch(/Remove maya@x\.com\?/)
+    expect(group.textContent).toMatch(/Delete the account of maya@x\.com\?/)
     expect(group.textContent).toMatch(/including 2 wanted/)
     expect(within(group).getByRole('button', { name: 'Keep' })).toBeTruthy()
     expect(document.activeElement).toBe(within(group).getByRole('button', { name: 'Keep' }))
     expect(confirmSpy).not.toHaveBeenCalled()
-    expect(changePerson).not.toHaveBeenCalled()
+    expect(deleteAccount).not.toHaveBeenCalled()
   })
 
   it('Keep cancels without calling the API', () => {
     const { confirmSpy, group } = openConfirm()
     fireEvent.click(within(group).getByRole('button', { name: 'Keep' }))
     expect(within(panel()).queryByRole('group')).toBeNull()
-    expect(screen.getByRole('button', { name: 'Remove maya@x.com' })).toBeTruthy()
-    expect(changePerson).not.toHaveBeenCalled()
+    expect(screen.getByRole('button', { name: 'Delete account maya@x.com' })).toBeTruthy()
+    expect(deleteAccount).not.toHaveBeenCalled()
     expect(refresh).not.toHaveBeenCalled()
     expect(confirmSpy).not.toHaveBeenCalled()
   })
 
   it('closing the panel drops the confirm without calling the API', () => {
     openConfirm()
-    fireEvent.click(screen.getByRole('button', { name: 'Close allowlist' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Close collectors' }))
     fireEvent.click(openButton())
     expect(within(panel()).queryByRole('group')).toBeNull()
-    expect(changePerson).not.toHaveBeenCalled()
+    expect(deleteAccount).not.toHaveBeenCalled()
   })
 
-  it('Remove calls the API once, refreshes and closes the confirm', async () => {
+  it('Delete account calls the API once, refreshes and closes the confirm', async () => {
     const { group } = openConfirm()
-    changePerson.mockResolvedValue({ ok: true })
+    deleteAccount.mockResolvedValue({ ok: true })
     await act(async () => {
-      fireEvent.click(within(group).getByRole('button', { name: 'Remove' }))
+      fireEvent.click(within(group).getByRole('button', { name: 'Delete account' }))
     })
-    expect(changePerson).toHaveBeenCalledTimes(1)
-    expect(changePerson).toHaveBeenCalledWith('remove', 'maya@x.com')
+    expect(deleteAccount).toHaveBeenCalledTimes(1)
+    expect(deleteAccount).toHaveBeenCalledWith('maya@x.com')
     expect(refresh).toHaveBeenCalledTimes(1)
     await waitFor(() => expect(within(panel()).queryByRole('group')).toBeNull())
-    expect(panel().textContent).toMatch(/Removed maya@x\.com\./)
+    expect(panel().textContent).toMatch(/Deleted the account of maya@x\.com\./)
   })
 
-  it('keeps the confirm open and shows the error when removal fails', async () => {
+  it('keeps the confirm open and shows the error when deletion fails', async () => {
     const { group } = openConfirm()
-    changePerson.mockResolvedValue({ ok: false, error: 'network' })
+    deleteAccount.mockResolvedValue({ ok: false, error: 'network' })
     await act(async () => {
-      fireEvent.click(within(group).getByRole('button', { name: 'Remove' }))
+      fireEvent.click(within(group).getByRole('button', { name: 'Delete account' }))
     })
     const g = within(panel()).getByRole('group')
     expect(within(g).getByRole('alert').textContent).toMatch(/Could not reach the server/)
-    expect(within(g).getByRole('button', { name: 'Remove' }).hasAttribute('disabled')).toBe(false)
+    expect(within(g).getByRole('button', { name: 'Delete account' }).hasAttribute('disabled')).toBe(false)
     expect(refresh).not.toHaveBeenCalled()
   })
 })

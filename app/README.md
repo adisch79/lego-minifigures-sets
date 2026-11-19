@@ -34,3 +34,13 @@ See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rule
 ## Sign-in settings
 
 Create `app/.env.local` (git-ignored via `*.local`) with the two names `VITE_SUPABASE_URL=` and `VITE_SUPABASE_ANON_KEY=`, and fill both values from the Supabase dashboard, Project Settings, API (project URL and anon key). In CI they are repo variables, not secrets. With either empty the site works without sign-in. The service-role key must never get a `VITE_` name: it would ship in the bundle.
+
+## Open sign-up and Turnstile (V2-09)
+`VITE_TURNSTILE_SITE_KEY` (public site key) switches on the Turnstile widget on the sign-in form and adds challenges.cloudflare.com to the meta CSP. Unset: no widget, no captcha token (local dev, tests). SOURCE: https://developers.cloudflare.com/turnstile/
+
+Release order (wrong order blocks every sign-in):
+1. Create the Turnstile site in Cloudflare.
+2. Set `VITE_TURNSTILE_SITE_KEY` in the Cloudflare Pages build environment.
+3. Build and deploy, then check the widget shows on the sign-in form.
+4. Only then put the Turnstile secret into Supabase Auth > Attack Protection and enable captcha.
+Full checklist: docs/design/V2-09-open-signup.md (on dev after the docs merge).

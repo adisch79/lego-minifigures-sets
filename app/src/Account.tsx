@@ -16,6 +16,7 @@ import {
 import { requestLink, signOut, useAuth, type AuthState } from './auth'
 import { useIsAdmin, type AdminGate } from './adminApi'
 import { DEMO, DEMO_AUTH } from './demo'
+import { Turnstile, turnstileSiteKey } from './Turnstile'
 
 type AccountUi = {
   auth: AuthState
@@ -40,7 +41,7 @@ export function AccountProvider({ children }: { children: ReactNode }) {
   const [stripDismissed, setStripDismissed] = useState(false)
   const pillRef = useRef<HTMLButtonElement | null>(null)
   const stripShown =
-    !stripDismissed && !!auth.linkError && auth.status !== 'disabled' && auth.status !== 'signed-in'
+    !stripDismissed && !!auth.linkError && auth.status !== 'disabled'
   const dismissStrip = useCallback(() => setStripDismissed(true), [])
   const { gate: adminGate, recheck: recheckAdmin } = useIsAdmin(auth)
   return (
@@ -123,10 +124,11 @@ function Chevron({ up }: { up: boolean }) {
   )
 }
 
-type Failure = 'invalid' | 'rate' | 'network'
+type Failure = 'invalid' | 'rate' | 'network' | 'captcha'
 
 const LIVE_TEXT: Record<Failure | 'sent', string> = {
-  sent: 'Check your email. If this address is invited, a sign-in link is on its way.',
+  sent: 'Check your email for the sign-in link and code.',
+  captcha: 'Verification failed, try again.',
   invalid: 'That does not look like an email address.',
   rate: 'Too many requests. Try again in an hour.',
   network: 'Could not reach the server. Check your connection and try again.',
@@ -137,6 +139,10 @@ function SignInPanel({ onAnnounce }: { onAnnounce: (text: string) => void }) {
   const [email, setEmail] = useState('')
   const [phase, setPhase] = useState<'form' | 'sending' | 'sent'>('form')
   const [failure, setFailure] = useState<Failure | null>(null)
+  // Turnstile: token is null until solved; the widget remounts (resetKey) after each send.
+  const siteKey = turnstileSiteKey()
+  const [token, setToken] = useState<string | null>(null)
+  const [resetKey, setResetKey] = useState(0)
   const inputRef = useRef<HTMLInputElement>(null)
   const sentRef = useRef<HTMLHeadingElement>(null)
   const id = useId()
@@ -151,8 +157,14 @@ function SignInPanel({ onAnnounce }: { onAnnounce: (text: string) => void }) {
   const submit = async (e: FormEvent) => {
     e.preventDefault()
     if (phase === 'sending' || failure === 'rate') return
+    if (siteKey && !token) return
     setPhase('sending')
-    const result = await requestLink(email)
+    const result = await requestLink(email, siteKey ? (token ?? undefined) : undefined)
+    // A Turnstile token works once, so ask for a fresh one whatever the result.
+    if (siteKey) {
+      setToken(null)
+      setResetKey((k) => k + 1)
+    }
     if (result.ok) {
       setFailure(null)
       setPhase('sent')
@@ -173,7 +185,7 @@ function SignInPanel({ onAnnounce }: { onAnnounce: (text: string) => void }) {
         <h3 ref={sentRef} tabIndex={-1}>
           Check your email
         </h3>
-        <p>If this address is invited, a sign-in link is on its way. Open it in this browser.</p>
+        <p>Check your email for the sign-in link and code. Open the link in this browser.</p>
         <button
           type="button"
           className="linkish"
@@ -222,6 +234,16 @@ function SignInPanel({ onAnnounce }: { onAnnounce: (text: string) => void }) {
           </span>
         </div>
       )}
+      {failure === 'captcha' && (
+        <div className="callout red">
+          <span className="dot">
+            <WarnIcon />
+          </span>
+          <span>
+            <b>Verification failed, try again.</b>
+          </span>
+        </div>
+      )}
       <label className="f" htmlFor={inputId}>
         Email address
       </label>
@@ -249,7 +271,8 @@ function SignInPanel({ onAnnounce }: { onAnnounce: (text: string) => void }) {
           That does not look like an email address.
         </p>
       )}
-      <button type="submit" className="send" disabled={sending || failure === 'rate'}>
+      {siteKey && <Turnstile siteKey={siteKey} onToken={setToken} resetKey={resetKey} />}
+      <button type="submit" className="send" disabled={sending || failure === 'rate' || (!!siteKey && !token)}>
         {label}
       </button>
     </form>
@@ -278,7 +301,7 @@ function SignedInPanel({ email, onDone }: { email: string; onDone: () => void })
           <AdminIcon />
           <span>
             <b>Admin</b>
-            <small>Wanted wall and allowlist</small>
+            <small>Wanted wall and collectors</small>
           </span>
         </a>
       )}
@@ -406,6 +429,27 @@ export function AccountControl() {
 /** Red strip under the header after a sign-in link failed. */
 export function LinkErrorStrip() {
   const { auth, stripShown, dismissStrip, setOpen, pillRef } = useAccountUi()
+  if (auth.pendingLink && auth.status !== 'loading' && auth.status !== 'disabled') {
+    // V2-16: a mail link is used only after this click (no sign-in on page load).
+    const switching = auth.status === 'signed-in'
+    return (
+      <div className="linkgo" role="status" aria-label="Sign-in link">
+        <p>
+          {switching
+            ? `You are signed in as ${auth.email}. Continue to switch to the account from the email link.`
+            : 'Your sign-in link is ready.'}
+        </p>
+        <button type="button" className="send" onClick={() => void auth.continueLink?.()}>
+          Continue sign-in
+        </button>
+        {switching && (
+          <button type="button" className="linkgo-keep" onClick={() => auth.dismissLink?.()}>
+            Keep current account
+          </button>
+        )}
+      </div>
+    )
+  }
   if (!stripShown) return null
   return (
     <div className="linkbar" role="alert">

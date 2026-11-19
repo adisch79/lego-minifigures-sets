@@ -1,7 +1,9 @@
+import { StrictMode } from 'react'
 import { renderHook, waitFor, act } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 const signInWithOtp = vi.fn()
+const verifyOtp = vi.fn()
 const initialize = vi.fn()
 const getSession = vi.fn()
 let authListener: ((event: string, session: unknown) => void) | null = null
@@ -9,6 +11,7 @@ vi.mock('@supabase/supabase-js', () => ({
   createClient: vi.fn(() => ({
     auth: {
       signInWithOtp,
+      verifyOtp: (p: unknown) => verifyOtp(p),
       signOut: vi.fn(),
       initialize: () => initialize(),
       getSession: () => getSession(),
@@ -34,6 +37,7 @@ async function load(withEnv: boolean) {
 
 beforeEach(() => {
   signInWithOtp.mockReset()
+  verifyOtp.mockReset().mockResolvedValue({ data: {}, error: null })
   initialize.mockReset().mockResolvedValue({ error: null })
   getSession.mockReset().mockResolvedValue({ data: { session: null }, error: null })
   authListener = null
@@ -60,14 +64,39 @@ describe('requestLink', () => {
     signInWithOtp.mockResolvedValue({ error: null })
     expect(await a.requestLink('a@b.co')).toEqual({ ok: true })
   })
-  it('trims, lower-cases, forbids user creation, sets redirect', async () => {
+  it('trims, lower-cases, allows user creation, sets redirect', async () => {
     const a = await load(true)
     signInWithOtp.mockResolvedValue({ error: null })
     await a.requestLink('  Foo@Bar.COM ')
     expect(signInWithOtp).toHaveBeenCalledWith({
       email: 'foo@bar.com',
-      options: { shouldCreateUser: false, emailRedirectTo: window.location.origin + '/app/' },
+      options: { shouldCreateUser: true, emailRedirectTo: window.location.origin + '/app/' },
     })
+  })
+  it('answers ok for a brand-new address', async () => {
+    const a = await load(true)
+    signInWithOtp.mockResolvedValue({ data: { user: null, session: null }, error: null })
+    expect(await a.requestLink('new.person@example.com')).toEqual({ ok: true })
+  })
+  it('passes the Turnstile token only when given', async () => {
+    const a = await load(true)
+    signInWithOtp.mockResolvedValue({ error: null })
+    await a.requestLink('a@b.co', 'tok123')
+    expect(signInWithOtp.mock.calls[0][0].options.captchaToken).toBe('tok123')
+    await a.requestLink('a@b.co')
+    expect(signInWithOtp.mock.calls[1][0].options).not.toHaveProperty('captchaToken')
+  })
+  it('maps a rate-limit code to rate', async () => {
+    const a = await load(true)
+    signInWithOtp.mockResolvedValue({ error: { status: 400, code: 'over_email_send_rate_limit', message: 'x' } })
+    expect(await a.requestLink('a@b.co')).toEqual({ ok: false, reason: 'rate' })
+  })
+  it('maps captcha errors to captcha', async () => {
+    const a = await load(true)
+    signInWithOtp.mockResolvedValue({ error: { status: 400, code: 'captcha_failed', message: 'x' } })
+    expect(await a.requestLink('a@b.co', 't')).toEqual({ ok: false, reason: 'captcha' })
+    signInWithOtp.mockResolvedValue({ error: { status: 400, message: 'captcha protection: request disallowed' } })
+    expect(await a.requestLink('a@b.co', 't')).toEqual({ ok: false, reason: 'captcha' })
   })
   it('redirect drops query and hash', async () => {
     const a = await load(true)
@@ -199,5 +228,145 @@ describe('requestLink loose match', () => {
     const a = await load(true)
     signInWithOtp.mockResolvedValue({ error: { status: 400, message: 'Origin not allowed' } })
     expect(await a.requestLink('a@b.co')).toEqual({ ok: false, reason: 'network' })
+  })
+})
+
+describe('token_hash link (V2-16 email button)', () => {
+  const NEUTRAL = 'That sign-in link did not work. Ask for a new one.'
+  const session = { data: { session: { user: { email: 'a@b.co' } } }, error: null }
+  const ready = async (a: Awaited<ReturnType<typeof load>>) => {
+    const hook = renderHook(() => a.useAuth())
+    await waitFor(() => expect(hook.result.current.status).not.toBe('loading'))
+    return hook
+  }
+
+  it('does not call verifyOtp on load and reports a pending link', async () => {
+    window.history.replaceState(null, '', '/app/?token_hash=abc123&type=email')
+    const a = await load(true)
+    const { result } = await ready(a)
+    expect(verifyOtp).not.toHaveBeenCalled()
+    expect(result.current.pendingLink).toBe(true)
+    expect(result.current.status).toBe('signed-out')
+  })
+  it('calls verifyOtp once on click, then signs in', async () => {
+    window.history.replaceState(null, '', '/app/?token_hash=abc123&type=email')
+    const a = await load(true)
+    const { result } = await ready(a)
+    getSession.mockResolvedValue(session)
+    await act(async () => {
+      await result.current.continueLink?.()
+    })
+    expect(verifyOtp).toHaveBeenCalledTimes(1)
+    expect(verifyOtp).toHaveBeenCalledWith({ token_hash: 'abc123', type: 'email' })
+    expect(result.current.status).toBe('signed-in')
+    expect(result.current.pendingLink).toBe(false)
+  })
+  it('runs verifyOtp once for a double click', async () => {
+    window.history.replaceState(null, '', '/app/?token_hash=abc123&type=email')
+    const a = await load(true)
+    const { result } = await ready(a)
+    await act(async () => {
+      await Promise.all([result.current.continueLink?.(), result.current.continueLink?.()])
+    })
+    expect(verifyOtp).toHaveBeenCalledTimes(1)
+  })
+  it('runs verifyOtp once under StrictMode', async () => {
+    window.history.replaceState(null, '', '/app/?token_hash=abc123&type=email')
+    const a = await load(true)
+    const { result } = renderHook(() => a.useAuth(), { wrapper: StrictMode })
+    await waitFor(() => expect(result.current.status).not.toBe('loading'))
+    expect(verifyOtp).not.toHaveBeenCalled()
+    await act(async () => {
+      await result.current.continueLink?.()
+      await result.current.continueLink?.()
+    })
+    expect(verifyOtp).toHaveBeenCalledTimes(1)
+  })
+  it('with a session already present, keeps it until the click', async () => {
+    window.history.replaceState(null, '', '/app/?token_hash=abc123&type=email')
+    const a = await load(true)
+    getSession.mockResolvedValue(session)
+    const { result } = await ready(a)
+    expect(result.current.status).toBe('signed-in')
+    expect(result.current.email).toBe('a@b.co')
+    expect(result.current.pendingLink).toBe(true)
+    expect(verifyOtp).not.toHaveBeenCalled()
+  })
+  it('dismissLink clears the pending link without verifying', async () => {
+    window.history.replaceState(null, '', '/app/?token_hash=abc123&type=email')
+    const a = await load(true)
+    const { result } = await ready(a)
+    act(() => result.current.dismissLink?.())
+    expect(result.current.pendingLink).toBe(false)
+    expect(verifyOtp).not.toHaveBeenCalled()
+  })
+  it('removes token_hash and type from the URL on load and keeps other params', async () => {
+    window.history.replaceState(null, '', '/app/?token_hash=abc123&type=email&q=1#series/71019')
+    const a = await load(true)
+    await ready(a)
+    expect(window.location.search).toBe('?q=1')
+    expect(window.location.hash).toBe('#series/71019')
+  })
+  it('shows the neutral message when verifyOtp fails', async () => {
+    window.history.replaceState(null, '', '/app/?token_hash=bad&type=email')
+    const a = await load(true)
+    verifyOtp.mockResolvedValue({ data: {}, error: { code: 'otp_expired', message: 'Email link is invalid or has expired' } })
+    const { result } = await ready(a)
+    await act(async () => {
+      await result.current.continueLink?.()
+    })
+    expect(result.current.linkError).toBe(NEUTRAL)
+    expect(result.current.pendingLink).toBe(false)
+    expect(window.location.search).toBe('')
+  })
+  it('shows the neutral message when verifyOtp throws', async () => {
+    window.history.replaceState(null, '', '/app/?token_hash=bad&type=email')
+    const a = await load(true)
+    verifyOtp.mockRejectedValue(new Error('network'))
+    const { result } = await ready(a)
+    await act(async () => {
+      await result.current.continueLink?.()
+    })
+    expect(result.current.linkError).toBe(NEUTRAL)
+  })
+  it('a PKCE exchange error wins over a token error', async () => {
+    const a = await load(true)
+    initialize.mockResolvedValue({ error: { code: 'otp_expired', message: 'expired' } })
+    const { result } = await ready(a)
+    expect(result.current.linkError).toBe('That sign-in link has expired. Ask for a new one.')
+  })
+  it.each([
+    ['missing type', 'token_hash=abc123'],
+    ['unknown type', 'token_hash=abc&type=recovery'],
+    ['signup type', 'token_hash=abc&type=signup'],
+    ['bad shape', 'token_hash=a%20b%3Cx&type=email'],
+    ['too long', `token_hash=${'a'.repeat(129)}&type=email`],
+  ])('drops a link with %s, still strips it from the URL', async (_n, qs) => {
+    window.history.replaceState(null, '', `/app/?${qs}&q=1`)
+    const a = await load(true)
+    const { result } = await ready(a)
+    expect(result.current.pendingLink).toBe(false)
+    expect(result.current.linkError).toBe(NEUTRAL)
+    expect(verifyOtp).not.toHaveBeenCalled()
+    expect(window.location.search).toBe('?q=1')
+  })
+  it('keeps a token-link failure through later auth events while signed in', async () => {
+    window.history.replaceState(null, '', '/app/?token_hash=bad&type=email')
+    const a = await load(true)
+    verifyOtp.mockResolvedValue({ data: {}, error: { code: 'otp_expired', message: 'expired' } })
+    const { result } = await ready(a)
+    await act(async () => {
+      await result.current.continueLink?.()
+    })
+    expect(result.current.linkError).toBe(NEUTRAL)
+    act(() => authListener?.('TOKEN_REFRESHED', { user: { email: 'a@b.co' } }))
+    expect(result.current.status).toBe('signed-in')
+    expect(result.current.linkError).toBe(NEUTRAL)
+  })
+  it('does nothing when no params are present', async () => {
+    const a = await load(true)
+    const { result } = await ready(a)
+    expect(result.current.pendingLink).toBe(false)
+    expect(verifyOtp).not.toHaveBeenCalled()
   })
 })

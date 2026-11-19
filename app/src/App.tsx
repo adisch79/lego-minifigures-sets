@@ -25,6 +25,11 @@ import { filterSeries, type SeriesFilter } from './marks'
 import { FilterBar, HeartOutlineIcon, MarksProvider, TileBadge, TileProgress, TrophyIcon, useMarksUi } from './MarkChips'
 import SeriesPage, { Brand, LoadError } from './SeriesPage'
 import Admin from './Admin'
+import About from './About'
+import SiteFooter from './SiteFooter'
+import { WithMark } from './LegoMark'
+import Stats from './Stats'
+import './about.css'
 
 // Vite base is './', so this stays correct under a Pages sub-path.
 const BASE = import.meta.env.BASE_URL
@@ -64,35 +69,13 @@ function Tile({ series, index, query }: { series: Series; index: number; query: 
         </div>
         <h2>
           <a href={href} tabIndex={-1}>
-            {series.name}
+            <WithMark text={series.name} />
           </a>
         </h2>
         <TileProgress series={series} />
-        {hits.length > 0 && <p className="hit">Includes {hits.join(', ')}</p>}
+        {hits.length > 0 && <p className="hit">Includes <WithMark text={hits.join(', ')} /></p>}
       </div>
     </li>
-  )
-}
-
-function Stats({ series }: { series: Series[] }) {
-  const figures = series.reduce((sum, s) => sum + s.figureCount, 0)
-  const years = series.map((s) => s.year)
-  return (
-    <div className="stats">
-      <div>
-        <strong>{series.length}</strong>Series
-      </div>
-      <div>
-        <strong>{figures}</strong>Figures
-      </div>
-      <div>
-        <strong>
-          {Math.min(...years)}
-          <span>-{Math.max(...years)}</span>
-        </strong>
-        Years
-      </div>
-    </div>
   )
 }
 
@@ -239,6 +222,10 @@ function Home({
                 </select>
               </label>
             </div>
+            {/* Story V2-15: About link next to Sign in (mockup C frame 01). */}
+            <a className="nav-about" href="#about">
+              About
+            </a>
             <AccountControl />
           </div>
           <LinkErrorStrip />
@@ -329,7 +316,8 @@ export default function App() {
   // Kept here, not in Home, so the filter survives a visit to a series page.
   const [filter, setFilter] = useState<SeriesFilter>('all')
   const seriesId = route.page === 'series' ? route.id : null
-  // One key per page, so scroll and focus react to any page change (home, admin, a series).
+  // One key per page, so scroll and focus react to any page change (home, admin, about, a series).
+  // Every About chapter shares the key 'about', so moving between chapters does not refocus the h1.
   const pageKey = route.page === 'series' ? `series/${route.id}` : route.page
 
   // Last committed page key, and how far down home was when it was left.
@@ -392,9 +380,26 @@ export default function App() {
     }
   }, [pageKey])
 
+  // Story V2-15: an About chapter anchor scrolls to its chapter. Runs after the page-change effect
+  // above (on entry) and on every hash change while already on About; `route` is a new object per
+  // hash change, so the same chapter link twice in a row still scrolls. No chapter: the page top.
+  useEffect(() => {
+    if (route.page !== 'about') return
+    const target = route.chapter ? document.getElementById(route.chapter) : null
+    if (target) {
+      const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? true
+      target.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' })
+      target.querySelector<HTMLElement>('h2')?.focus({ preventScroll: true })
+    } else {
+      window.scrollTo(0, 0)
+    }
+  }, [route])
+
   useEffect(() => {
     if (route.page === 'admin') {
       document.title = 'Admin - Minifig Hunt'
+    } else if (route.page === 'about') {
+      document.title = 'About - Minifig Hunt'
     } else if (seriesId === null) {
       document.title = 'Minifig Hunt'
     } else if (load.status === 'ready') {
@@ -415,17 +420,24 @@ export default function App() {
       <MarksProvider>
         {route.page === 'admin' ? (
           <Admin load={load} onRetry={retry} />
-        ) : seriesId !== null ? (
-          <SeriesPage id={seriesId} load={load} onRetry={retry} />
         ) : (
-          <Home
-            load={load}
-            state={state}
-            setState={setState}
-            filter={filter}
-            setFilter={setFilter}
-            onRetry={retry}
-          />
+          <>
+            {route.page === 'about' ? (
+              <About load={load} />
+            ) : seriesId !== null ? (
+              <SeriesPage id={seriesId} load={load} onRetry={retry} />
+            ) : (
+              <Home
+                load={load}
+                state={state}
+                setState={setState}
+                filter={filter}
+                setFilter={setFilter}
+                onRetry={retry}
+              />
+            )}
+            <SiteFooter />
+          </>
         )}
       </MarksProvider>
     </AccountProvider>

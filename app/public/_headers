@@ -4,8 +4,9 @@
 # CSP mirrors the meta tag in vite.config.ts (cspPlugin) and adds frame-ancestors, which a meta tag cannot carry.
 # connect-src: the Supabase project (REST, auth and functions share this host). SOURCE: docs/HANDOFF.md (project ref iagnfgedasxkqqjbsoeg)
 # img-src: 'self' data: only, all figure images are bundled (grep of app/src found no external image host; img.bricklink.com is used by scripts only).
+# challenges.cloudflare.com in script-src, frame-src and connect-src: Turnstile widget (V2-09). SOURCE: https://developers.cloudflare.com/turnstile/reference/content-security-policy/
 # frame-ancestors 'none': no embedding. SOURCE: https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Content-Security-Policy/frame-ancestors
-  Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self' https://iagnfgedasxkqqjbsoeg.supabase.co; base-uri 'self'; form-action 'self'; object-src 'none'; frame-ancestors 'none'
+  Content-Security-Policy: default-src 'self'; script-src 'self' https://challenges.cloudflare.com; frame-src https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self' https://iagnfgedasxkqqjbsoeg.supabase.co https://challenges.cloudflare.com; base-uri 'self'; form-action 'self'; object-src 'none'; frame-ancestors 'none'
 # HSTS one year, no includeSubDomains/preload until the whole domain is checked. SOURCE: https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Strict-Transport-Security
   Strict-Transport-Security: max-age=31536000
 # SOURCE: https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/X-Content-Type-Options

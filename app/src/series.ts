@@ -1,7 +1,14 @@
 // Pure logic for story V1-05: hash routing and the series page's figure selection.
 import type { Figure, Series } from './catalog'
 
-export type Route = { page: 'home' } | { page: 'admin' } | { page: 'series'; id: string }
+/** Story V2-15: chapters of the About page, reached as #about/<chapter>. */
+export type AboutChapter = 'support' | 'write'
+
+export type Route =
+  | { page: 'home' }
+  | { page: 'admin' }
+  | { page: 'about'; chapter?: AboutChapter }
+  | { page: 'series'; id: string }
 
 export type Load =
   | { status: 'loading' }
@@ -9,6 +16,7 @@ export type Load =
   | { status: 'ready'; series: Series[] }
 
 const SERIES_PREFIX = '#series/'
+const ABOUT_CHAPTERS: readonly AboutChapter[] = ['support', 'write']
 
 function decode(text: string): string {
   try {
@@ -18,10 +26,17 @@ function decode(text: string): string {
   }
 }
 
-/** Reads the route from location.hash. Any hash that is not a series or admin link means home. */
+/** Reads the route from location.hash. Any hash that is not a series, about or admin link means home. */
 export function parseRoute(hash: string): Route {
+  const trimmed = hash.replace(/\/+$/, '')
   // Story V2-05: the admin page. A trailing slash is tolerated like on series links.
-  if (hash.replace(/\/+$/, '') === '#admin') return { page: 'admin' }
+  if (trimmed === '#admin') return { page: 'admin' }
+  // Story V2-15: the About page. An empty or unknown chapter opens the page top.
+  if (trimmed === '#about') return { page: 'about' }
+  if (trimmed.startsWith('#about/')) {
+    const chapter = ABOUT_CHAPTERS.find((c) => c === trimmed.slice('#about/'.length))
+    return chapter ? { page: 'about', chapter } : { page: 'about' }
+  }
   if (!hash.startsWith(SERIES_PREFIX)) return { page: 'home' }
   return { page: 'series', id: decode(hash.slice(SERIES_PREFIX.length).replace(/\/+$/, '')) }
 }
