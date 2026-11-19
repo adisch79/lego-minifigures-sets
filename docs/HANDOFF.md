@@ -1,7 +1,7 @@
 # HANDOFF
 
 ## Current state (updated 2026-11-19, MVP 2.1: V2-09/15/16/18 on dev, not released)
-- **NEXT (2026-11-19): release.** Checklist [release-2026-11-19.md](release-2026-11-19.md); release PR #59 (dev into master) open, NOT merged: owner does steps 1-3 (sign-up OFF check, paste 2 migrations, redeploy admin-people), then approves the merge. V2-19 still blocked on owner answers.
+- **NEXT (2026-11-19): release.** Checklist [release-2026-11-19.md](release-2026-11-19.md); release PR #59 (dev into master) open, NOT merged: 2026-11-20: migrations NOT run yet (owner said no; error text not yet given); admin-people rolled back to the live (old) code. Redo steps 2-3 per the checklist, then owner approves the merge. V2-19 still blocked on owner answers.
 - **Live:** https://minifighunt.com/ on Cloudflare Pages (V2-06, 2026-11-07); `www` 301 to apex. GitHub Pages switched off. Releases: V2-04+V2-05 PR #35, V2-06 PR #38 ([backlog](backlog.md)).
 
 ## Next step: MVP 2.1 owner fixes, ONE AT A TIME (updated 2026-11-08)
