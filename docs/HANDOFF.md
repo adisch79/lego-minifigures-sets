@@ -1,7 +1,7 @@
 # HANDOFF
 
-## Current state (updated 2026-11-19, MVP 2.1: V2-09/15/16/18 on dev, not released)
-- **NEXT (2026-11-19): release.** Checklist [release-2026-11-19.md](release-2026-11-19.md); release PR #59 (dev into master) open, NOT merged: 2026-11-20: both migrations live (checked: allowlist triggers 0, admin_people_list, contact_messages, admin_contact_list present). admin-people still OLD code: redeploy from qa-dev (checklist step 3), then owner approves the merge. V2-19 still blocked on owner answers.
+## Current state (updated 2026-11-20, MVP 2.1 released; sign-up still OFF)
+- **RELEASED 2026-11-20:** PR #59 + CI fix #60 via #61 (master 5b1ae29, deploy run 44627368000 success; live CSP has Turnstile host, live bundle has V2-18 footer). Migrations V2-09 + V2-15 live, admin-people new code live. Sign-up must stay OFF (allowlist gate gone). NEXT: owner checks #admin + About; then later owner steps in [release-2026-11-19.md](release-2026-11-19.md) steps 5-6. V2-19 still blocked on owner answers.
 - **Live:** https://minifighunt.com/ on Cloudflare Pages (V2-06, 2026-11-07); `www` 301 to apex. GitHub Pages switched off. Releases: V2-04+V2-05 PR #35, V2-06 PR #38 ([backlog](backlog.md)).
 
 ## Next step: MVP 2.1 owner fixes, ONE AT A TIME (updated 2026-11-08)
