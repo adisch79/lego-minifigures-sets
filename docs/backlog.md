@@ -80,7 +80,7 @@ Legend: **UI** = needs approved direction first. **Owner** = needs something onl
 ## MVP 3 — Lowest prices · demo: price chip on every series/figure
 | ID | Title | Acceptance criteria | Size | Model | Flags | Status |
 |---|---|---|---|---|---|---|
-| V3-01 | Price source spike | Per source (BrickLink stores shipping to IL, eBay, 2–3 shops): page structure, robots.txt/ToS notes, block risk, rate limit; pick sources | S | opus | | In progress |
+| V3-01 | Price source spike | Per source (BrickLink stores shipping to IL, eBay, 2–3 shops): page structure, robots.txt/ToS notes, block risk, rate limit; pick sources | S | opus | | Done |
 | V3-02 | Scheduled price scraper | Daily GitHub Action; ≤ 1 req / 4 s per host; cache; failures logged, last good price kept; `prices.json` with source, URL, date | M | sonnet + security review | | Ready |
 | V3-03 | Currency | Original currency + ILS from the Bank of Israel daily rate (`SOURCE:` in code) | S | sonnet | | Ready |
 | V3-04 | Show lowest price | Price chip on tile and figure, link to the offer, date of the price | S | senior-frontend-dev | UI | Ready |
