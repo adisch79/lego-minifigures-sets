@@ -1,7 +1,7 @@
 # HANDOFF
 
 ## Current state (updated 2026-11-20, MVP 2.1 released; sign-up still OFF)
-- **RELEASED 2026-11-20:** PR #59 + CI fix #60 via #61 (master 5b1ae29, deploy run 44627368000 success; live CSP has Turnstile host, live bundle has V2-18 footer). Migrations V2-09 + V2-15 live, admin-people new code live. Sign-up must stay OFF (allowlist gate gone). Owner checked #admin + About on 2026-11-20: OK. Deferred by owner (2026-11-20, "can wait"): release steps 5-6 in [release-2026-11-19.md](release-2026-11-19.md), contact form switch-on, V2-19 answers, V2-16 nits (Open questions), MVP 3/4.
+- **RELEASED 2026-11-20:** PR #59 + CI fix #60 via #61 (master 5b1ae29, deploy run 44627368000 success; live CSP has Turnstile host, live bundle has V2-18 footer). Migrations V2-09 + V2-15 live, admin-people new code live. Sign-up must stay OFF (allowlist gate gone). Owner checked #admin + About on 2026-11-20: OK. Deferred by owner (2026-11-20, "can wait"): release steps 5-6 in [release-2026-11-19.md](release-2026-11-19.md), contact form switch-on, V2-19 answers, MVP 3/4.
 - **Live:** https://minifighunt.com/ on Cloudflare Pages (V2-06, 2026-11-07); `www` 301 to apex. GitHub Pages switched off. Releases: V2-04+V2-05 PR #35, V2-06 PR #38 ([backlog](backlog.md)).
 
 ## Next step: MVP 2.1 owner fixes, ONE AT A TIME (updated 2026-11-08)
@@ -32,12 +32,12 @@ Previous next-step text (V2-04/05/06, all done): [archive/handoff-2026-11-07.md]
 - Figure images: `img.bricklink.com/ItemImage/SN/0/<code>-<n>.png`. 71049 has no code and keeps v1 images.
 - Logos: only files with real alpha (memory `feedback-asset-search`).
 
-## Tests (2026-11-18 V2-18, dev 4ac4bbb)
+## Tests (2026-11-20 V2-16b, dev fda6bae: app vitest 369, tsc clean; rest below from 2026-11-18)
 Second 2026-11-18 session (05cdf90) changed docs only; tests not re-run.
 `npx vitest run` in `app/`: 364 pass, `npx tsc --noEmit` clean. `npm test` in `supabase/`: 133 pass. `python -m pytest tests`: 102 pass. Local `dev` branch is stale: test against `origin/dev` (worktree `.claude/worktrees/qa-dev`).
 
 ## Open questions
-- V2-16 follow-up nits (review of 3f27c2b): `invalidTokenLink` module flag never reset on useAuth remount (auth.ts:86-98,196); code sign-in does not clear an old token-link failure (auth.ts:231-233); `stripDismissed` never reset (Account.tsx:41-45); no test for success-after-failure.
+- V2-16b (PR #62, dev fda6bae, 2026-11-20) fixed the V2-16 nits. Left nits: SIGNED_IN during init on a future auth-js (locked 2.119.0 emits INITIAL_SESSION) would clear a token-link failure on load (auth.ts:250-253); no test for sign-out then same user signs back in.
 - V2-09 default: admin collectors list drops rows with no email (email-only sign-in, cannot happen today).
 - Ages unreadable for 8909, 8805, 8684; no age is printed on their cards.
 - One unreproduced `app/` vitest failure in 6 QA runs (2026-11-02): possibly flaky, name lost.
