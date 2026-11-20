@@ -32,7 +32,7 @@ Previous next-step text (V2-04/05/06, all done): [archive/handoff-2026-11-07.md]
 - Figure images: `img.bricklink.com/ItemImage/SN/0/<code>-<n>.png`. 71049 has no code and keeps v1 images.
 - Logos: only files with real alpha (memory `feedback-asset-search`).
 
-## Tests (2026-11-20 V2-16b, dev fda6bae: app vitest 369, tsc clean; rest below from 2026-11-18)
+## Tests (2026-11-20 V2-16b + lint fix PR #63, dev e7ce1b6, CI green: app lint clean, vitest 369, tsc clean; rest below from 2026-11-18)
 Second 2026-11-18 session (05cdf90) changed docs only; tests not re-run.
 `npx vitest run` in `app/`: 364 pass, `npx tsc --noEmit` clean. `npm test` in `supabase/`: 133 pass. `python -m pytest tests`: 102 pass. Local `dev` branch is stale: test against `origin/dev` (worktree `.claude/worktrees/qa-dev`).
 
