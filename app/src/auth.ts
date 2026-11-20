@@ -84,6 +84,12 @@ const TOKEN_HASH_TYPES = ['email']
 const TOKEN_HASH_SHAPE = /^[A-Za-z0-9_-]{1,128}$/
 // True when a token_hash was present but malformed: the visitor sees the failed-link message.
 let invalidTokenLink = false
+/** Returns the invalid-link flag and clears it, so only the first caller (first mount) sees it. */
+function takeInvalidTokenLink(): boolean {
+  const v = invalidTokenLink
+  invalidTokenLink = false
+  return v
+}
 let pendingTokenLink: { tokenHash: string; type: 'email' } | null = (() => {
   if (typeof window === 'undefined') return null
   const p = new URLSearchParams(window.location.search)
@@ -183,17 +189,21 @@ export async function signOut(): Promise<void> {
 
 /** Session state for the UI. Safe to call when auth is disabled. */
 export function useAuth(): AuthState {
+  // Taken once per hook instance (useState keeps the first result across StrictMode re-renders).
+  const [initialTokenFailure] = useState(takeInvalidTokenLink)
   const [state, setState] = useState<AuthState>(
     authEnabled
       ? {
           status: 'loading',
-          linkError: initialLinkError ?? (invalidTokenLink ? MSG_LINK_FAILED : undefined),
+          linkError: initialLinkError ?? (initialTokenFailure ? MSG_LINK_FAILED : undefined),
           pendingLink: pendingTokenLink !== null,
         }
       : { status: 'disabled' },
   )
   // A token-link failure survives later auth events while signed in (until dismissed or a later link works).
-  const tokenFailure = useRef(invalidTokenLink)
+  const tokenFailure = useRef(initialTokenFailure)
+  // Email of the current session, to tell a real sign-in from a re-emitted SIGNED_IN.
+  const emailRef = useRef<string | undefined>(undefined)
 
   const dismissLink = useCallback(() => {
     pendingTokenLink = null
@@ -208,6 +218,7 @@ export function useAuth(): AuthState {
     try {
       const { data: s } = await supabase.auth.getSession()
       const email = s.session?.user.email ?? undefined
+      emailRef.current = email
       setState((prev) => ({
         ...prev,
         status: email ? 'signed-in' : 'signed-out',
@@ -225,6 +236,7 @@ export function useAuth(): AuthState {
     let active = true
     const apply = (email: string | undefined, linkError?: string) => {
       if (!active) return
+      emailRef.current = email
       setState((prev) => ({
         status: email ? 'signed-in' : 'signed-out',
         email,
@@ -235,8 +247,10 @@ export function useAuth(): AuthState {
       }))
     }
     const { data } = supabase.auth.onAuthStateChange((event, session) => {
-      // A fresh sign-in (code or link) ends any earlier token-link failure.
-      if (event === 'SIGNED_IN' && session?.user.email) tokenFailure.current = false
+      // A real transition into a session (was signed out, or a different user) ends any earlier
+      // token-link failure. A re-emitted SIGNED_IN for the same user (refocus, recovery) does not.
+      const next = session?.user.email ?? undefined
+      if (event === 'SIGNED_IN' && next && next !== emailRef.current) tokenFailure.current = false
       apply(session?.user.email ?? undefined)
     })
     void (async () => {
@@ -257,8 +271,6 @@ export function useAuth(): AuthState {
     })()
     return () => {
       active = false
-      // The failure belongs to this page load's first mount; a remount must not show it again.
-      invalidTokenLink = false
       data.subscription.unsubscribe()
     }
   }, [])

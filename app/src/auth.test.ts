@@ -378,6 +378,46 @@ describe('token_hash link (V2-16 email button)', () => {
     act(() => authListener?.('TOKEN_REFRESHED', { user: { email: 'a@b.co' } }))
     expect(result.current.linkError).toBeUndefined()
   })
+  it('keeps a token-link failure when SIGNED_IN is re-emitted for the same signed-in user', async () => {
+    window.history.replaceState(null, '', '/app/?token_hash=bad&type=email')
+    const a = await load(true)
+    verifyOtp.mockResolvedValue({ data: {}, error: { code: 'otp_expired', message: 'expired' } })
+    getSession.mockResolvedValue(session)
+    const { result } = await ready(a)
+    await act(async () => {
+      await result.current.continueLink?.()
+    })
+    expect(result.current.status).toBe('signed-in')
+    expect(result.current.linkError).toBe(NEUTRAL)
+    // Tab refocus / session recovery re-emits SIGNED_IN for the stored session.
+    act(() => authListener?.('SIGNED_IN', { user: { email: 'a@b.co' } }))
+    expect(result.current.linkError).toBe(NEUTRAL)
+  })
+  it('clears an earlier failure when a later continueLink succeeds', async () => {
+    window.history.replaceState(null, '', '/app/?token_hash=bad&type=email')
+    const a = await load(true)
+    verifyOtp.mockResolvedValueOnce({ data: {}, error: { code: 'otp_expired', message: 'expired' } })
+    const { result } = await ready(a)
+    await act(async () => {
+      await result.current.continueLink?.()
+    })
+    expect(result.current.linkError).toBe(NEUTRAL)
+    getSession.mockResolvedValue(session)
+    await act(async () => {
+      await result.current.continueLink?.()
+    })
+    expect(result.current.status).toBe('signed-in')
+    expect(result.current.linkError).toBeUndefined()
+    act(() => authListener?.('TOKEN_REFRESHED', { user: { email: 'a@b.co' } }))
+    expect(result.current.linkError).toBeUndefined()
+  })
+  it('keeps the failure message through the StrictMode double mount', async () => {
+    window.history.replaceState(null, '', '/app/?token_hash=a%20b%3Cx&type=email')
+    const a = await load(true)
+    const { result } = renderHook(() => a.useAuth(), { wrapper: StrictMode })
+    await waitFor(() => expect(result.current.status).not.toBe('loading'))
+    expect(result.current.linkError).toBe(NEUTRAL)
+  })
   it('does not show a stale token-link failure after the hook remounts', async () => {
     window.history.replaceState(null, '', '/app/?token_hash=a%20b%3Cx&type=email')
     const a = await load(true)

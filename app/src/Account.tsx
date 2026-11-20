@@ -41,7 +41,7 @@ export function AccountProvider({ children }: { children: ReactNode }) {
   const [stripDismissed, setStripDismissed] = useState(false)
   const pillRef = useRef<HTMLButtonElement | null>(null)
   // A changed failure (new failure, or cleared by a sign-in) is a new strip: forget the old dismissal.
-  useEffect(() => setStripDismissed(false), [auth.linkError])
+  useEffect(() => { setStripDismissed(false) }, [auth.linkError])
   const stripShown =
     !stripDismissed && !!auth.linkError && auth.status !== 'disabled'
   const dismissStrip = useCallback(() => setStripDismissed(true), [])
