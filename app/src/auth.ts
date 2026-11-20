@@ -234,7 +234,9 @@ export function useAuth(): AuthState {
         pendingLink: prev.pendingLink,
       }))
     }
-    const { data } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data } = supabase.auth.onAuthStateChange((event, session) => {
+      // A fresh sign-in (code or link) ends any earlier token-link failure.
+      if (event === 'SIGNED_IN' && session?.user.email) tokenFailure.current = false
       apply(session?.user.email ?? undefined)
     })
     void (async () => {
@@ -255,6 +257,8 @@ export function useAuth(): AuthState {
     })()
     return () => {
       active = false
+      // The failure belongs to this page load's first mount; a remount must not show it again.
+      invalidTokenLink = false
       data.subscription.unsubscribe()
     }
   }, [])
