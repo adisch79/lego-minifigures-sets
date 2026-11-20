@@ -2,6 +2,7 @@
 
 ## Current state (updated 2026-11-20, MVP 2.1 released; sign-up still OFF)
 - **RELEASED 2026-11-20:** PR #59 + CI fix #60 via #61 (master 5b1ae29, deploy run 44627368000 success; live CSP has Turnstile host, live bundle has V2-18 footer). Migrations V2-09 + V2-15 live, admin-people new code live. Sign-up must stay OFF (allowlist gate gone). Owner checked #admin + About on 2026-11-20: OK. Deferred by owner (2026-11-20, "can wait"): release steps 5-6 in [release-2026-11-19.md](release-2026-11-19.md), contact form switch-on, V2-19 answers, MVP 3/4.
+- **Figma export 2026-11-21:** live design captured from origin/dev into https://www.figma.com/design/CiihBq32N0AnImMospthZK (Figma account handle YAARA, team plan Starter, seat View). Frames: home 1-2, series 71052 4-2 (with figures), About 3-2; frame 2-2 is a stale series capture without figure images (delete it). Method: local `vite` in a temp worktree with `site/img` copied into `app/public/img`, capture.js injected via Chrome. Owner edits the design there; changes come back as a new design direction.
 - **Live:** https://minifighunt.com/ on Cloudflare Pages (V2-06, 2026-11-07); `www` 301 to apex. GitHub Pages switched off. Releases: V2-04+V2-05 PR #35, V2-06 PR #38 ([backlog](backlog.md)).
 
 ## Next step: MVP 2.1 owner fixes, ONE AT A TIME (updated 2026-11-08)
