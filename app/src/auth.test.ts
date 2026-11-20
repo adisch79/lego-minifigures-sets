@@ -393,6 +393,22 @@ describe('token_hash link (V2-16 email button)', () => {
     act(() => authListener?.('SIGNED_IN', { user: { email: 'a@b.co' } }))
     expect(result.current.linkError).toBe(NEUTRAL)
   })
+  it('clears a token-link failure on a real re-sign-in after sign-out for the same email', async () => {
+    window.history.replaceState(null, '', '/app/?token_hash=bad&type=email')
+    const a = await load(true)
+    verifyOtp.mockResolvedValue({ data: {}, error: { code: 'otp_expired', message: 'expired' } })
+    getSession.mockResolvedValue(session)
+    const { result } = await ready(a)
+    await act(async () => {
+      await result.current.continueLink?.()
+    })
+    expect(result.current.status).toBe('signed-in')
+    expect(result.current.linkError).toBe(NEUTRAL)
+    act(() => authListener?.('SIGNED_OUT', null))
+    act(() => authListener?.('SIGNED_IN', { user: { email: 'a@b.co' } }))
+    expect(result.current.status).toBe('signed-in')
+    expect(result.current.linkError).toBeUndefined()
+  })
   it('clears an earlier failure when a later continueLink succeeds', async () => {
     window.history.replaceState(null, '', '/app/?token_hash=bad&type=email')
     const a = await load(true)
