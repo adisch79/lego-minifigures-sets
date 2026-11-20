@@ -2,6 +2,8 @@
 
 ## Current state (updated 2026-11-20, MVP 2.1 released; sign-up still OFF)
 - **RELEASED 2026-11-20:** PR #59 + CI fix #60 via #61 (master 5b1ae29, deploy run 44627368000 success; live CSP has Turnstile host, live bundle has V2-18 footer). Migrations V2-09 + V2-15 live, admin-people new code live. Sign-up must stay OFF (allowlist gate gone). Owner checked #admin + About on 2026-11-20: OK. Deferred by owner (2026-11-20, "can wait"): release steps 5-6 in [release-2026-11-19.md](release-2026-11-19.md), contact form switch-on, V2-19 answers, MVP 3/4.
+- **NEXT (session 2026-11-21 ended on context limit):** PR #64 (V2-16c, test-only: sign-out then same-user sign-in clears token-link failure, 62fcf9b, CI green, vitest 370) needs a code-reviewer pass, then `gh pr merge 64 --merge` (classifier refuses merge without review). After that nothing agent-doable is queued: owner deferred all owner steps and MVP 3/4 on 2026-11-20. Owner will edit the Figma file later and send the link.
+- Leftovers: vite on port 5199 (PID 47716) may still hold `C:/Users/adisc/AppData/wt-figma` (worktree already unregistered); owner command: `! powershell -NoProfile -Command 'Get-NetTCPConnection -LocalPort 5199 -State Listen | % { Stop-Process -Id $_.OwningProcess -Force }'; rm -rf /c/Users/adisc/AppData/wt-figma`. Merged agent worktrees agent-ae8474626350c9196, agent-a388aaf61c2452d3d, agent-abde49e565fab732e can be removed.
 - **Figma export 2026-11-21:** live design captured from origin/dev into https://www.figma.com/design/CiihBq32N0AnImMospthZK (Figma account handle YAARA, team plan Starter, seat View). Frames: home 1-2, series 71052 4-2 (with figures), About 3-2; frame 2-2 is a stale series capture without figure images (delete it). Method: local `vite` in a temp worktree with `site/img` copied into `app/public/img`, capture.js injected via Chrome. Owner edits the design there; changes come back as a new design direction.
 - **Live:** https://minifighunt.com/ on Cloudflare Pages (V2-06, 2026-11-07); `www` 301 to apex. GitHub Pages switched off. Releases: V2-04+V2-05 PR #35, V2-06 PR #38 ([backlog](backlog.md)).
 
@@ -38,7 +40,7 @@ Second 2026-11-18 session (05cdf90) changed docs only; tests not re-run.
 `npx vitest run` in `app/`: 364 pass, `npx tsc --noEmit` clean. `npm test` in `supabase/`: 133 pass. `python -m pytest tests`: 102 pass. Local `dev` branch is stale: test against `origin/dev` (worktree `.claude/worktrees/qa-dev`).
 
 ## Open questions
-- V2-16b (PR #62, dev fda6bae, 2026-11-20) fixed the V2-16 nits. Left nits: SIGNED_IN during init on a future auth-js (locked 2.119.0 emits INITIAL_SESSION) would clear a token-link failure on load (auth.ts:250-253); no test for sign-out then same user signs back in.
+- V2-16b (PR #62, dev fda6bae, 2026-11-20) fixed the V2-16 nits. Left nits: SIGNED_IN during init on a future auth-js (locked 2.119.0 emits INITIAL_SESSION) would clear a token-link failure on load (auth.ts:250-253); sign-out re-sign-in test in PR #64 (open).
 - V2-09 default: admin collectors list drops rows with no email (email-only sign-in, cannot happen today).
 - Ages unreadable for 8909, 8805, 8684; no age is printed on their cards.
 - One unreproduced `app/` vitest failure in 6 QA runs (2026-11-02): possibly flaky, name lost.
