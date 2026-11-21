@@ -1,0 +1,283 @@
+<!doctype html>
+<!-- V4-01 Hebrew + RTL toggle, mockup C: Brick switch. Static, generated from shared markup; images are the real repo assets. -->
+<html lang="en" dir="ltr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>V4-01 C - Brick switch</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="base.css">
+<style>
+.screen { --he-body:"Fredoka", "Segoe UI", sans-serif; --he-display:"Fredoka", "Segoe UI", sans-serif; }
+.big { font-weight:700; letter-spacing:-.01em; line-height:1; font-size:clamp(48px,7vw,96px); }
+.big em { position:relative; }
+.big em::after { content:""; position:absolute; inset-inline:2% 2%; bottom:.02em; height:.12em; border-radius:999px; background:var(--ink); }
+.hero h1 { font-weight:700; letter-spacing:-.01em; }
+.lede { font-weight:500; }
+.meta h2 { font-weight:600; }
+.fig h3 { font-weight:600; }
+.fig-no { font-weight:700; }
+.brand-row { display:flex; align-items:center; gap:14px; }
+.bk { position:relative; width:84px; height:38px; border-radius:9px; background:var(--ink); flex:none; display:block; margin-top:6px; box-shadow:inset 0 -4px 0 rgba(0,0,0,.35); }
+.bk .st { position:absolute; top:-6px; width:18px; height:7px; border-radius:4px 4px 1px 1px; background:var(--ink); }
+.bk .st:nth-child(1) { inset-inline-start:13px; } .bk .st:nth-child(2) { inset-inline-end:13px; }
+.bk .l { position:absolute; top:0; bottom:4px; width:42px; display:grid; place-items:center; font-family:"Fredoka", sans-serif; font-weight:700; font-size:17px; color:#8A8A84; z-index:2; }
+/* Physical sides on purpose: A always on the left, א always on the right, in both page directions */
+.bk .l-en { left:0; } .bk .l-he { right:0; }
+.bk .knob { position:absolute; top:3px; left:3px; width:38px; height:28px; border-radius:7px; background:var(--lego-yellow); box-shadow:inset 0 -3px 0 rgba(0,0,0,.18); transition:left .35s var(--ease); z-index:1; }
+.bk.he .knob { left:43px; }
+.bk:not(.he) .l-en, .bk.he .l-he { color:var(--ink); }
+.bk.big { transform:scale(1.5); transform-origin:center; margin:14px 26px; }
+.hello { margin:0 calc(50% - 50vw); background:var(--lego-red); color:var(--white); }
+.screen .hello { margin:0 -32px; padding:0 32px; display:flex; align-items:center; gap:14px; min-height:56px; font-size:15.5px; }
+.hello .hb { width:34px; height:34px; border-radius:9px; background:var(--lego-yellow); color:var(--ink); display:grid; place-items:center; font-weight:700; font-size:19px; flex:none; }
+.hello b { font-weight:700; }
+.hello .hl { margin-inline-start:auto; height:36px; padding:0 16px; border-radius:999px; background:var(--white); color:var(--ink); font-family:"Segoe UI", sans-serif; font-weight:800; font-size:13.5px; display:inline-flex; align-items:center; }
+.hello .hx { font-size:22px; width:36px; text-align:center; }
+</style>
+</head>
+<body class="board">
+<div class="board-head">
+  <div>
+    <span class="tag">V4-01 &middot; Direction C</span>
+    <h1>Brick switch</h1>
+    <p>The toggle is a 2x1 LEGO-style brick with studs: a yellow knob slides between A and א. It sits on the brand, because the language belongs to the site, not to the account. A first-visit strip greets Hebrew browsers once. Fredoka throughout: rounded, toy-like Hebrew that matches the bricks.</p>
+  </div>
+  <dl><dt>Toggle</dt><dd>Brick switch A / א</dd><dt>Where</dt><dd>Glued to the brand logo</dd><dt>Hebrew type</dt><dd>Fredoka 400-700</dd><dt>Extra</dt><dd>One-time greeting strip</dd></dl>
+</div>
+
+<section class="frame">
+  <div class="frame-label"><b>01</b> Home, Hebrew, desktop 1280, signed in</div>
+  <div class="screen" dir="rtl" lang="he">
+<header class="band"><div class="wrap">
+  <div class="band-top">
+    <span class="brand-row"><a class="brand" href="#"><span class="brand-mark"><img src="../../app/public/favicon.svg" alt=""></span><span><b>Minifig Hunt</b><small>מיניפיגרים לאספנים</small></span></a><span class="bk he" role="switch" aria-checked="true" aria-label="עברית"><span class="st"></span><span class="st"></span><span class="l l-en" lang="en">A</span><span class="l l-he">א</span><span class="knob"></span></span></span>
+    <div class="controls">
+      <div class="field"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><div class="inp">חיפוש סדרה, שנה או דמות</div></div>
+      <div class="sel">החדשות קודם</div>
+    </div>
+    <a class="nav-about" href="#">אודות</a>
+    
+    <span class="me"><span class="av">H</span><span class="ltr">hunter@example.com</span></span>
+  </div>
+  <div class="hello"><span class="hb">א</span><span><b>Minifig Hunt מדבר עברית.</b> הדפדפן שלך בעברית, אז עברנו בשבילך.</span><span class="hl" lang="en" dir="ltr">Back to English</span><span class="hx" aria-label="סגירה">&times;</span></div>
+  <div class="band-hero">
+    <h1 class="big">כל סדרה.<br>כל <em>דמות.</em></h1>
+    <div>
+      <p class="lede">כל סדרות המיניפיגרים לאספנים במקום אחד. אפשר גם למצוא סדרה לפי השם של דמות אחת.</p>
+      <div class="stats">
+        <div><strong>52</strong>סדרות</div>
+        <div><strong>787</strong>דמויות</div>
+        <div><strong>2010<span>-2026</span></strong>שנים</div>
+      </div>
+    </div>
+  </div>
+</div></header>
+<main class="wrap">
+  <div class="rule">
+    <div class="seg"><span class="on">הכול <em>52</em></span><span>המבוקשות שלי <em>2</em></span><span>חסרות לי <em>51</em></span></div>
+    <span>מוצגות <b>52</b> מתוך 52 סדרות</span>
+  </div>
+  <ul class="grid">
+<li class="tile">
+  <div class="art"><img src="../../app/public/cards/71053.png" alt=""></div>
+  <div class="meta">
+    <div class="meta-row"><span class="num">מס׳ <span class="ltr">71053</span> &middot; 2026</span><span class="count-badge">12 דמויות</span></div>
+    <h2><bdi>Shrek</bdi></h2>
+    <div class="prog"><div class="bar"><i style="width:25%"></i></div><b class="ltr">3<span>/12</span></b></div>
+    
+  </div>
+</li>
+<li class="tile">
+  <div class="art"><img src="../../app/public/cards/71052.png" alt=""></div>
+  <div class="meta">
+    <div class="meta-row"><span class="num">מס׳ <span class="ltr">71052</span> &middot; 2026</span><span class="count-badge">12 דמויות</span></div>
+    <h2><bdi>Series 29 Minifigures</bdi></h2>
+    <div class="prog"><div class="bar"><i style="width:33%"></i></div><b class="ltr">4<span>/12</span></b></div>
+    <p class="wantn">2 דמויות מבוקשות</p>
+  </div>
+</li>
+<li class="tile">
+  <div class="art"><img src="../../app/public/cards/71051.png" alt=""></div>
+  <div class="meta">
+    <div class="meta-row"><span class="num">מס׳ <span class="ltr">71051</span> &middot; 2026</span><span class="count-badge">12 דמויות</span></div>
+    <h2><bdi>Series 28 Minifigures</bdi></h2>
+    <div class="prog"><div class="bar done"><i style="width:100%"></i></div><b class="ltr">12<span>/12</span></b></div>
+    
+  </div>
+</li>
+<li class="tile">
+  <div class="art"><img src="../../app/public/cards/71050.png" alt=""></div>
+  <div class="meta">
+    <div class="meta-row"><span class="num">מס׳ <span class="ltr">71050</span> &middot; 2025</span><span class="count-badge">12 דמויות</span></div>
+    <h2><bdi>Spider-Man - Across the Spider-Verse</bdi></h2>
+    <div class="prog"><div class="bar"><i style="width:0%"></i></div><b class="ltr">0<span>/12</span></b></div>
+    <p class="wantn">1 דמות מבוקשת</p>
+  </div>
+</li>
+<li class="tile">
+  <div class="art"><img src="../../app/public/cards/71049.png" alt=""></div>
+  <div class="meta">
+    <div class="meta-row"><span class="num">מס׳ <span class="ltr">71049</span> &middot; 2025</span><span class="count-badge">12 דמויות</span></div>
+    <h2><bdi>Formula 1</bdi></h2>
+    <div class="prog"><div class="bar"><i style="width:58%"></i></div><b class="ltr">7<span>/12</span></b></div>
+    
+  </div>
+</li>
+<li class="tile">
+  <div class="art"><img src="../../app/public/cards/71048.png" alt=""></div>
+  <div class="meta">
+    <div class="meta-row"><span class="num">מס׳ <span class="ltr">71048</span> &middot; 2025</span><span class="count-badge">12 דמויות</span></div>
+    <h2><bdi>Series 27 Minifigures</bdi></h2>
+    <div class="prog"><div class="bar"><i style="width:17%"></i></div><b class="ltr">2<span>/12</span></b></div>
+    
+  </div>
+</li>
+  </ul>
+</main>
+<footer class="site-foot"><div class="wrap">
+  <span class="badge" aria-hidden="true">&reg;</span>
+  <span class="txt"><b>Minifig Hunt</b> הוא אתר של מעריצים. <bdi>LEGO<sup class="r">&reg;</sup></bdi> הוא סימן מסחרי של קבוצת החברות <bdi>LEGO<sup class="r">&reg;</sup></bdi>, שאינה נותנת חסות לאתר, אינה מאשרת אותו ואינה ממליצה עליו.</span>
+  <nav aria-label="האתר"><a href="#">אודות</a><a href="#">צרו קשר</a><a href="#">קנו לי קפה</a></nav>
+</div></footer>
+  </div>
+</section>
+<div class="note-strip"><span>Brick sits with the logo: language is a site setting, not an account one</span><span>A stays left and א stays right in both directions, so the knob never jumps sides on switch</span><span>Red one-time strip only when the browser language is Hebrew and no choice is saved</span><span>Fredoka: rounded Hebrew, matches studs and chips</span></div>
+
+<section class="frame">
+  <div class="frame-label"><b>02</b> Series 71052, Hebrew, desktop 1280</div>
+  <div class="screen" dir="rtl" lang="he">
+<header class="band"><div class="wrap">
+  <div class="band-top">
+    <span class="brand-row"><a class="brand" href="#"><span class="brand-mark"><img src="../../app/public/favicon.svg" alt=""></span><span><b>Minifig Hunt</b><small>מיניפיגרים לאספנים</small></span></a><span class="bk he" role="switch" aria-checked="true" aria-label="עברית"><span class="st"></span><span class="st"></span><span class="l l-en" lang="en">A</span><span class="l l-he">א</span><span class="knob"></span></span></span>
+    <a class="back" href="#"><span aria-hidden="true">&rarr;</span> <span class="t">כל הסדרות</span></a>
+    
+    <span class="me"><span class="av">H</span><span class="ltr">hunter@example.com</span></span>
+  </div>
+  <section class="hero">
+    <div class="art-stage"><img class="flat" src="../../app/public/cards/71052.png" alt=""></div>
+    <div class="spill" aria-hidden="true"><img src="../../site/img/71052/71052-1.webp" alt="" style="inset-inline-start:10px;top:0px;transform:rotate(12deg)"><img src="../../site/img/71052/71052-4.webp" alt="" style="inset-inline-start:150px;top:30px;transform:rotate(-9deg)"><img src="../../site/img/71052/71052-7.webp" alt="" style="inset-inline-start:20px;top:150px;transform:rotate(-7deg)"><img src="../../site/img/71052/71052-11.webp" alt="" style="inset-inline-start:160px;top:190px;transform:rotate(11deg)"><img src="../../site/img/71052/71052-12.webp" alt="" style="inset-inline-start:50px;top:290px;transform:rotate(-5deg)"></div>
+    <div class="hero-copy">
+      <p class="eyebrow">מיניפיגרים לאספנים</p>
+      <h1><bdi>Series 29 Minifigures</bdi></h1>
+      <div class="facts"><span class="fact dark">מס׳ <span class="ltr">71052</span></span><span class="fact">2026</span><span class="fact">12 לאסוף</span></div>
+      <div class="sp">
+        <div class="sp-num"><strong>4<span>/12</span></strong><small>דמויות באוסף</small></div>
+        <div class="bar"><i style="width:33%"></i></div>
+        <div class="smk"><span>כל הסדרה</span><span class="chip own"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7"/></svg>יש לי</span><span class="chip want"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 21s-7.5-4.6-9.6-9.3C.9 8.2 3 4.5 6.6 4.5c2.1 0 3.9 1.2 5.4 3 1.5-1.8 3.3-3 5.4-3 3.6 0 5.7 3.7 4.2 7.2C19.5 16.4 12 21 12 21Z"/></svg>רוצה</span></div>
+      </div>
+    </div>
+  </section>
+</div></header>
+<main class="wrap">
+  <div class="rule rule-series"><h2>מה יש בסדרה</h2></div>
+  <ul class="figs">
+<li class="fig is-owned"><span class="fig-no">1</span>
+  <div class="pic"><img src="../../site/img/71052/71052-1.webp" alt="Robot T. rex"></div>
+  <h3><bdi>Robot T. rex</bdi></h3>
+  <div class="mk"><span class="chip own on"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7"/></svg>יש לי</span><span class="chip want"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 21s-7.5-4.6-9.6-9.3C.9 8.2 3 4.5 6.6 4.5c2.1 0 3.9 1.2 5.4 3 1.5-1.8 3.3-3 5.4-3 3.6 0 5.7 3.7 4.2 7.2C19.5 16.4 12 21 12 21Z"/></svg>רוצה</span></div>
+</li>
+<li class="fig is-owned"><span class="fig-no">2</span>
+  <div class="pic"><img src="../../site/img/71052/71052-2.webp" alt="Marine Biologist"></div>
+  <h3><bdi>Marine Biologist</bdi></h3>
+  <div class="mk"><span class="chip own on"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7"/></svg>יש לי</span><span class="chip want"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 21s-7.5-4.6-9.6-9.3C.9 8.2 3 4.5 6.6 4.5c2.1 0 3.9 1.2 5.4 3 1.5-1.8 3.3-3 5.4-3 3.6 0 5.7 3.7 4.2 7.2C19.5 16.4 12 21 12 21Z"/></svg>רוצה</span></div>
+</li>
+<li class="fig is-wanted"><span class="fig-no">3</span>
+  <div class="pic"><img src="../../site/img/71052/71052-3.webp" alt="BIONICLE Cosplayer"></div>
+  <h3><bdi>BIONICLE Cosplayer</bdi></h3>
+  <div class="mk"><span class="chip own"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7"/></svg>יש לי</span><span class="chip want on"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 21s-7.5-4.6-9.6-9.3C.9 8.2 3 4.5 6.6 4.5c2.1 0 3.9 1.2 5.4 3 1.5-1.8 3.3-3 5.4-3 3.6 0 5.7 3.7 4.2 7.2C19.5 16.4 12 21 12 21Z"/></svg>רוצה</span></div>
+</li>
+<li class="fig"><span class="fig-no">4</span>
+  <div class="pic"><img src="../../site/img/71052/71052-4.webp" alt="Monster Hunter"></div>
+  <h3><bdi>Monster Hunter</bdi></h3>
+  <div class="mk"><span class="chip own"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7"/></svg>יש לי</span><span class="chip want"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 21s-7.5-4.6-9.6-9.3C.9 8.2 3 4.5 6.6 4.5c2.1 0 3.9 1.2 5.4 3 1.5-1.8 3.3-3 5.4-3 3.6 0 5.7 3.7 4.2 7.2C19.5 16.4 12 21 12 21Z"/></svg>רוצה</span></div>
+</li>
+<li class="fig is-owned"><span class="fig-no">5</span>
+  <div class="pic"><img src="../../site/img/71052/71052-5.webp" alt="Boba Cup Fan"></div>
+  <h3><bdi>Boba Cup Fan</bdi></h3>
+  <div class="mk"><span class="chip own on"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7"/></svg>יש לי</span><span class="chip want"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 21s-7.5-4.6-9.6-9.3C.9 8.2 3 4.5 6.6 4.5c2.1 0 3.9 1.2 5.4 3 1.5-1.8 3.3-3 5.4-3 3.6 0 5.7 3.7 4.2 7.2C19.5 16.4 12 21 12 21Z"/></svg>רוצה</span></div>
+</li>
+<li class="fig"><span class="fig-no">6</span>
+  <div class="pic"><img src="../../site/img/71052/71052-6.webp" alt="Trash Monster"></div>
+  <h3><bdi>Trash Monster</bdi></h3>
+  <div class="mk"><span class="chip own"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7"/></svg>יש לי</span><span class="chip want"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 21s-7.5-4.6-9.6-9.3C.9 8.2 3 4.5 6.6 4.5c2.1 0 3.9 1.2 5.4 3 1.5-1.8 3.3-3 5.4-3 3.6 0 5.7 3.7 4.2 7.2C19.5 16.4 12 21 12 21Z"/></svg>רוצה</span></div>
+</li>
+<li class="fig"><span class="fig-no">7</span>
+  <div class="pic"><img src="../../site/img/71052/71052-7.webp" alt="Chocolatier"></div>
+  <h3><bdi>Chocolatier</bdi></h3>
+  <div class="mk"><span class="chip own"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7"/></svg>יש לי</span><span class="chip want"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 21s-7.5-4.6-9.6-9.3C.9 8.2 3 4.5 6.6 4.5c2.1 0 3.9 1.2 5.4 3 1.5-1.8 3.3-3 5.4-3 3.6 0 5.7 3.7 4.2 7.2C19.5 16.4 12 21 12 21Z"/></svg>רוצה</span></div>
+</li>
+<li class="fig"><span class="fig-no">8</span>
+  <div class="pic"><img src="../../site/img/71052/71052-8.webp" alt="Tuba Player"></div>
+  <h3><bdi>Tuba Player</bdi></h3>
+  <div class="mk"><span class="chip own"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7"/></svg>יש לי</span><span class="chip want"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 21s-7.5-4.6-9.6-9.3C.9 8.2 3 4.5 6.6 4.5c2.1 0 3.9 1.2 5.4 3 1.5-1.8 3.3-3 5.4-3 3.6 0 5.7 3.7 4.2 7.2C19.5 16.4 12 21 12 21Z"/></svg>רוצה</span></div>
+</li>
+<li class="fig is-owned"><span class="fig-no">9</span>
+  <div class="pic"><img src="../../site/img/71052/71052-9.webp" alt="Football Goalkeeper"></div>
+  <h3><bdi>Football Goalkeeper</bdi></h3>
+  <div class="mk"><span class="chip own on"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7"/></svg>יש לי</span><span class="chip want"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 21s-7.5-4.6-9.6-9.3C.9 8.2 3 4.5 6.6 4.5c2.1 0 3.9 1.2 5.4 3 1.5-1.8 3.3-3 5.4-3 3.6 0 5.7 3.7 4.2 7.2C19.5 16.4 12 21 12 21Z"/></svg>רוצה</span></div>
+</li>
+<li class="fig is-wanted"><span class="fig-no">10</span>
+  <div class="pic"><img src="../../site/img/71052/71052-10.webp" alt="Cute Witch"></div>
+  <h3><bdi>Cute Witch</bdi></h3>
+  <div class="mk"><span class="chip own"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7"/></svg>יש לי</span><span class="chip want on"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 21s-7.5-4.6-9.6-9.3C.9 8.2 3 4.5 6.6 4.5c2.1 0 3.9 1.2 5.4 3 1.5-1.8 3.3-3 5.4-3 3.6 0 5.7 3.7 4.2 7.2C19.5 16.4 12 21 12 21Z"/></svg>רוצה</span></div>
+</li>
+<li class="fig"><span class="fig-no">11</span>
+  <div class="pic"><img src="../../site/img/71052/71052-11.webp" alt="Mysterious Ronin"></div>
+  <h3><bdi>Mysterious Ronin</bdi></h3>
+  <div class="mk"><span class="chip own"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7"/></svg>יש לי</span><span class="chip want"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 21s-7.5-4.6-9.6-9.3C.9 8.2 3 4.5 6.6 4.5c2.1 0 3.9 1.2 5.4 3 1.5-1.8 3.3-3 5.4-3 3.6 0 5.7 3.7 4.2 7.2C19.5 16.4 12 21 12 21Z"/></svg>רוצה</span></div>
+</li>
+<li class="fig"><span class="fig-no">12</span>
+  <div class="pic"><img src="../../site/img/71052/71052-12.webp" alt="Unicorn Elf"></div>
+  <h3><bdi>Unicorn Elf</bdi></h3>
+  <div class="mk"><span class="chip own"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7"/></svg>יש לי</span><span class="chip want"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 21s-7.5-4.6-9.6-9.3C.9 8.2 3 4.5 6.6 4.5c2.1 0 3.9 1.2 5.4 3 1.5-1.8 3.3-3 5.4-3 3.6 0 5.7 3.7 4.2 7.2C19.5 16.4 12 21 12 21Z"/></svg>רוצה</span></div>
+</li>
+  </ul>
+</main>
+<footer class="site-foot"><div class="wrap">
+  <span class="badge" aria-hidden="true">&reg;</span>
+  <span class="txt"><b>Minifig Hunt</b> הוא אתר של מעריצים. <bdi>LEGO<sup class="r">&reg;</sup></bdi> הוא סימן מסחרי של קבוצת החברות <bdi>LEGO<sup class="r">&reg;</sup></bdi>, שאינה נותנת חסות לאתר, אינה מאשרת אותו ואינה ממליצה עליו.</span>
+  <nav aria-label="האתר"><a href="#">אודות</a><a href="#">צרו קשר</a><a href="#">קנו לי קפה</a></nav>
+</div></footer>
+  </div>
+</section>
+<div class="note-strip"><span>Same brick next to the logo on every page</span><span>Headline in Fredoka 700, underline bar under the red word on home</span><span>Card right, figures spill left, number tab top-right</span></div>
+
+<section class="frame">
+  <div class="frame-label"><b>03</b> The toggle up close</div>
+  <div class="states">
+<div class="state"><span class="k">English (knob on A)</span><div class="row" dir="ltr" style="justify-content:center"><span class="bk big" role="switch" aria-checked="false" aria-label="עברית"><span class="st"></span><span class="st"></span><span class="l l-en" lang="en">A</span><span class="l l-he">א</span><span class="knob"></span></span></div></div>
+<div class="state"><span class="k">Hebrew (knob on א)</span><div class="row" dir="rtl" style="justify-content:center"><span class="bk he big" role="switch" aria-checked="true" aria-label="עברית"><span class="st"></span><span class="st"></span><span class="l l-en" lang="en">A</span><span class="l l-he">א</span><span class="knob"></span></span></div></div>
+<div class="state dark"><span class="k">Behaviour</span><span style="font-family:Fredoka;font-size:15px;line-height:1.55;color:#C9C9C4" dir="rtl">לחיצה או רווח מחליפים שפה. הכפתור מחליק, והעמוד מתהפך בדהייה קצרה.<br><span lang="en" dir="ltr" style="display:block;font-family:Segoe UI;font-size:13px;margin-top:6px">Click or Space switches; the knob slides and the page cross-fades (off with reduced motion).</span></span></div>
+  </div>
+</section>
+
+<section class="frame">
+  <div class="frame-label"><b>04</b> Phone 390, signed out</div>
+  <div class="phones">
+    <div><div class="phone"><div class="screen" dir="rtl" lang="he">
+<header class="band"><div class="wrap">
+  <div class="band-top"><span class="brand-row"><a class="brand" href="#"><span class="brand-mark"><img src="../../app/public/favicon.svg" alt=""></span><span><b>Minifig Hunt</b><small>מיניפיגרים לאספנים</small></span></a><span class="bk he" role="switch" aria-checked="true" aria-label="עברית"><span class="st"></span><span class="st"></span><span class="l l-en" lang="en">A</span><span class="l l-he">א</span><span class="knob"></span></span></span><span style="margin-inline-start:auto"></span><span class="pill-in"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><circle cx="8" cy="15" r="4"/><path d="m11 12 9-9m-3 3 3 3"/></svg><span class="t">התחברות</span></span>
+    <div class="controls"><div class="field"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><div class="inp">חיפוש סדרה, שנה או דמות</div></div><div class="sel">החדשות קודם</div></div>
+  </div>
+  <div class="band-hero"><h1 class="big">כל סדרה.<br>כל <em>דמות.</em></h1>
+    <div><p class="lede">כל סדרות המיניפיגרים לאספנים במקום אחד.</p>
+    <div class="stats"><div><strong>52</strong>סדרות</div><div><strong>787</strong>דמויות</div><div><strong>2010<span>-2026</span></strong>שנים</div></div></div>
+  </div>
+</div></header></div></div><p class="cap"><b>Home.</b> The brick stays glued to the logo; the key button keeps the far end.</p></div>
+    <div><div class="phone"><div class="screen" dir="rtl" lang="he">
+<header class="band"><div class="wrap">
+  <div class="band-top"><span class="brand-row"><a class="brand" href="#"><span class="brand-mark"><img src="../../app/public/favicon.svg" alt=""></span><span><b>Minifig Hunt</b><small>מיניפיגרים לאספנים</small></span></a><span class="bk he" role="switch" aria-checked="true" aria-label="עברית"><span class="st"></span><span class="st"></span><span class="l l-en" lang="en">A</span><span class="l l-he">א</span><span class="knob"></span></span></span><a class="back" href="#"><span aria-hidden="true">&rarr;</span><span class="t">כל הסדרות</span></a><span class="pill-in"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><circle cx="8" cy="15" r="4"/><path d="m11 12 9-9m-3 3 3 3"/></svg><span class="t">התחברות</span></span></div>
+  <section class="hero">
+    <div class="art-stage"><img class="flat" src="../../app/public/cards/71052.png" alt=""></div>
+    <div class="spill" aria-hidden="true"><img src="../../site/img/71052/71052-1.webp" alt="" style="inset-inline-start:10px;top:0px;transform:rotate(12deg)"><img src="../../site/img/71052/71052-4.webp" alt="" style="inset-inline-start:150px;top:30px;transform:rotate(-9deg)"><img src="../../site/img/71052/71052-7.webp" alt="" style="inset-inline-start:20px;top:150px;transform:rotate(-7deg)"><img src="../../site/img/71052/71052-11.webp" alt="" style="inset-inline-start:160px;top:190px;transform:rotate(11deg)"><img src="../../site/img/71052/71052-12.webp" alt="" style="inset-inline-start:50px;top:290px;transform:rotate(-5deg)"></div>
+    <div class="hero-copy"><p class="eyebrow">מיניפיגרים לאספנים</p><h1><bdi>Series 29 Minifigures</bdi></h1>
+      <div class="facts"><span class="fact dark">מס׳ <span class="ltr">71052</span></span><span class="fact">2026</span><span class="fact">12 לאסוף</span></div></div>
+  </section>
+</div></header></div></div><p class="cap"><b>Series.</b> Brick, back arrow and key on one row: 84 + 44 + 44px fits 354px.</p></div>
+  </div>
+</section>
+</body>
+</html>

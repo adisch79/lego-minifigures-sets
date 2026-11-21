@@ -1,0 +1,175 @@
+/* V4-01 mockups: shared port of app/src/index.css + about.css (footer), rewritten with logical
+   properties so the same rules lay out correctly in dir="rtl" and dir="ltr".
+   Per-direction files only set fonts, the language toggle and small typographic tweaks. */
+:root {
+  /* SOURCE: colours sampled from the LEGO logo on the 71019 bag image (copied from app/src/index.css) */
+  --lego-red:#DF0012; --lego-yellow:#FDE01B;
+  --ink:#1A1A1A; --white:#FFFFFF;
+  --grey-50:#F6F6F4; --grey-100:#EDEDEA; --grey-300:#C9C9C4; --grey-500:#6E6E69;
+  --radius:16px; --ease:cubic-bezier(.2,.8,.2,1);
+  --he-body:"Segoe UI", system-ui, sans-serif;
+  --he-display:var(--he-body);
+}
+* { box-sizing:border-box; }
+html,body { margin:0; }
+
+/* ---------- Board chrome (the presentation around the screens) ---------- */
+body.board { background:#121212; color:#EDEDEA; font-family:"Segoe UI", system-ui, sans-serif; padding:40px 0 80px; }
+.board-head { max-width:1280px; margin:0 auto 34px; padding:0 4px; display:flex; gap:28px; align-items:flex-end; justify-content:space-between; flex-wrap:wrap; }
+.board-head .tag { display:inline-block; font-size:12px; font-weight:800; letter-spacing:.16em; text-transform:uppercase; color:var(--ink); background:var(--lego-yellow); padding:6px 10px; border-radius:6px; }
+.board-head h1 { font-size:44px; letter-spacing:-.03em; line-height:1; margin:14px 0 10px; color:#fff; }
+.board-head p { margin:0; max-width:64ch; font-size:15px; line-height:1.55; color:#B9B9B3; }
+.board-head dl { display:grid; grid-template-columns:auto auto; gap:6px 16px; margin:0; font-size:13px; }
+.board-head dt { color:#8A8A84; font-weight:700; }
+.board-head dd { margin:0; color:#fff; font-weight:700; }
+.frame { max-width:1280px; margin:0 auto 46px; }
+.frame-label { display:flex; gap:12px; align-items:baseline; margin:0 4px 12px; font-size:13px; font-weight:700; color:#B9B9B3; }
+.frame-label b { color:var(--lego-yellow); font-size:12px; letter-spacing:.14em; }
+.screen { background:var(--white); color:var(--ink); border-radius:14px; overflow:hidden; box-shadow:0 30px 80px -30px rgba(0,0,0,.8);
+  font-family:var(--he-body); -webkit-font-smoothing:antialiased; }
+.note-strip { max-width:1280px; margin:-30px auto 46px; padding:0 4px; display:flex; flex-wrap:wrap; gap:8px; }
+.note-strip span { font-size:12.5px; font-weight:700; color:#D7D7D2; background:#1F1F1F; border:1px solid #2E2E2E; padding:6px 10px; border-radius:999px; }
+.note-strip span::before { content:""; display:inline-block; width:7px; height:7px; border-radius:50%; background:var(--lego-yellow); margin-inline-end:8px; vertical-align:1px; }
+
+/* ---------- App port ---------- */
+.screen :focus-visible { outline:3px solid var(--ink); outline-offset:3px; border-radius:8px; }
+.wrap { max-width:1200px; margin:0 auto; padding:0 32px; }
+.ltr { direction:ltr; unicode-bidi:isolate; display:inline-block; }
+.band { background:var(--lego-yellow); overflow-x:clip; }
+.band-top { display:flex; align-items:center; gap:20px; padding:20px 0; position:relative; }
+.brand { display:flex; align-items:center; gap:12px; text-decoration:none; color:var(--ink); }
+.brand-mark, .brand-mark img { width:36px; height:36px; flex:none; display:block; }
+/* The brand name stays Latin and LTR in both languages: it is a name, not a phrase */
+.brand b { display:block; font-family:"Segoe UI", system-ui, sans-serif; font-size:21px; font-weight:800; letter-spacing:-.02em; line-height:1; direction:ltr; text-align:start; }
+.brand small { display:block; font-size:12px; font-weight:700; margin-top:4px; opacity:.72; }
+
+.controls { margin-inline-start:auto; display:flex; gap:10px; }
+.field { position:relative; }
+.field svg { position:absolute; inset-inline-start:15px; top:50%; transform:translateY(-50%); color:var(--grey-500); pointer-events:none; }
+.inp, .sel { font:inherit; font-size:14px; color:var(--ink); height:44px; border-radius:999px; border:2px solid transparent; background:var(--white);
+  padding:0 16px; box-shadow:0 1px 0 rgba(0,0,0,.06); display:flex; align-items:center; }
+.inp { width:280px; padding-inline-start:42px; color:var(--grey-500); }
+.sel { padding-inline-end:36px; font-weight:600; position:relative; }
+.sel::after { content:""; position:absolute; inset-inline-end:16px; top:16px; width:6px; height:6px; border-right:2px solid var(--ink); border-bottom:2px solid var(--ink); transform:rotate(45deg); }
+.nav-about { font-size:14px; font-weight:700; color:var(--ink); text-decoration:none; }
+.me { display:inline-flex; align-items:center; gap:10px; height:44px; padding-inline:5px 14px; border-radius:999px; background:var(--white); font-size:14px; font-weight:700; }
+.av { width:34px; height:34px; border-radius:50%; background:var(--lego-red); color:var(--lego-yellow); display:grid; place-items:center; font-size:15px; font-weight:800; }
+.pill-in { display:inline-flex; align-items:center; gap:8px; height:44px; padding-inline:14px 18px; border-radius:999px; background:var(--ink); color:var(--lego-yellow); font-size:14px; font-weight:700; }
+
+.band-hero { padding:36px 0 52px; display:grid; grid-template-columns:1.3fr 1fr; gap:40px; align-items:end; }
+.big { font-family:var(--he-display); font-size:clamp(40px,6vw,80px); line-height:1; letter-spacing:-.02em; font-weight:800; margin:0; }
+.big em { font-style:normal; color:var(--lego-red); }
+.lede { font-size:17px; line-height:1.6; margin:0 0 18px; max-width:40ch; font-weight:500; }
+.stats { display:flex; gap:28px; }
+.stats div { font-size:13px; font-weight:700; }
+.stats strong { display:block; font-family:var(--he-display); font-size:30px; letter-spacing:-.02em; line-height:1.1; font-variant-numeric:tabular-nums; direction:ltr; text-align:start; }
+.stats strong span { opacity:.4; }
+
+.rule { display:flex; justify-content:space-between; align-items:center; border-bottom:2px solid var(--ink); padding:28px 0 14px; margin-bottom:36px; font-size:14px; color:var(--grey-500); }
+.rule b { color:var(--ink); }
+.seg { display:inline-flex; padding:4px; gap:2px; background:var(--grey-50); border-radius:999px; border:2px solid var(--grey-100); }
+.seg span { height:36px; padding:0 16px; border-radius:999px; font-size:14px; font-weight:700; color:var(--grey-500); display:inline-flex; align-items:center; gap:6px; }
+.seg em { font-style:normal; font-size:12px; padding:2px 7px; border-radius:999px; background:var(--grey-100); color:var(--ink); font-variant-numeric:tabular-nums; }
+.seg .on { background:var(--ink); color:var(--white); }
+.seg .on em { background:var(--lego-yellow); }
+
+.grid { list-style:none; margin:0; padding:0 0 80px; display:grid; grid-template-columns:repeat(3,1fr); gap:48px 32px; }
+.art { aspect-ratio:3/4; background:var(--grey-50); border-radius:var(--radius); overflow:hidden; }
+.art img { width:100%; height:100%; object-fit:cover; display:block; }
+.meta { padding:16px 2px 0; }
+.meta-row { display:flex; justify-content:space-between; align-items:center; gap:12px; }
+.num { font-size:13px; font-weight:700; color:var(--grey-500); font-variant-numeric:tabular-nums; }
+.count-badge { font-size:12.5px; font-weight:700; background:var(--lego-yellow); border-radius:999px; padding:4px 10px; white-space:nowrap; }
+/* Catalog names stay in English: isolated LTR runs inside the RTL page, aligned to the RTL start */
+.meta h2 { font-family:var(--he-display); font-size:22px; line-height:1.2; letter-spacing:-.02em; margin:8px 0 14px; font-weight:800; }
+.prog { display:flex; align-items:center; gap:10px; }
+.bar { flex:1; height:8px; border-radius:999px; background:var(--grey-100); overflow:hidden; }
+.bar i { display:block; height:100%; border-radius:999px; background:var(--ink); }
+.bar.done i { background:var(--lego-red); }
+.prog b { font-size:14px; font-weight:800; font-variant-numeric:tabular-nums; white-space:nowrap; }
+.prog b span { color:var(--grey-500); font-weight:700; }
+.wantn { font-size:13px; font-weight:700; color:#B3000E; margin:8px 0 0; }
+
+/* Series page */
+.back { margin-inline-start:auto; flex:none; font-size:14px; font-weight:700; color:var(--ink); text-decoration:none; display:inline-flex; gap:8px; align-items:center; height:42px; padding:0 18px; border-radius:999px; background:var(--white); }
+.hero { position:relative; display:grid; grid-template-columns:320px 1fr; gap:48px; align-items:center; padding:24px 0 56px; }
+.art-stage { position:relative; height:440px; display:flex; align-items:center; }
+.flat { display:block; width:100%; max-height:100%; object-fit:contain; border-radius:12px; box-shadow:0 26px 44px -26px rgba(0,0,0,.55); }
+.spill { position:absolute; inset-inline-start:330px; top:10px; width:300px; height:440px; pointer-events:none; z-index:2; }
+.spill img { position:absolute; width:140px; height:140px; object-fit:contain; }
+.hero-copy { position:relative; z-index:3; padding-inline-start:268px; min-width:0; }
+.eyebrow { font-size:13px; font-weight:700; margin:0 0 12px; opacity:.75; }
+.hero h1 { font-family:var(--he-display); font-size:clamp(36px,5vw,64px); line-height:1; letter-spacing:-.03em; font-weight:800; margin:0 0 20px; }
+.facts { display:flex; flex-wrap:wrap; gap:8px; }
+.fact { font-size:13px; font-weight:700; padding:7px 13px; border-radius:999px; background:var(--white); font-variant-numeric:tabular-nums; }
+.fact.dark { background:var(--ink); color:var(--lego-yellow); }
+.sp { margin-top:22px; max-width:440px; }
+.sp-num { display:flex; align-items:baseline; gap:10px; margin-bottom:10px; }
+.sp-num strong { font-family:var(--he-display); font-size:44px; line-height:1; font-weight:800; letter-spacing:-.03em; font-variant-numeric:tabular-nums; direction:ltr; }
+.sp-num strong span { opacity:.4; }
+.sp-num small { font-size:13px; font-weight:800; }
+.sp .bar { height:12px; background:rgba(255,255,255,.7); }
+.smk { display:flex; align-items:center; gap:10px; margin-top:16px; flex-wrap:wrap; }
+.smk > span { font-size:13px; font-weight:800; }
+.chip { display:inline-flex; align-items:center; justify-content:center; gap:6px; height:38px; padding:0 12px; border-radius:999px; border:2px solid var(--grey-100);
+  background:var(--white); color:var(--ink); font-size:13px; font-weight:800; flex:1; }
+.smk .chip { flex:none; height:40px; padding:0 16px; border-color:transparent; }
+.chip.own.on { background:var(--ink); border-color:var(--ink); color:var(--lego-yellow); }
+.chip.want.on { background:var(--lego-red); border-color:var(--lego-red); color:var(--white); }
+.rule-series h2 { font-family:var(--he-display); font-size:16px; margin:0; color:var(--ink); }
+.figs { list-style:none; margin:0; padding:0 0 80px; display:grid; grid-template-columns:repeat(4,1fr); gap:22px; }
+.fig { position:relative; background:var(--white); border:1px solid var(--grey-100); border-radius:var(--radius); padding:12px; display:flex; flex-direction:column; }
+/* The number tab sits on the inline start: top right in Hebrew, with the cut corner mirrored */
+.fig-no { position:absolute; top:12px; inset-inline-start:12px; z-index:1; min-width:50px; height:50px; padding:0 8px; border-start-start-radius:10px; border-end-end-radius:12px;
+  background:var(--lego-yellow); font-family:var(--he-display); font-size:26px; font-weight:800; display:grid; place-items:center; font-variant-numeric:tabular-nums; }
+.pic { position:relative; aspect-ratio:1; background:var(--grey-50); border-radius:10px; }
+.pic img { position:absolute; inset:8%; width:84%; height:84%; object-fit:contain; }
+.fig h3 { font-family:var(--he-display); font-size:15px; line-height:1.25; font-weight:800; margin:12px 2px 4px; min-height:2.5em; }
+.mk { display:flex; gap:6px; margin-top:auto; padding-top:6px; }
+.fig.is-owned { border-color:var(--ink); }
+.fig.is-owned .pic { background:#FFF4B0; }
+.fig.is-wanted .pic { box-shadow:inset 0 0 0 2px var(--lego-red); }
+
+/* Footer: Fair Play band (V2-18 option C) */
+.site-foot { background:var(--ink); color:var(--white); }
+.site-foot .wrap { display:grid; grid-template-columns:auto 1fr auto; gap:14px 22px; align-items:center; padding-top:22px; padding-bottom:24px; }
+.site-foot .badge { width:40px; height:40px; border-radius:50%; background:var(--lego-yellow); color:var(--ink); display:grid; place-items:center; font-weight:900; font-size:18px; font-family:"Segoe UI", sans-serif; }
+.site-foot .txt { font-size:14px; line-height:1.6; color:var(--grey-300); }
+.site-foot .txt b { color:var(--white); font-weight:800; }
+.site-foot nav { display:flex; gap:22px; flex-wrap:wrap; }
+.site-foot nav a { color:var(--lego-yellow); font-weight:800; text-decoration:none; padding:6px 0; font-size:14px; }
+sup.r { font-size:.62em; vertical-align:super; line-height:0; }
+
+/* Phone frames */
+.phones { display:flex; gap:28px; flex-wrap:wrap; align-items:flex-start; }
+.phone { width:390px; border-radius:34px; background:#000; padding:12px; box-shadow:0 30px 60px -30px rgba(0,0,0,.9); }
+.phone .screen { border-radius:24px; }
+.phone .wrap { padding:0 18px; }
+.phone .band-top { flex-wrap:wrap; gap:10px; padding:14px 0; }
+.phone .controls { order:3; margin-inline-start:0; width:100%; }
+.phone .field { flex:1; min-width:0; }
+.phone .inp { width:100%; font-size:15px; }
+.phone .sel { font-size:15px; }
+.phone .band-hero { grid-template-columns:1fr; gap:16px; padding:10px 0 26px; }
+.phone .big { font-size:44px; }
+.phone .lede { font-size:15.5px; }
+.phone .stats { gap:20px; }
+.phone .stats strong { font-size:24px; }
+.phone .hero { grid-template-columns:1fr; padding:8px 0 28px; gap:14px; }
+.phone .art-stage { height:230px; width:160px; }
+.phone .spill { inset-inline-start:150px; top:0; transform:scale(.6); transform-origin:top right; }
+.phone .hero-copy { padding-inline-start:0; }
+.phone .hero h1 { font-size:36px; }
+.phone .back { width:44px; height:44px; padding:0; justify-content:center; font-size:18px; }
+.phone .back .t { display:none; }
+.phone .pill-in { width:44px; padding:0; justify-content:center; }
+.phone .pill-in .t { display:none; }
+.cap { margin:12px 6px 0; font-size:13px; line-height:1.5; color:#B9B9B3; }
+.cap b { color:#fff; }
+
+/* Toggle close-up panel */
+.states { display:grid; grid-template-columns:repeat(3,1fr); gap:18px; }
+.state { background:var(--lego-yellow); color:var(--ink); border-radius:14px; padding:26px 22px 20px; min-height:150px; display:flex; flex-direction:column; gap:16px; justify-content:space-between; }
+.state.dark { background:var(--ink); color:var(--white); }
+.state .k { font-size:12px; font-weight:800; letter-spacing:.12em; text-transform:uppercase; opacity:.7; font-family:"Segoe UI", sans-serif; }
+.state .row { display:flex; gap:14px; align-items:center; flex-wrap:wrap; }
