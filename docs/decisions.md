@@ -94,3 +94,4 @@
 - 2026-11-17 — V2-16 mail links are built from `{{ .SiteURL }}` (production) by design, so preview and localhost mails also point to prod. Reason: one Site URL setting, no Supabase host in the mail; accepted risk for dev mails.
 - 2026-11-17 — V2-16 mail figure images are PNG copies in `site/email/` (served at /email/). Reason: desktop Outlook does not render webp.
 - 2026-11-18 — V2-18 puts (R) on every LEGO word in visible text, not only the first per page. Reason: Fair Play says the mark should appear "each time it is used" (https://www.lego.com/en-us/legal/notices-and-policies/fair-play).
+- 2026-11-21 — V3-03: BOI rate fallback cache max 7 days old, then error. Reason: own default; stale rate must not pass as a current price.
